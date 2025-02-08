@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 
 class OrderController extends Controller
 {
@@ -56,38 +57,41 @@ class OrderController extends Controller
         ]);
     }
 
-    public function index()
+    /**
+     * Get logged in user's orders
+     */
+    public function userOrders(Request $request): JsonResponse
     {
-        $user = auth()->user();
-        $query = Order::with(['items.product', 'branch', 'user']);
-
-        // If user is admin, show all orders, otherwise show only user's orders
-        if (!$user->isAdmin()) {
-            $query->where('user_id', $user->id);
-        }
-
-        $orders = $query->latest()->paginate(10);
+        $orders = $request->user()
+            ->orders()
+            ->with(['items.product', 'branch'])
+            ->latest()
+            ->get();
 
         return response()->json([
-            'data' => $orders,
-            'message' => 'Orders retrieved successfully'
+            'status' => 'success',
+            'data' => $orders
         ]);
     }
 
-    public function show(Order $order)
+    /**
+     * Get specific order details
+     */
+    public function show(Order $order): JsonResponse
     {
-        $user = auth()->user();
-        
-        // Allow admin to view any order, but regular users can only view their own orders
-        if (!$user->isAdmin() && $order->user_id !== $user->id) {
+        // Check if order belongs to logged in user
+        if ($order->user_id !== auth()->id()) {
             return response()->json([
-                'message' => 'You are not authorized to view this order'
+                'status' => 'error',
+                'message' => 'Unauthorized access to order'
             ], 403);
         }
 
+        $order->load(['items.product', 'branch']);
+
         return response()->json([
-            'data' => $order->load(['items.product', 'branch', 'user']),
-            'message' => 'Order retrieved successfully'
+            'status' => 'success',
+            'data' => $order
         ]);
     }
 } 

@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\BranchProductController;
 use App\Http\Controllers\Api\BranchOrderController;
 use App\Models\Category;
+use App\Http\Controllers\Api\SubscriptionPlanController;
 
 // Public routes
 Route::post('/login', [AuthController::class, 'login']);
@@ -36,10 +37,18 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/categories/{category}/subcategories', [CategoryController::class, 'subcategories']);
     
     // Orders
-    Route::get('/orders', [OrderController::class, 'index']);
+    Route::get('/orders', [OrderController::class, 'userOrders']);
     Route::post('/orders', [OrderController::class, 'store']);
     Route::get('/orders/{order}', [OrderController::class, 'show']);
     
+    // Branch Products
+    Route::get('/branch/{branch}/products', [BranchProductController::class, 'index']);
+    Route::get('/branch/products/{product}', [BranchProductController::class, 'show']);
+
+    // Branch Orders
+    Route::get('/branch/{branch}/orders', [BranchOrderController::class, 'index']);
+    Route::put('/branch/orders/{order}/status', [BranchOrderController::class, 'updateStatus']);
+
     // Admin routes
     Route::prefix('admin')->middleware(['auth:sanctum', 'admin'])->group(function () {
         Route::get('dashboard', [App\Http\Controllers\Api\Admin\DashboardController::class, 'index']);
@@ -67,7 +76,22 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::apiResource('branch/products', BranchProductController::class);
         Route::get('branch/orders', [BranchOrderController::class, 'index']);
         Route::put('branch/orders/{order}/status', [BranchOrderController::class, 'updateStatus']);
+        Route::post('branch/products/add', [BranchProductController::class, 'addProduct']);
+        Route::put('branch/products/{product}', [BranchProductController::class, 'updateProduct']);
     });
+
+    // Admin only routes
+    Route::middleware('admin')->group(function () {
+        // Subscription Plans
+        Route::get('/plans', [SubscriptionPlanController::class, 'index']);
+        Route::get('/plans/{plan}', [SubscriptionPlanController::class, 'show']);
+        Route::post('/plans/create', [SubscriptionPlanController::class, 'store']);
+        Route::put('/plans/{plan}', [SubscriptionPlanController::class, 'update']);
+        Route::delete('/plans/{plan}', [SubscriptionPlanController::class, 'destroy']);
+    });
+
+    // User subscription
+    Route::get('/subscription', [SubscriptionPlanController::class, 'currentSubscription']);
 });
 
 Route::get('/categories/{category}/subcategories', function (Category $category) {

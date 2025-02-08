@@ -62,4 +62,15 @@ class Kernel extends HttpKernel
         'admin' => \App\Http\Middleware\EnsureUserIsAdmin::class,
         'branch.manager' => \App\Http\Middleware\EnsureUserIsBranchManager::class,
     ];
+
+    /**
+     * The application's route middleware.
+     *
+     * These middleware may be assigned to groups or used individually.
+     *
+     * @var array<string, class-string|string>
+     */
+    protected $routeMiddleware = [
+        'admin' => \App\Http\Middleware\AdminAuthentication::class,
+    ];
 } 
