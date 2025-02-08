@@ -1,0 +1,393 @@
+KANMA STORE API DOCUMENTATION
+============================
+
+BASE URL
+--------
+https://api.kanma.in
+
+AUTHENTICATION
+-------------
+All protected endpoints require a Bearer token in the Authorization header:
+Authorization: Bearer <access_token>
+
+RESPONSE FORMAT
+-------------
+All responses follow this structure:
+{
+    "status": "success|error",
+    "message": "Optional message",
+    "data": {} // Response data
+}
+
+ERROR HANDLING
+-------------
+{
+    "status": "error",
+    "message": "Error description",
+    "errors": {} // Validation errors if any
+}
+
+STATUS CODES
+-----------
+200: Success
+201: Created
+400: Bad Request
+401: Unauthorized
+403: Forbidden
+404: Not Found
+422: Validation Error
+500: Server Error
+
+IMPORTANT NOTES
+--------------
+1. All timestamps are in UTC format
+2. All monetary values are in INR (₹)
+3. Image URLs are relative paths - prepend with base URL
+4. Rate limiting: 60 requests per minute
+5. Token expiry: 24 hours 
+
+API ENDPOINTS
+============
+
+1. AUTHENTICATION
+----------------
+Login
+URL: /api/login
+Method: POST
+Auth Required: No
+
+Request Body:
+{
+    "email": "string",
+    "password": "string"
+}
+
+Success Response (200):
+{
+    "status": "success",
+    "data": {
+        "token": "string",
+        "user": {
+            "id": "integer",
+            "name": "string",
+            "email": "string",
+            "role": "string"
+        }
+    }
+}
+
+2. CATEGORIES
+------------
+List Categories
+URL: /api/categories
+Method: GET
+Auth Required: Yes
+Headers: Authorization: Bearer token
+
+Success Response (200):
+{
+    "status": "success",
+    "data": [
+        {
+            "id": "integer",
+            "name": "string",
+            "description": "string",
+            "is_active": "boolean",
+            "subcategories": [
+                {
+                    "id": "integer",
+                    "name": "string",
+                    "description": "string",
+                    "is_active": "boolean"
+                }
+            ]
+        }
+    ]
+}
+
+3. BRANCH PRODUCTS
+-----------------
+List Branch Products
+URL: /api/branch/{branch_id}/products
+Method: GET
+Auth Required: Yes
+Headers: Authorization: Bearer token
+
+Query Parameters:
+- category_id (optional): Filter by category
+- subcategory_id (optional): Filter by subcategory
+- search (optional): Search in name/description
+- is_active (optional): Filter by status
+
+Success Response (200):
+{
+    "status": "success",
+    "data": [
+        {
+            "id": "integer",
+            "name": "string",
+            "description": "string",
+            "price": "decimal",
+            "image_path": "string|null",
+            "category": {
+                "id": "integer",
+                "name": "string"
+            },
+            "subcategory": {
+                "id": "integer",
+                "name": "string"
+            },
+            "is_active": "boolean"
+        }
+    ]
+}
+
+4. BRANCH ORDERS
+---------------
+List Branch Orders
+URL: /api/branch/{branch_id}/orders
+Method: GET
+Auth Required: Yes
+Headers: Authorization: Bearer token
+
+Query Parameters:
+- status (optional): Filter by order status
+- date (optional): Filter by date (YYYY-MM-DD)
+
+Success Response (200):
+{
+    "status": "success",
+    "data": [
+        {
+            "id": "integer",
+            "order_number": "string",
+            "customer_name": "string",
+            "total_amount": "decimal",
+            "status": "string",
+            "created_at": "datetime",
+            "items": [
+                {
+                    "product_name": "string",
+                    "quantity": "integer",
+                    "price": "decimal"
+                }
+            ]
+        }
+    ]
+}
+
+Update Order Status
+URL: /api/branch/orders/{order_id}/status
+Method: PUT
+Auth Required: Yes
+Headers: Authorization: Bearer token
+
+Request Body:
+{
+    "status": "processing|completed|cancelled"
+}
+
+Success Response (200):
+{
+    "status": "success",
+    "message": "Order status updated successfully",
+    "data": {
+        "id": "integer",
+        "status": "string",
+        "updated_at": "datetime"
+    }
+}
+
+5. SUBSCRIPTION PLANS (Admin Only)
+--------------------------------
+List Plans
+URL: /api/plans
+Method: GET
+Auth Required: Yes (Admin)
+Headers: Authorization: Bearer token (Admin)
+
+Success Response (200):
+{
+    "status": "success",
+    "data": [
+        {
+            "id": "integer",
+            "name": "string",
+            "description": "string",
+            "price": "decimal",
+            "duration_days": "integer",
+            "features": ["string"],
+            "is_popular": "boolean",
+            "is_active": "boolean"
+        }
+    ]
+}
+
+6. USER SUBSCRIPTION
+-------------------
+Get Current Subscription
+URL: /api/subscription
+Method: GET
+Auth Required: Yes
+Headers: Authorization: Bearer token
+
+Success Response (200):
+{
+    "status": "success",
+    "data": {
+        "id": "integer",
+        "plan": {
+            "id": "integer",
+            "name": "string",
+            "description": "string",
+            "price": "decimal",
+            "duration_days": "integer",
+            "features": ["string"]
+        },
+        "starts_at": "datetime",
+        "ends_at": "datetime",
+        "status": "string"
+    }
+}
+
+7. USER ORDERS
+--------------
+Get User Orders
+URL: /api/orders
+Method: GET
+Auth Required: Yes
+Headers: Authorization: Bearer token
+
+Success Response (200):
+{
+    "status": "success",
+    "data": [
+        {
+            "id": "integer",
+            "order_number": "string",
+            "total_amount": "decimal",
+            "status": "string",
+            "created_at": "datetime",
+            "branch": {
+                "id": "integer",
+                "name": "string"
+            },
+            "items": [
+                {
+                    "id": "integer",
+                    "product": {
+                        "id": "integer",
+                        "name": "string",
+                        "price": "decimal"
+                    },
+                    "quantity": "integer",
+                    "price": "decimal"
+                }
+            ]
+        }
+    ]
+}
+
+Get Order Details
+URL: /api/orders/{order_id}
+Method: GET
+Auth Required: Yes
+Headers: Authorization: Bearer token
+
+Success Response (200):
+{
+    "status": "success",
+    "data": {
+        "id": "integer",
+        "order_number": "string",
+        "total_amount": "decimal",
+        "status": "string",
+        "created_at": "datetime",
+        "branch": {
+            "id": "integer",
+            "name": "string"
+        },
+        "items": [
+            {
+                "id": "integer",
+                "product": {
+                    "id": "integer",
+                    "name": "string",
+                    "price": "decimal"
+                },
+                "quantity": "integer",
+                "price": "decimal"
+            }
+        ]
+    }
+}
+
+8. PRODUCTS
+-----------
+List Products
+URL: /api/products
+Method: GET
+Auth Required: Yes
+Headers: Authorization: Bearer token
+
+Query Parameters:
+- branch_id (optional): Filter by branch (will return products available in this branch)
+- category_id (optional): Filter by category
+- subcategory_id (optional): Filter by subcategory
+- search (optional): Search in name/description
+
+Success Response (200):
+{
+    "status": "success",
+    "data": [
+        {
+            "id": "integer",
+            "name": "string",
+            "description": "string",
+            "price": "decimal",
+            "image_path": "string|null",
+            "is_active": "boolean",
+            "category": {
+                "id": "integer",
+                "name": "string"
+            },
+            "subcategory": {
+                "id": "integer",
+                "name": "string"
+            }
+        }
+    ]
+}
+
+Get Product Details
+URL: /api/products/{product_id}
+Method: GET
+Auth Required: Yes
+Headers: Authorization: Bearer token
+
+Success Response (200):
+{
+    "status": "success",
+    "data": {
+        "id": "integer",
+        "name": "string",
+        "description": "string",
+        "price": "decimal",
+        "image_path": "string|null",
+        "is_active": "boolean",
+        "category": {
+            "id": "integer",
+            "name": "string"
+        },
+        "subcategory": {
+            "id": "integer",
+            "name": "string"
+        },
+        "branches": [
+            {
+                "id": "integer",
+                "name": "string"
+            }
+        ]
+    }
+} 

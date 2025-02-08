@@ -15,6 +15,8 @@ use App\Http\Controllers\BranchManager\CategoryController as BranchManagerCatego
 use App\Http\Controllers\BranchManager\SubcategoryController as BranchManagerSubcategoryController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Admin\SubscriptionPlanController;
+use App\Http\Controllers\Branch\ProductController;
+use App\Http\Controllers\Admin\ProductController as AdminProductController;
 
 // Redirect root to customer login (we'll create this later)
 Route::get('/', function () {
@@ -32,19 +34,12 @@ Route::prefix('admin')->group(function () {
     Route::middleware(['auth', 'admin'])->name('admin.')->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
         Route::get('/orders', [OrderController::class, 'index'])->name('orders');
-        Route::get('/branches', [BranchController::class, 'list'])->name('branches');
         
         // User management
         Route::get('/users', [UserController::class, 'index'])->name('users.index');
         Route::get('/users/{user}/edit', [UserController::class, 'edit'])->name('users.edit');
         Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update');
         Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
-
-        // Branch management
-        Route::get('/branches/create', [BranchController::class, 'create'])->name('branches.create');
-        Route::post('/branches', [BranchController::class, 'store'])->name('branches.store');
-        Route::get('/branches/{branch}/edit', [BranchController::class, 'edit'])->name('branches.edit');
-        Route::put('/branches/{branch}', [BranchController::class, 'update'])->name('branches.update');
 
         // Category Management
         Route::get('/categories', [CategoryController::class, 'index'])->name('categories.index');
@@ -77,39 +72,55 @@ Route::prefix('admin')->group(function () {
         Route::get('/orders', [OrderController::class, 'index'])->name('orders');
         Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
         Route::put('/orders/{order}/status', [OrderController::class, 'updateStatus'])->name('orders.update-status');
+
+        // Product Management
+        Route::get('/products', [AdminProductController::class, 'index'])->name('products.index');
+        Route::get('/products/create', [AdminProductController::class, 'create'])->name('products.create');
+        Route::post('/products', [AdminProductController::class, 'store'])->name('products.store');
+        Route::get('/products/{product}/edit', [AdminProductController::class, 'edit'])->name('products.edit');
+        Route::put('/products/{product}', [AdminProductController::class, 'update'])->name('products.update');
+        Route::delete('/products/{product}', [AdminProductController::class, 'destroy'])->name('products.destroy');
+
+        // Branch management routes (using resource controller)
+        Route::resource('branches', BranchController::class);
     });
 
     // Protected Branch Manager Routes
-    Route::middleware(['auth', 'branch.manager'])->prefix('branch')->group(function () {
-        Route::get('/dashboard', [BranchManagerDashboardController::class, 'show'])->name('branch.dashboard');
-        Route::get('/orders', [BranchManagerOrderController::class, 'list'])->name('branch.orders');
+    Route::middleware(['auth', 'branch.manager'])->prefix('branch')->name('branch.')->group(function () {
+        Route::get('/dashboard', [BranchManagerDashboardController::class, 'show'])->name('dashboard');
+        Route::get('/orders', [BranchManagerOrderController::class, 'list'])->name('orders');
         
         // Product routes
-        Route::get('/products', [BranchManagerProductController::class, 'index'])->name('branch.products.index');
-        Route::get('/products/create', [BranchManagerProductController::class, 'create'])->name('branch.products.create');
-        Route::post('/products', [BranchManagerProductController::class, 'store'])->name('branch.products.store');
-        Route::get('/products/{product}/edit', [BranchManagerProductController::class, 'edit'])->name('branch.products.edit');
-        Route::put('/products/{product}', [BranchManagerProductController::class, 'update'])->name('branch.products.update');
-        Route::delete('/products/{product}', [BranchManagerProductController::class, 'destroy'])->name('branch.products.destroy');
+        Route::get('/products', [ProductController::class, 'index'])->name('products.index');
+        Route::get('/products/create', [ProductController::class, 'create'])->name('products.create');
+        Route::post('/products', [ProductController::class, 'store'])->name('products.store');
+        Route::get('/products/{product}/edit', [ProductController::class, 'edit'])->name('products.edit');
+        Route::put('/products/{product}', [ProductController::class, 'update'])->name('products.update');
+        
+        // Available Products
+        Route::get('/available-products', [ProductController::class, 'available'])->name('products.available');
+        Route::post('/products/add', [ProductController::class, 'addToBranch'])->name('products.add');
+        Route::put('/products/{product}/price', [ProductController::class, 'updatePrice'])->name('products.update-price');
+        Route::put('/products/{product}/toggle', [ProductController::class, 'toggleStatus'])->name('products.toggle');
 
         // Category Management
-        Route::get('/categories', [BranchManagerCategoryController::class, 'index'])->name('branch.categories.index');
-        Route::get('/categories/create', [BranchManagerCategoryController::class, 'create'])->name('branch.categories.create');
-        Route::post('/categories', [BranchManagerCategoryController::class, 'store'])->name('branch.categories.store');
-        Route::get('/categories/{category}/edit', [BranchManagerCategoryController::class, 'edit'])->name('branch.categories.edit');
-        Route::put('/categories/{category}', [BranchManagerCategoryController::class, 'update'])->name('branch.categories.update');
-        Route::delete('/categories/{category}', [BranchManagerCategoryController::class, 'destroy'])->name('branch.categories.destroy');
+        Route::get('/categories', [BranchManagerCategoryController::class, 'index'])->name('categories.index');
+        Route::get('/categories/create', [BranchManagerCategoryController::class, 'create'])->name('categories.create');
+        Route::post('/categories', [BranchManagerCategoryController::class, 'store'])->name('categories.store');
+        Route::get('/categories/{category}/edit', [BranchManagerCategoryController::class, 'edit'])->name('categories.edit');
+        Route::put('/categories/{category}', [BranchManagerCategoryController::class, 'update'])->name('categories.update');
+        Route::delete('/categories/{category}', [BranchManagerCategoryController::class, 'destroy'])->name('categories.destroy');
 
         // Subcategory Management
-        Route::get('/subcategories', [BranchManagerSubcategoryController::class, 'index'])->name('branch.subcategories.index');
-        Route::get('/subcategories/create', [BranchManagerSubcategoryController::class, 'create'])->name('branch.subcategories.create');
-        Route::post('/subcategories', [BranchManagerSubcategoryController::class, 'store'])->name('branch.subcategories.store');
-        Route::get('/subcategories/{subcategory}/edit', [BranchManagerSubcategoryController::class, 'edit'])->name('branch.subcategories.edit');
-        Route::put('/subcategories/{subcategory}', [BranchManagerSubcategoryController::class, 'update'])->name('branch.subcategories.update');
-        Route::delete('/subcategories/{subcategory}', [BranchManagerSubcategoryController::class, 'destroy'])->name('branch.subcategories.destroy');
+        Route::get('/subcategories', [BranchManagerSubcategoryController::class, 'index'])->name('subcategories.index');
+        Route::get('/subcategories/create', [BranchManagerSubcategoryController::class, 'create'])->name('subcategories.create');
+        Route::post('/subcategories', [BranchManagerSubcategoryController::class, 'store'])->name('subcategories.store');
+        Route::get('/subcategories/{subcategory}/edit', [BranchManagerSubcategoryController::class, 'edit'])->name('subcategories.edit');
+        Route::put('/subcategories/{subcategory}', [BranchManagerSubcategoryController::class, 'update'])->name('subcategories.update');
+        Route::delete('/subcategories/{subcategory}', [BranchManagerSubcategoryController::class, 'destroy'])->name('subcategories.destroy');
 
-        Route::get('/profile', [ProfileController::class, 'edit'])->name('branch.profile.edit');
-        Route::put('/profile', [ProfileController::class, 'update'])->name('branch.profile.update');
+        Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+        Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
     });
 });
 

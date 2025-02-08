@@ -11,21 +11,18 @@ class SubscriptionPlan extends Model
 
     protected $fillable = [
         'name',
-        'type',
         'description',
         'price',
-        'validity_days',
-        'wallet_addon',
-        'free_orders',
-        'free_delivery_radius',
+        'duration_days',
+        'features',
+        'is_popular',
         'is_active'
     ];
 
     protected $casts = [
         'price' => 'decimal:2',
-        'wallet_addon' => 'decimal:2',
-        'free_orders' => 'integer',
-        'free_delivery_radius' => 'integer',
+        'features' => 'array',
+        'is_popular' => 'boolean',
         'is_active' => 'boolean'
     ];
 
@@ -45,5 +42,10 @@ class SubscriptionPlan extends Model
     public function branches()
     {
         return $this->hasMany(Branch::class);
+    }
+
+    public function subscriptions()
+    {
+        return $this->hasMany(Subscription::class);
     }
 } 
