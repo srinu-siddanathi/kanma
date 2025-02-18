@@ -12,10 +12,11 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('address');
-            $table->decimal('latitude', 10, 8);
-            $table->decimal('longitude', 10, 8);
-            $table->string('contact_number');
-            $table->string('email');
+            $table->string('phone')->nullable();
+            $table->string('email')->nullable();
+            $table->decimal('latitude', 10, 8)->nullable();
+            $table->decimal('longitude', 11, 8)->nullable();
+            $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
             $table->boolean('is_active')->default(true);
             $table->timestamps();
         });

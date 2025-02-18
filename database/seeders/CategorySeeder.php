@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Models\Category;
-use App\Models\Subcategory;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
@@ -12,29 +11,32 @@ class CategorySeeder extends Seeder
 {
     public function run()
     {
-        // Disable foreign key checks
         DB::statement('SET FOREIGN_KEY_CHECKS=0');
-
-        // Clear existing data
-        Category::query()->delete();
+        Category::truncate();
+        DB::statement('SET FOREIGN_KEY_CHECKS=1');
 
         $categories = [
-            'Food' => 'All food items',
-            'Beverages' => 'All types of drinks',
-            'Snacks' => 'Quick bites and snacks',
-            'Desserts' => 'Sweet treats and desserts',
+            [
+                'name' => 'Food',
+                'description' => 'All food items',
+            ],
+            [
+                'name' => 'Beverages',
+                'description' => 'All types of drinks',
+            ],
+            [
+                'name' => 'Desserts',
+                'description' => 'Sweet treats and desserts',
+            ]
         ];
 
-        foreach ($categories as $name => $description) {
+        foreach ($categories as $category) {
             Category::create([
-                'name' => $name,
-                'slug' => Str::slug($name),
-                'description' => $description,
+                'name' => $category['name'],
+                'slug' => Str::slug($category['name']),
+                'description' => $category['description'],
                 'is_active' => true,
             ]);
         }
-
-        // Re-enable foreign key checks
-        DB::statement('SET FOREIGN_KEY_CHECKS=1');
     }
 } 

@@ -16,7 +16,7 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Name</label>
                     <input type="text" name="name" value="{{ old('name') }}" 
-                           class="mt-1 block w-full rounded-md border-gray-300" required>
+                           class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                     @error('name')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
@@ -25,7 +25,7 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Address</label>
                     <textarea name="address" rows="3" 
-                              class="mt-1 block w-full rounded-md border-gray-300">{{ old('address') }}</textarea>
+                              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">{{ old('address') }}</textarea>
                     @error('address')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
@@ -34,7 +34,7 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Phone</label>
                     <input type="text" name="phone" value="{{ old('phone') }}" 
-                           class="mt-1 block w-full rounded-md border-gray-300">
+                           class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                     @error('phone')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
@@ -43,7 +43,7 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Email</label>
                     <input type="email" name="email" value="{{ old('email') }}" 
-                           class="mt-1 block w-full rounded-md border-gray-300" required>
+                           class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                     @error('email')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
@@ -64,10 +64,22 @@
                            class="mt-1 block w-full rounded-md border-gray-300" required>
                 </div>
 
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Latitude</label>
+                        <input type="number" name="latitude" value="{{ old('latitude') }}" step="any"
+                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Longitude</label>
+                        <input type="number" name="longitude" value="{{ old('longitude') }}" step="any"
+                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    </div>
+                </div>
+
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">Status</label>
-                    <div class="mt-2">
-                        <label class="inline-flex items-center">
+                    <div class="flex items-center">
+                        <label class="flex items-center">
                             <input type="checkbox" name="is_active" value="1" 
                                    class="rounded border-gray-300 text-blue-600"
                                    {{ old('is_active', true) ? 'checked' : '' }}>

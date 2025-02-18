@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Facades\Storage;
 
@@ -13,13 +14,13 @@ class Product extends Model
 
     protected $fillable = [
         'name',
+        'slug',
         'description',
-        'price',
-        'image_path',
-        'is_active',
-        'branch_id',
         'category_id',
         'subcategory_id',
+        'price',
+        'image_path',
+        'is_active'
     ];
 
     protected $casts = [
@@ -28,28 +29,6 @@ class Product extends Model
     ];
 
     protected $appends = ['image_url'];
-
-    protected static function booted()
-    {
-        // When a product is updated
-        static::updated(function ($product) {
-            if ($product->isDirty(['price', 'is_active']) && $product->branch_id) {
-                // Update the default branch's pivot data
-                $product->branches()->updateExistingPivot($product->branch_id, [
-                    'price' => $product->price,
-                    'is_active' => $product->is_active
-                ]);
-            }
-        });
-    }
-
-    /**
-     * Get the branch that owns the product.
-     */
-    public function branch(): BelongsTo
-    {
-        return $this->belongsTo(Branch::class);
-    }
 
     public function category(): BelongsTo
     {
@@ -61,14 +40,14 @@ class Product extends Model
         return $this->belongsTo(Subcategory::class);
     }
 
-    public function branches()
+    public function branches(): BelongsToMany
     {
         return $this->belongsToMany(Branch::class, 'branch_products')
             ->withPivot('price', 'is_active')
             ->withTimestamps();
     }
 
-    public function getImageUrlAttribute()
+    public function getImageUrlAttribute(): ?string
     {
         if ($this->image_path) {
             return Storage::url($this->image_path);

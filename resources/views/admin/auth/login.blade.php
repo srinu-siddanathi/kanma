@@ -1,52 +1,99 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Login - Kanma.in</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>{{ config('app.name', 'Laravel') }} - Admin Login</title>
+
+    <!-- Use CDN for Tailwind instead of Vite -->
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-100">
-    <div class="min-h-screen flex items-center justify-center">
-        <div class="max-w-md w-full space-y-8 p-8 bg-white rounded-lg shadow">
-            <div>
-                <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
-                    Admin Login
+
+<body>
+    <div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8"
+        style="background: linear-gradient(135deg, #FDB813 0%, #FF4E50 100%);">
+        <div class="max-w-md w-full bg-white/10 backdrop-blur-lg p-8 rounded-xl shadow-2xl">
+            <!-- Logo -->
+            <div class="mb-8 text-center">
+                <h2 class="text-3xl font-bold text-white">
+                    {{ config('app.name', 'Laravel') }} Admin
                 </h2>
+                <p class="mt-2 text-white/80">Admin Control Panel</p>
             </div>
-            <form class="mt-8 space-y-6" action="{{ route('admin.login.submit') }}" method="POST">
+
+            <!-- Session Status -->
+            @if (session('status'))
+            <div class="mb-4 bg-white/10 text-white p-4 rounded-md">
+                {{ session('status') }}
+            </div>
+            @endif
+
+            <form class="space-y-6" method="POST" action="{{ route('admin.login') }}">
                 @csrf
-                <div class="rounded-md shadow-sm -space-y-px">
-                    <div>
-                        <label for="email" class="sr-only">Email address</label>
-                        <input id="email" name="email" type="email" required 
-                            class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm" 
-                            placeholder="Email address">
+
+                <!-- Email Address -->
+                <div>
+                    <label for="email" class="block text-sm font-medium text-white">
+                        Email
+                    </label>
+                    <div class="mt-1">
+                        <input id="email" name="email" type="email" required class="appearance-none block w-full px-3 py-2 border border-white/20 rounded-md 
+                                      shadow-sm bg-white/10 text-white placeholder-white/50
+                                      focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                            value="{{ old('email') }}" placeholder="Enter admin email">
                     </div>
-                    <div>
-                        <label for="password" class="sr-only">Password</label>
-                        <input id="password" name="password" type="password" required 
-                            class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm" 
-                            placeholder="Password">
+                    @error('email')
+                    <p class="mt-2 text-sm text-red-300">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Password -->
+                <div>
+                    <label for="password" class="block text-sm font-medium text-white">
+                        Password
+                    </label>
+                    <div class="mt-1">
+                        <input id="password" name="password" type="password" required class="appearance-none block w-full px-3 py-2 border border-white/20 rounded-md 
+                                      shadow-sm bg-white/10 text-white placeholder-white/50
+                                      focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                            placeholder="Enter admin password">
+                    </div>
+                    @error('password')
+                    <p class="mt-2 text-sm text-red-300">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Remember Me -->
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <input id="remember_me" name="remember" type="checkbox" class="h-4 w-4 rounded border-white/20 bg-white/10 text-yellow-500 
+                                      focus:ring-yellow-500 focus:ring-offset-0">
+                        <label for="remember_me" class="ml-2 block text-sm text-white">
+                            Remember me
+                        </label>
                     </div>
                 </div>
 
-                @if ($errors->any())
-                    <div class="text-red-500 text-sm">
-                        @foreach ($errors->all() as $error)
-                            <p>{{ $error }}</p>
-                        @endforeach
-                    </div>
-                @endif
-
                 <div>
-                    <button type="submit" 
-                        class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                        Sign in
+                    <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md 
+                                   shadow-sm text-sm font-medium text-white bg-gradient-to-r from-yellow-500 
+                                   to-red-500 hover:from-yellow-600 hover:to-red-600 focus:outline-none 
+                                   focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 transition-colors">
+                        Sign in to Admin Panel
                     </button>
                 </div>
             </form>
+
+            <!-- Back to Main Site -->
+            <div class="mt-6 text-center">
+                <a href="{{ route('home') }}" class="text-sm text-white/80 hover:text-white">
+                    ← Back to Main Site
+                </a>
+            </div>
         </div>
     </div>
 </body>
-</html> 
+
+</html>

@@ -17,11 +17,47 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Admin\SubscriptionPlanController;
 use App\Http\Controllers\Branch\ProductController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
+use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\Auth\RegisteredUserController;
 
-// Redirect root to customer login (we'll create this later)
+// Public routes
 Route::get('/', function () {
-    return view('welcome');
+    return view('home');
 })->name('home');
+
+Route::get('/shop', function () {
+    return view('shop');
+})->name('shop');
+
+Route::get('/about', function () {
+    return view('about');
+})->name('about');
+
+Route::get('/contact', function () {
+    return view('contact');
+})->name('contact');
+
+// Authentication routes
+Route::middleware('guest')->group(function () {
+    Route::get('register', [RegisteredUserController::class, 'create'])
+        ->name('register');
+
+    Route::post('register', [RegisteredUserController::class, 'store']);
+
+    Route::get('login', [AuthenticatedSessionController::class, 'create'])
+        ->name('login');
+
+    Route::post('login', [AuthenticatedSessionController::class, 'store']);
+});
+
+Route::middleware('auth')->group(function () {
+    Route::get('/profile', function () {
+        return view('profile');
+    })->name('profile');
+
+    Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
+        ->name('logout');
+});
 
 // Admin & Branch Manager Auth Routes
 Route::prefix('admin')->group(function () {
@@ -125,10 +161,6 @@ Route::prefix('admin')->group(function () {
 });
 
 // Static Pages
-Route::get('/about', function () {
-    return view('static.about');
-})->name('static.about');
-
 Route::get('/terms', function () {
     return view('static.terms');
 })->name('static.terms');

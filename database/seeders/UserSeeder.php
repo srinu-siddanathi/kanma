@@ -5,54 +5,44 @@ namespace Database\Seeders;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
 
 class UserSeeder extends Seeder
 {
     public function run()
     {
-        // Create Admin
-        User::create([
-            'name' => 'Admin User',
-            'email' => 'admin@example.com',
-            'password' => Hash::make('password'),
-            'role' => 'admin',
-            'is_active' => true,
-        ]);
+        // Clear existing users except admin
+        DB::statement('SET FOREIGN_KEY_CHECKS=0');
+        User::where('role', '!=', 'admin')->delete();
+        DB::statement('SET FOREIGN_KEY_CHECKS=1');
 
-        // Create Branch Managers
-        User::create([
-            'name' => 'Main Branch Manager',
-            'email' => 'manager1@example.com',
-            'password' => Hash::make('password'),
-            'role' => 'branch_manager',
-            'branch_id' => 1,
-            'is_active' => true,
-        ]);
+        // Create customer users
+        for ($i = 1; $i <= 5; $i++) {
+            User::create([
+                'name' => "Customer {$i}",
+                'email' => "customer{$i}@example.com",
+                'password' => Hash::make('password'),
+                'role' => 'customer',
+                'phone_number' => '98765' . str_pad($i, 5, '0', STR_PAD_LEFT),
+                'is_active' => true,
+                'wallet_balance' => 0,
+            ]);
+        }
 
-        User::create([
-            'name' => 'Downtown Branch Manager',
-            'email' => 'manager2@example.com',
-            'password' => Hash::make('password'),
-            'role' => 'branch_manager',
-            'branch_id' => 2,
-            'is_active' => true,
-        ]);
+        // Create branch managers (if needed)
+        $branches = \App\Models\Branch::whereDoesntHave('user')->get();
+        foreach ($branches as $index => $branch) {
+            $manager = User::create([
+                'name' => "Manager " . ($index + 1),
+                'email' => "manager" . ($index + 1) . "@kanma.in",
+                'password' => Hash::make('password'),
+                'role' => 'branch_manager',
+                'phone_number' => '97865' . str_pad($index + 1, 5, '0', STR_PAD_LEFT),
+                'is_active' => true,
+                'branch_id' => $branch->id,
+            ]);
 
-        // Create some customers
-        User::create([
-            'name' => 'Customer One',
-            'email' => 'customer1@example.com',
-            'password' => Hash::make('password'),
-            'role' => 'customer',
-            'is_active' => true,
-        ]);
-
-        User::create([
-            'name' => 'Customer Two',
-            'email' => 'customer2@example.com',
-            'password' => Hash::make('password'),
-            'role' => 'customer',
-            'is_active' => true,
-        ]);
+            $branch->update(['user_id' => $manager->id]);
+        }
     }
 } 

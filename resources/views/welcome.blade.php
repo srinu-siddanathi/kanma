@@ -46,38 +46,38 @@
                         <div class="p-4 rounded-lg bg-white/5 backdrop-blur-sm">
                             <div class="text-3xl font-bold text-white mb-1">1800+</div>
                             <div class="text-white/70">Kanma members</div>
-                        </div>
+                                </div>
                         <div class="p-4 rounded-lg bg-white/5 backdrop-blur-sm">
                             <div class="text-3xl font-bold text-white mb-1">23+</div>
                             <div class="text-white/70">Vendors</div>
-                        </div>
+                                        </div>
                         <div class="p-4 rounded-lg bg-white/5 backdrop-blur-sm">
                             <div class="text-3xl font-bold text-white mb-1">1200+</div>
                             <div class="text-white/70">Products</div>
-                        </div>
-                    </div>
+                                        </div>
+                                    </div>
 
                     <!-- Features -->
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
                         <div class="p-4 rounded-lg bg-white/5 backdrop-blur-sm">
                             <h3 class="text-white font-semibold mb-2">Best Prices & Offers</h3>
                             <p class="text-white/70 text-sm">Discover a world of savings with our exclusive offers and promotions</p>
-                        </div>
+                                </div>
                         <div class="p-4 rounded-lg bg-white/5 backdrop-blur-sm">
                             <h3 class="text-white font-semibold mb-2">Free Delivery</h3>
                             <p class="text-white/70 text-sm">24/7 amazing services with free delivery on all orders</p>
-                        </div>
+                                </div>
                         <div class="p-4 rounded-lg bg-white/5 backdrop-blur-sm">
                             <h3 class="text-white font-semibold mb-2">100% Satisfaction</h3>
                             <p class="text-white/70 text-sm">We measure our success by the smiles we bring to your face</p>
-                        </div>
-                    </div>
+                                </div>
+                                </div>
 
                     <!-- Contact Info -->
                     <div class="text-white/80 text-sm mb-8">
                         <p>Call Us: (+91) 89852 36524</p>
                         <p>Working Hours: 6:00 AM to 9:00 PM</p>
-                    </div>
+                                </div>
 
                     <!-- Newsletter Signup -->
                     <div class="max-w-md mx-auto">

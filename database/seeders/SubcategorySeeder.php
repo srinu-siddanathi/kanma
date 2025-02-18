@@ -2,42 +2,67 @@
 
 namespace Database\Seeders;
 
+use App\Models\Category;
 use App\Models\Subcategory;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
 
 class SubcategorySeeder extends Seeder
 {
     public function run()
     {
+        // Clear existing subcategories
+        DB::statement('SET FOREIGN_KEY_CHECKS=0');
+        Subcategory::truncate();
+        DB::statement('SET FOREIGN_KEY_CHECKS=1');
+
         $subcategories = [
             // Food subcategories
-            ['name' => 'Main Course', 'category_id' => 1],
-            ['name' => 'Appetizers', 'category_id' => 1],
-            ['name' => 'Salads', 'category_id' => 1],
-            
+            [
+                'name' => 'Starters',
+                'category_name' => 'Food',
+            ],
+            [
+                'name' => 'Main Course',
+                'category_name' => 'Food',
+            ],
+            [
+                'name' => 'Rice Items',
+                'category_name' => 'Food',
+            ],
             // Beverages subcategories
-            ['name' => 'Hot Drinks', 'category_id' => 2],
-            ['name' => 'Cold Drinks', 'category_id' => 2],
-            ['name' => 'Smoothies', 'category_id' => 2],
-            
-            // Snacks subcategories
-            ['name' => 'Chips', 'category_id' => 3],
-            ['name' => 'Nuts', 'category_id' => 3],
-            
+            [
+                'name' => 'Hot Drinks',
+                'category_name' => 'Beverages',
+            ],
+            [
+                'name' => 'Cold Drinks',
+                'category_name' => 'Beverages',
+            ],
             // Desserts subcategories
-            ['name' => 'Cakes', 'category_id' => 4],
-            ['name' => 'Ice Cream', 'category_id' => 4],
+            [
+                'name' => 'Ice Creams',
+                'category_name' => 'Desserts',
+            ],
+            [
+                'name' => 'Cakes',
+                'category_name' => 'Desserts',
+            ],
         ];
 
         foreach ($subcategories as $subcategory) {
-            Subcategory::create([
-                'name' => $subcategory['name'],
-                'slug' => Str::slug($subcategory['name']),
-                'description' => 'Description for ' . $subcategory['name'],
-                'category_id' => $subcategory['category_id'],
-                'is_active' => true,
-            ]);
+            $category = Category::where('name', $subcategory['category_name'])->first();
+            
+            if ($category) {
+                Subcategory::create([
+                    'name' => $subcategory['name'],
+                    'slug' => Str::slug($subcategory['name']),
+                    'description' => 'Description for ' . $subcategory['name'],
+                    'category_id' => $category->id,
+                    'is_active' => true,
+                ]);
+            }
         }
     }
 } 

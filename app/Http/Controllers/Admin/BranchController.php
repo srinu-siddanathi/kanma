@@ -26,31 +26,17 @@ class BranchController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'address' => 'nullable|string',
+            'address' => 'required|string',
             'phone' => 'nullable|string|max:20',
-            'email' => 'required|email|unique:users,email',
-            'password' => 'required|string|min:8|confirmed',
+            'email' => 'nullable|email|max:255',
+            'latitude' => 'nullable|numeric|between:-90,90',
+            'longitude' => 'nullable|numeric|between:-180,180',
             'is_active' => 'boolean'
         ]);
 
-        // Create user for branch manager
-        $user = User::create([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'password' => Hash::make($validated['password']),
-        ]);
+        $validated['is_active'] = $request->has('is_active');
 
-        // Assign branch manager role
-        $user->assignRole('branch-manager');
-
-        // Create branch
-        $branch = Branch::create([
-            'name' => $validated['name'],
-            'address' => $validated['address'],
-            'phone' => $validated['phone'],
-            'user_id' => $user->id,
-            'is_active' => $request->boolean('is_active', true)
-        ]);
+        $branch = Branch::create($validated);
 
         return redirect()
             ->route('admin.branches.index')

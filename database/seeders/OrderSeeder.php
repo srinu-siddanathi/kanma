@@ -8,48 +8,65 @@ use App\Models\Branch;
 use App\Models\Product;
 use Illuminate\Database\Seeder;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class OrderSeeder extends Seeder
 {
     public function run()
     {
-        $customers = User::where('role', 'customer')->get();
-        $branches = Branch::with('products')->get();
-        
-        // Create some orders for each customer
-        foreach ($customers as $customer) {
-            foreach (range(1, 3) as $i) {
-                $branch = $branches->random();
-                $products = $branch->products->random(rand(1, 3));
-                
-                $order = Order::create([
-                    'user_id' => $customer->id,
-                    'branch_id' => $branch->id,
-                    'status' => 'pending',
-                    'delivery_address' => 'Sample Address, Hyderabad - 500081',
-                    'delivery_latitude' => 17.5286,
-                    'delivery_longitude' => 78.4308,
-                    'notes' => 'Sample order notes',
-                    'total_amount' => 0,
-                    'created_at' => Carbon::now()->subDays(rand(0, 30)),
+        // Clear existing orders
+        DB::statement('SET FOREIGN_KEY_CHECKS=0');
+        Order::truncate();
+        DB::statement('SET FOREIGN_KEY_CHECKS=1');
+
+        // Get available data
+        $users = User::where('role', 'customer')->get();
+        $branches = Branch::all();
+        $products = Product::all();
+
+        // Check if we have necessary data
+        if ($users->isEmpty() || $branches->isEmpty() || $products->isEmpty()) {
+            $this->command->info('Skipping OrderSeeder: Missing required data');
+            return;
+        }
+
+        // Create sample orders
+        for ($i = 0; $i < 10; $i++) {
+            $user = $users->random();
+            $branch = $branches->random();
+            $orderProducts = $products->random(rand(1, 3));
+
+            $order = Order::create([
+                'user_id' => $user->id,
+                'branch_id' => $branch->id,
+                'order_type' => 'regular',
+                'delivery_address' => '123 Sample Street, City',
+                'delivery_latitude' => 17.4486 + (rand(-100, 100) / 1000),
+                'delivery_longitude' => 78.3908 + (rand(-100, 100) / 1000),
+                'notes' => 'Sample order notes',
+                'total_amount' => 0, // Will be calculated based on items
+                'status' => collect(['pending', 'processing', 'completed'])->random(),
+                'created_at' => Carbon::now()->subHours(rand(1, 48)),
+            ]);
+
+            // Add order items
+            $total = 0;
+            foreach ($orderProducts as $product) {
+                $quantity = rand(1, 3);
+                $price = $product->price;
+                $subtotal = $quantity * $price;
+                $total += $subtotal;
+
+                $order->items()->create([
+                    'product_id' => $product->id,
+                    'quantity' => $quantity,
+                    'price' => $price,
+                    'subtotal' => $subtotal,
                 ]);
-
-                $total = 0;
-                foreach ($products as $product) {
-                    $quantity = rand(1, 3);
-                    $subtotal = $product->price * $quantity;
-                    $total += $subtotal;
-                    
-                    $order->items()->create([
-                        'product_id' => $product->id,
-                        'quantity' => $quantity,
-                        'price' => $product->price,
-                        'subtotal' => $subtotal,
-                    ]);
-                }
-
-                $order->update(['total_amount' => $total]);
             }
+
+            // Update order total
+            $order->update(['total_amount' => $total]);
         }
     }
 } 
