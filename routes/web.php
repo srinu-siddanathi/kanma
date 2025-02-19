@@ -19,6 +19,8 @@ use App\Http\Controllers\Branch\ProductController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\RegisteredUserController;
+use App\Http\Controllers\Auth\PasswordResetLinkController;
+use App\Http\Controllers\Auth\NewPasswordController;
 
 // Public routes
 Route::get('/', function () {
@@ -48,6 +50,16 @@ Route::middleware('guest')->group(function () {
         ->name('login');
 
     Route::post('login', [AuthenticatedSessionController::class, 'store']);
+
+    // Add these password reset routes
+    Route::get('forgot-password', [PasswordResetLinkController::class, 'create'])
+        ->name('password.request');
+    Route::post('forgot-password', [PasswordResetLinkController::class, 'store'])
+        ->name('password.email');
+    Route::get('reset-password/{token}', [NewPasswordController::class, 'create'])
+        ->name('password.reset');
+    Route::post('reset-password', [NewPasswordController::class, 'store'])
+        ->name('password.update');
 });
 
 Route::middleware('auth')->group(function () {
@@ -168,3 +180,19 @@ Route::get('/terms', function () {
 Route::get('/privacy', function () {
     return view('static.privacy');
 })->name('static.privacy');
+
+Route::get('/product/{id}', function ($id) {
+    return view('product');
+})->name('product.show');
+
+Route::get('/cart', function () {
+    return view('cart');
+})->name('cart');
+
+Route::get('/checkout', function () {
+    return view('checkout');
+})->name('checkout');
+
+Route::get('/orders', function () {
+    return view('orders');
+})->name('orders');
