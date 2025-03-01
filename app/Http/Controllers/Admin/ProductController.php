@@ -8,6 +8,7 @@ use App\Models\Category;
 use App\Models\Branch;
 use Illuminate\Http\Request;
 use App\Traits\HasImageUpload;
+use Illuminate\Support\Str;
 
 class ProductController extends Controller
 {
@@ -16,6 +17,7 @@ class ProductController extends Controller
     public function index()
     {
         $products = Product::with(['category', 'subcategory', 'branches'])
+            ->whereNull('shop_id')
             ->latest()
             ->paginate(10);
 
@@ -34,45 +36,31 @@ class ProductController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'price' => 'required|numeric|min:0',
             'category_id' => 'required|exists:categories,id',
             'subcategory_id' => 'required|exists:subcategories,id',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'branches' => 'array',
-            'branches.*' => 'exists:branches,id'
+            'variants' => 'required|array|min:1',
+            'variants.*.quantity' => 'required|numeric|min:0',
+            'variants.*.unit' => 'required|in:g,kg,ml,l',
+            'variants.*.price' => 'required|numeric|min:0',
+            'variants.*.stock' => 'required|integer|min:0',
         ]);
 
-        // Handle image upload
-        $imagePath = null;
-        if ($request->hasFile('image')) {
-            $imagePath = $this->uploadImage($request->file('image'));
-        }
-
-        // Create the product
         $product = Product::create([
             'name' => $validated['name'],
+            'slug' => Str::slug($validated['name']),
             'description' => $validated['description'],
-            'price' => $validated['price'],
             'category_id' => $validated['category_id'],
             'subcategory_id' => $validated['subcategory_id'],
-            'image_path' => $imagePath,
+            'shop_id' => auth()->user()->shop->id ?? null,
             'is_active' => true,
-            'branch_id' => null // Set branch_id as null since we're using pivot table
         ]);
 
-        // Attach to selected branches
-        if (!empty($validated['branches'])) {
-            foreach ($validated['branches'] as $branchId) {
-                $product->branches()->attach($branchId, [
-                    'price' => $validated['price'],
-                    'is_active' => true
-                ]);
-            }
+        foreach ($validated['variants'] as $variantData) {
+            $product->variants()->create($variantData);
         }
 
-        return redirect()
-            ->route('admin.products.index')
-            ->with('success', 'Product created successfully');
+        return redirect()->route('admin.products.index')
+            ->with('success', 'Product created successfully.');
     }
 
     public function edit(Product $product)
@@ -87,40 +75,41 @@ class ProductController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'price' => 'required|numeric|min:0',
             'category_id' => 'required|exists:categories,id',
             'subcategory_id' => 'required|exists:subcategories,id',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'is_active' => 'boolean',
-            'branches' => 'array',
-            'branches.*' => 'exists:branches,id'
+            'variants' => 'required|array|min:1',
+            'variants.*.id' => 'nullable|exists:product_variants,id',
+            'variants.*.quantity' => 'required|numeric|min:0',
+            'variants.*.unit' => 'required|in:g,kg,ml,l',
+            'variants.*.price' => 'required|numeric|min:0',
+            'variants.*.stock' => 'required|integer|min:0',
         ]);
-
-        // Handle image upload
-        $imagePath = $product->image_path;
-        if ($request->hasFile('image')) {
-            $imagePath = $this->uploadImage($request->file('image'), 'products', $product->image_path);
-        }
 
         $product->update([
             'name' => $validated['name'],
+            'slug' => Str::slug($validated['name']),
             'description' => $validated['description'],
-            'price' => $validated['price'],
             'category_id' => $validated['category_id'],
             'subcategory_id' => $validated['subcategory_id'],
-            'image_path' => $imagePath,
-            'is_active' => $validated['is_active'] ?? true
         ]);
 
-        // Update branch associations
-        $product->branches()->sync(
-            collect($validated['branches'] ?? [])->mapWithKeys(function ($branchId) use ($validated) {
-                return [$branchId => [
-                    'price' => $validated['price'],
-                    'is_active' => true
-                ]];
-            })
-        );
+        // Update existing variants and create new ones
+        foreach ($validated['variants'] as $variantData) {
+            if (isset($variantData['id'])) {
+                $product->variants()->where('id', $variantData['id'])->update([
+                    'quantity' => $variantData['quantity'],
+                    'unit' => $variantData['unit'],
+                    'price' => $variantData['price'],
+                    'stock' => $variantData['stock'],
+                ]);
+            } else {
+                $product->variants()->create($variantData);
+            }
+        }
+
+        // Delete variants that weren't included in the update
+        $updatedVariantIds = collect($validated['variants'])->pluck('id')->filter();
+        $product->variants()->whereNotIn('id', $updatedVariantIds)->delete();
 
         return redirect()
             ->route('admin.products.index')
@@ -138,5 +127,52 @@ class ProductController extends Controller
         return redirect()
             ->route('admin.products.index')
             ->with('success', 'Product deleted successfully');
+    }
+
+    public function verify(Product $product)
+    {
+        $product->update([
+            'status' => Product::STATUS_VERIFIED,
+            'rejection_reason' => null
+        ]);
+
+        return back()->with('success', 'Product has been verified successfully');
+    }
+
+    public function reject(Request $request, Product $product)
+    {
+        $validated = $request->validate([
+            'rejection_reason' => 'required|string|max:500'
+        ]);
+
+        $product->update([
+            'status' => Product::STATUS_REJECTED,
+            'rejection_reason' => $validated['rejection_reason']
+        ]);
+
+        return back()->with('success', 'Product has been rejected successfully');
+    }
+
+    public function verifyMultiple(Request $request)
+    {
+        $validated = $request->validate([
+            'product_ids' => 'required|array',
+            'product_ids.*' => 'exists:products,id'
+        ]);
+
+        Product::whereIn('id', $validated['product_ids'])
+            ->update([
+                'status' => Product::STATUS_VERIFIED,
+                'rejection_reason' => null
+            ]);
+
+        return back()->with('success', count($validated['product_ids']) . ' products have been verified successfully');
+    }
+
+    public function show(Product $product)
+    {
+        return response()->json([
+            'data' => $product->load(['category', 'subcategory'])
+        ]);
     }
 } 

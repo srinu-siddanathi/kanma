@@ -12,9 +12,23 @@ use App\Http\Controllers\Api\BranchOrderController;
 use App\Models\Category;
 use App\Http\Controllers\Api\SubscriptionPlanController;
 
+/*
+|--------------------------------------------------------------------------
+| API Routes
+|--------------------------------------------------------------------------
+*/
+
 // Public routes
 Route::post('/login', [AuthController::class, 'login']);
-Route::post('register', [AuthController::class, 'register']);
+Route::post('/register', [AuthController::class, 'register']);
+
+// Public Product & Category Routes
+Route::get('/products', [ProductController::class, 'index']);
+Route::get('/products/{product}', [ProductController::class, 'show']);
+Route::get('/categories', [CategoryController::class, 'index']);
+Route::get('/categories/{category}/subcategories', [CategoryController::class, 'subcategories']);
+Route::get('/branches', [BranchController::class, 'index']);
+Route::get('/branches/{branch}', [BranchController::class, 'show']);
 
 // Protected routes
 Route::middleware('auth:sanctum')->group(function () {
@@ -23,18 +37,6 @@ Route::middleware('auth:sanctum')->group(function () {
     // User routes
     Route::get('user/profile', [UserController::class, 'profile']);
     Route::put('user/profile', [UserController::class, 'update']);
-    
-    // Branch routes
-    Route::get('branches', [BranchController::class, 'index']);
-    Route::get('branches/{branch}', [BranchController::class, 'show']);
-    
-    // Products
-    Route::get('/products', [ProductController::class, 'index']);
-    Route::get('/products/{product}', [ProductController::class, 'show']);
-    
-    // Categories
-    Route::get('/categories', [CategoryController::class, 'index']);
-    Route::get('/categories/{category}/subcategories', [CategoryController::class, 'subcategories']);
     
     // Orders
     Route::get('/orders', [OrderController::class, 'userOrders']);

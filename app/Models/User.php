@@ -8,6 +8,8 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class User extends Authenticatable
 {
@@ -28,6 +30,8 @@ class User extends Authenticatable
         'branch_id',
         'wallet_balance',
         'is_active',
+        'is_working_today',
+        'last_status_update',
     ];
 
     /**
@@ -45,15 +49,14 @@ class User extends Authenticatable
      *
      * @return array<string, string>
      */
-    protected function casts(): array
-    {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-            'wallet_balance' => 'decimal:2',
-            'is_active' => 'boolean',
-        ];
-    }
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'password' => 'hashed',
+        'wallet_balance' => 'decimal:2',
+        'is_active' => 'boolean',
+        'is_working_today' => 'boolean',
+        'last_status_update' => 'datetime',
+    ];
 
     public function isAdmin(): bool
     {
@@ -70,7 +73,10 @@ class User extends Authenticatable
         return $this->role === 'customer';
     }
 
-    public function branch()
+    /**
+     * Get the branch associated with the user.
+     */
+    public function branch(): BelongsTo
     {
         return $this->belongsTo(Branch::class);
     }
@@ -78,5 +84,21 @@ class User extends Authenticatable
     public function orders()
     {
         return $this->hasMany(Order::class);
+    }
+
+    public function activeOrders()
+    {
+        return $this->hasMany(Order::class, 'delivery_boy_id')
+            ->whereIn('status', ['assigned', 'picked_up']);
+    }
+
+    public function shop()
+    {
+        return $this->hasOne(Shop::class);
+    }
+
+    public function isShopOwner(): bool
+    {
+        return $this->role === 'shop_owner';
     }
 }

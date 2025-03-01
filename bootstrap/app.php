@@ -34,6 +34,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
             'admin' => \App\Http\Middleware\EnsureUserIsAdmin::class,
             'branch.manager' => \App\Http\Middleware\EnsureUserIsBranchManager::class,
+            'shop_owner' => \App\Http\Middleware\EnsureUserIsShopOwner::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

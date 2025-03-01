@@ -53,6 +53,33 @@
                     Add Products
                 </a>
 
+                <a href="{{ route('branch.delivery-boys.index') }}"
+                    class="{{ request()->routeIs('branch.delivery-boys.*') ? 'bg-gray-700' : '' }} flex items-center mt-5 py-2.5 px-4 rounded transition duration-200 hover:bg-gray-700">
+                    <svg class="h-5 w-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 4v16m8-8H4" />
+                    </svg>
+                    Delivery Boys
+                </a>
+
+                <a href="{{ route('branch.order-assignments.index') }}"
+                    class="{{ request()->routeIs('branch.order-assignments.*') ? 'bg-gray-700' : '' }} flex items-center mt-5 py-2.5 px-4 rounded transition duration-200 hover:bg-gray-700">
+                    <svg class="h-5 w-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 4v16m8-8H4" />
+                    </svg>
+                    Order Assignments
+                </a>
+
+                <a href="{{ route('branch.orders.history') }}"
+                    class="{{ request()->routeIs('branch.orders.history') ? 'bg-gray-700' : '' }} flex items-center mt-5 py-2.5 px-4 rounded transition duration-200 hover:bg-gray-700">
+                    <svg class="h-5 w-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                    </svg>
+                    Order History
+                </a>
+
                 <!-- <a href="{{ route('branch.categories.index') }}"
                     class="{{ request()->routeIs('branch.categories*') ? 'bg-gray-700' : '' }} flex items-center mt-5 py-2.5 px-4 rounded transition duration-200 hover:bg-gray-700">
                     <svg class="h-5 w-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -83,13 +110,12 @@
                                     d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                             </svg>
                         </div>
-                        <!-- <div class="ml-3">
+                        <div class="ml-3">
                             <div class="text-sm font-medium text-gray-300">{{ auth()->user()->name }}</div>
                             <div class="text-xs text-gray-500">
-                                <a href="{{ route('branch.profile.edit') }}" class="hover:text-gray-300">Edit
-                                    Profile</a>
+                                <a href="{{ route('branch.profile.edit') }}" class="hover:text-gray-300">Edit Profile</a>
                             </div>
-                        </div> -->
+                        </div>
                     </div>
                 </div>
 

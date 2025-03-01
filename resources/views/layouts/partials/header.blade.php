@@ -64,10 +64,10 @@
                             {{ Auth::user()->name }}
                         </button>
                         <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                            <li><a class="dropdown-item" href="{{ route('profile') }}">Profile</a></li>
-                            <li><a class="dropdown-item" href="{{ route('orders') }}">My Orders</a></li>
+                            <li><a class="dropdown-item" href="#">Profile</a></li>
+                            <li><a class="dropdown-item" href="#">My Orders</a></li>
                             <li>
-                                <form method="POST" action="{{ route('logout') }}">
+                                <form method="POST" action="">
                                     @csrf
                                     <button type="submit" class="dropdown-item">Logout</button>
                                 </form>
@@ -223,7 +223,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form method="POST" action="{{ route('login') }}" class="px-3">
+                <form method="POST" action="" class="px-3">
                     @csrf
                     <div class="mb-3">
                         <label for="email" class="form-label">Email Address</label>
@@ -277,7 +277,7 @@
 
                     <div class="text-center">
                         <span class="text-muted">Don't have an account?</span>
-                        <a href="{{ route('register') }}" class="text-decoration-none">Register now</a>
+                        <a href="#" class="text-decoration-none">Register now</a>
                     </div>
                 </form>
             </div>

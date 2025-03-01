@@ -46,4 +46,36 @@ class OrderController extends Controller
 
         return back()->with('success', 'Order status updated successfully');
     }
+
+    public function history()
+    {
+        $branch = auth()->user()->branch;
+        
+        // Get the query builder before executing
+        $query = Order::where('branch_id', $branch->id)
+            ->with(['user', 'deliveryBoy', 'items.product'])
+            ->latest();
+
+        // Debug logging
+        \Log::info('Branch ID: ' . $branch->id);
+        \Log::info('Orders query:', [
+            'sql' => $query->toSql(),
+            'bindings' => $query->getBindings()
+        ]);
+
+        // Execute the query
+        $orders = $query->paginate(10);
+        \Log::info('Orders count: ' . $orders->count());
+
+        return view('branch.orders.history', compact('orders'));
+    }
+
+    public function details(Order $order)
+    {
+        if ($order->branch_id !== auth()->user()->branch_id) {
+            abort(403);
+        }
+
+        return view('branch.orders.details', compact('order'));
+    }
 } 

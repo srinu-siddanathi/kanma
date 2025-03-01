@@ -11,7 +11,7 @@ class BranchController extends Controller
     public function index()
     {
         $branches = Branch::where('is_active', true)
-            ->select('id', 'name', 'address', 'contact_number', 'latitude', 'longitude')
+            ->select('id', 'name', 'address', 'phone', 'latitude', 'longitude')
             ->get();
 
         return response()->json([
@@ -29,7 +29,7 @@ class BranchController extends Controller
         }
 
         return response()->json([
-            'data' => $branch->load(['manager']),
+            'data' => $branch->load(['user']),
             'message' => 'Branch retrieved successfully'
         ]);
     }
