@@ -28,11 +28,19 @@ class AuthController extends Controller
                 return redirect()->intended(route('admin.dashboard'));
             } elseif ($user->isBranchManager()) {
                 return redirect()->intended(route('branch.dashboard'));
+            } elseif ($user->isShopOwner()) {
+                if (!$user->is_active) {
+                    Auth::logout();
+                    return back()->withErrors([
+                        'email' => 'Your account is pending approval. Please wait for admin activation.',
+                    ]);
+                }
+                return redirect()->intended(route('shop-owner.dashboard'));
             }
             
             Auth::logout();
             return back()->withErrors([
-                'email' => 'You do not have admin or branch manager access.',
+                'email' => 'You do not have admin, branch manager, or shop owner access.',
             ]);
         }
 

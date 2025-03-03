@@ -54,4 +54,9 @@ class Branch extends Model
     {
         return $this->hasMany(Order::class);
     }
+
+    public function deliveryBoys()
+    {
+        return $this->hasMany(User::class)->where('role', 'delivery_boy');
+    }
 } 

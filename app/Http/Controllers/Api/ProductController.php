@@ -17,7 +17,8 @@ class ProductController extends Controller
     {
         try {
             $query = Product::query()
-                ->with(['category', 'subcategory', 'branches']);
+                ->with(['category', 'subcategory', 'branches'])
+                ->whereNull('shop_id');
 
             // Filter by branch if branch_id is provided
             if ($request->has('branch_id')) {

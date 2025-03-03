@@ -11,6 +11,7 @@ class Order extends Model
     protected $fillable = [
         'user_id',
         'branch_id',
+        'shop_id',
         'order_type',
         'status',
         'total_amount',
@@ -20,6 +21,12 @@ class Order extends Model
         'delivery_latitude',
         'delivery_longitude',
         'notes',
+        'customer_id',
+        'delivery_boy_id',
+        'payment_status',
+        'payment_method',
+        'delivery_phone',
+        'delivery_instructions',
     ];
 
     protected $casts = [
@@ -35,11 +42,17 @@ class Order extends Model
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * Get the branch that owns the order.
+     */
     public function branch(): BelongsTo
     {
         return $this->belongsTo(Branch::class);
     }
 
+    /**
+     * Get the items for the order.
+     */
     public function items(): HasMany
     {
         return $this->hasMany(OrderItem::class);
@@ -49,5 +62,26 @@ class Order extends Model
     {
         $this->total_amount = $this->items()->sum(\DB::raw('price * quantity'));
         $this->save();
+    }
+
+    /**
+     * Get the customer that owns the order.
+     */
+    public function customer(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    /**
+     * Get the delivery boy assigned to the order.
+     */
+    public function deliveryBoy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'delivery_boy_id');
+    }
+
+    public function shop()
+    {
+        return $this->belongsTo(Shop::class);
     }
 } 

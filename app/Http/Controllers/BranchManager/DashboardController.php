@@ -16,7 +16,7 @@ class DashboardController extends Controller
 
         $stats = [
             'total_orders' => Order::where('branch_id', $branch->id)->count(),
-            'total_products' => Product::where('branch_id', $branch->id)->count(),
+            'total_products' => $branch->products()->count(),
             'active_categories' => Category::where('is_active', true)->count(),
             'todays_orders' => Order::where('branch_id', $branch->id)
                 ->whereDate('created_at', Carbon::today())
@@ -30,5 +30,10 @@ class DashboardController extends Controller
             ->get();
 
         return view('branch-manager.dashboard', compact('stats', 'recent_orders'));
+    }
+
+    public function index()
+    {
+        // This method is not needed anymore
     }
 } 
