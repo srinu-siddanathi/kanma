@@ -33,7 +33,7 @@ use App\Http\Controllers\Admin\AdminSettingsController;
 
 // Public routes
 Route::get('/', function () {
-    return view('home');
+    return view('index');
 })->name('home');
 
 Route::get('/shop', function () {

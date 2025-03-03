@@ -1,5 +1,6 @@
 <header>
     <div class="container-fluid">
+<<<<<<< Updated upstream
         <div class="row py-3 border-bottom align-items-center g-0">
             <div class="col-sm-4 col-lg-2 text-center text-sm-start">
                 <div class="main-logo">
@@ -284,3 +285,15 @@
         </div>
     </div>
 </div>
+=======
+        <div class="row py-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <a class="navbar-brand" href="#"><img src="images/logo.png" alt="logo"></a>
+                <!-- ... existing header content ... -->
+            </div>
+        </div>
+    </div>
+    
+    @include('layouts.partials.navigation')
+</header> 
+>>>>>>> Stashed changes
