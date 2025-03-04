@@ -91,8 +91,8 @@
                     <div class="row align-items-center">
                         <div class="col-md-4">
                             <div class="view-mode">
-                                <button class="btn btn-outline-secondary active" data-view="grid">
-                                    <i class="bi bi-grid"></i>
+                                <button class="btn btn-outline-secondary active" data-view="-fill">
+                                    <i class="bi bi-grid-fill"></i>
                                 </button>
                                 <button class="btn btn-outline-secondary" data-view="list">
                                     <i class="bi bi-list"></i>
@@ -126,7 +126,7 @@
                                     </svg>
                                 </a>
                                 <img src="{{ asset('images/product-thumb-' . ($i % 3 + 1) . '.png') }}"
-                                    class="card-img-top" alt="Product">
+                                    class="card-img-top"  onerror="this.src='{{asset('images/product-thumb-2.png')}}'" alt="Product">
                             </div>
                             <div class="card-body text-center">
                                 <h5 class="card-title mb-0">
