@@ -11,6 +11,11 @@ use App\Http\Controllers\Api\BranchProductController;
 use App\Http\Controllers\Api\BranchOrderController;
 use App\Models\Category;
 use App\Http\Controllers\Api\SubscriptionPlanController;
+use App\Http\Controllers\Api\ShopController;
+use App\Http\Controllers\Api\CartController;
+use App\Http\Controllers\Api\HomeController;
+use App\Http\Controllers\Api\AddressController;
+use App\Http\Controllers\Api\PaymentController;
 
 /*
 |--------------------------------------------------------------------------
@@ -21,6 +26,9 @@ use App\Http\Controllers\Api\SubscriptionPlanController;
 // Public routes
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/register', [AuthController::class, 'register']);
+Route::post('/login/otp/send', [AuthController::class, 'sendOtp']);
+Route::post('/login/otp/verify', [AuthController::class, 'verifyOtp']);
+Route::post('/verify-registration', [AuthController::class, 'verifyRegistrationOtp']);
 
 // Public Product & Category Routes
 Route::get('/products', [ProductController::class, 'index']);
@@ -29,6 +37,8 @@ Route::get('/categories', [CategoryController::class, 'index']);
 Route::get('/categories/{category}/subcategories', [CategoryController::class, 'subcategories']);
 Route::get('/branches', [BranchController::class, 'index']);
 Route::get('/branches/{branch}', [BranchController::class, 'show']);
+Route::get('/shops/nearby', [ShopController::class, 'nearby']);
+Route::get('/home', [HomeController::class, 'index']);
 
 // Protected routes
 Route::middleware('auth:sanctum')->group(function () {
@@ -37,6 +47,10 @@ Route::middleware('auth:sanctum')->group(function () {
     // User routes
     Route::get('user/profile', [UserController::class, 'profile']);
     Route::put('user/profile', [UserController::class, 'update']);
+    
+    // Address Management
+    Route::apiResource('addresses', AddressController::class);
+    Route::post('addresses/{address}/default', [AddressController::class, 'setDefault']);
     
     // Orders
     Route::get('/orders', [OrderController::class, 'userOrders']);
@@ -94,7 +108,23 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // User subscription
     Route::get('/subscription', [SubscriptionPlanController::class, 'currentSubscription']);
+
+    Route::post('/profile/complete', [AuthController::class, 'completeProfile']);
+
+    // Cart routes
+    Route::get('/cart', [CartController::class, 'index']);
+    Route::post('/cart/mutate', [CartController::class, 'mutate']);
+    Route::post('/cart/empty', [CartController::class, 'empty']);
+
+    // Payment routes
+    Route::post('/payments/initialize', [PaymentController::class, 'initializePayment']);
+    Route::get('/payments/status', [PaymentController::class, 'getPaymentStatus']);
+    Route::get('/payments/methods', [PaymentController::class, 'getSavedPaymentMethods']);
+    Route::delete('/payments/methods/{card_id}', [PaymentController::class, 'deletePaymentMethod']);
 });
+
+// Juspay Callback Route (no auth required as it's called by Juspay)
+Route::post('/payments/callback', [PaymentController::class, 'handleCallback']);
 
 Route::get('/categories/{category}/subcategories', function (Category $category) {
     return $category->subcategories()->where('is_active', true)->get();

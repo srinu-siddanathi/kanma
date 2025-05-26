@@ -7,54 +7,24 @@
                     <div class="banner-ad large bg-info block-1">
                         <div class="swiper main-swiper">
                             <div class="swiper-wrapper">
+                                @foreach($banners as $banner)
                                 <div class="swiper-slide">
                                     <div class="row banner-content p-5">
                                         <div class="content-wrapper col-md-7">
-                                            <div class="categories my-3">100% natural</div>
-                                            <h3 class="display-4">Fresh Smoothie & Summer Juice</h3>
-                                            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Dignissim massa
-                                                diam elementum.</p>
-                                            <a href="#"
-                                                class="btn btn-outline-dark btn-lg text-uppercase fs-6 rounded-1 px-4 py-3 mt-3">Shop
-                                                Now</a>
+                                            <div class="categories my-3">{{ $banner->subtitle }}</div>
+                                            <h3 class="display-4">{{ $banner->title }}</h3>
+                                            <p>{{ $banner->description }}</p>
+                                            <a href="{{ $banner->button_url }}" 
+                                               class="btn btn-outline-dark btn-lg text-uppercase fs-6 rounded-1 px-4 py-3 mt-3">
+                                                {{ $banner->button_text }}
+                                            </a>
                                         </div>
                                         <div class="img-wrapper col-md-5">
-                                            <img src="{{ asset('images/product-thumb-1.png') }}" class="img-fluid">
+                                            <img src="{{ asset($banner->image_url) }}" class="img-fluid">
                                         </div>
                                     </div>
                                 </div>
-                                <div class="swiper-slide">
-                                    <div class="row banner-content p-5">
-                                        <div class="content-wrapper col-md-7">
-                                            <div class="categories my-3">100% natural</div>
-                                            <h3 class="banner-title">Fresh Smoothie & Summer Juice</h3>
-                                            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Dignissim massa
-                                                diam elementum.</p>
-                                            <a href="#"
-                                                class="btn btn-outline-dark btn-lg text-uppercase fs-6 rounded-1 px-4 py-3 mt-3">Shop
-                                                Collection</a>
-                                        </div>
-                                        <div class="img-wrapper col-md-5">
-                                            <img src="{{ asset('images/product-thumb-1.png') }}" class="img-fluid">
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="swiper-slide">
-                                    <div class="row banner-content p-5">
-                                        <div class="content-wrapper col-md-7">
-                                            <div class="categories mb-3 pb-3">100% natural</div>
-                                            <h3 class="banner-title">Heinz Tomato Ketchup</h3>
-                                            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Dignissim massa
-                                                diam elementum.</p>
-                                            <a href="#"
-                                                class="btn btn-outline-dark btn-lg text-uppercase fs-6 rounded-1">Shop
-                                                Collection</a>
-                                        </div>
-                                        <div class="img-wrapper col-md-5">
-                                            <img src="{{ asset('images/product-thumb-2.png') }}" class="img-fluid">
-                                        </div>
-                                    </div>
-                                </div>
+                                @endforeach
                             </div>
                             <div class="swiper-pagination"></div>
                         </div>
@@ -91,3 +61,26 @@
     </div>
     </div>
 </section>
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    new Swiper(".main-swiper", {
+        speed: 500,
+        pagination: {
+            el: ".swiper-pagination",
+            clickable: true,
+        },
+        autoplay: {
+            delay: 5000,
+            disableOnInteraction: false,
+        },
+        loop: true,
+        effect: 'fade',
+        fadeEffect: {
+            crossFade: true
+        }
+    });
+});
+</script>
+@endpush

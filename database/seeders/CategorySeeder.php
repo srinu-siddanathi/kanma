@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\DB;
 
 class CategorySeeder extends Seeder
 {
-    public function run()
+    public function run(): void
     {
         DB::statement('SET FOREIGN_KEY_CHECKS=0');
         Category::truncate();
@@ -17,26 +17,57 @@ class CategorySeeder extends Seeder
 
         $categories = [
             [
-                'name' => 'Food',
-                'description' => 'All food items',
+                'name' => 'Fresh Fruits',
+                'slug' => Str::slug('Fresh Fruits'),
+                'description' => 'Fresh and organic fruits',
+                'image_url' => 'images/categories/fruits.jpg',
+                'is_active' => true,
+                'display_order' => 1
+            ],
+            [
+                'name' => 'Fresh Vegetables',
+                'slug' => Str::slug('Fresh Vegetables'),
+                'description' => 'Fresh and organic vegetables',
+                'image_url' => 'images/categories/vegetables.jpg',
+                'is_active' => true,
+                'display_order' => 2
+            ],
+            [
+                'name' => 'Dairy Products',
+                'slug' => Str::slug('Dairy Products'),
+                'description' => 'Fresh dairy products',
+                'image_url' => 'images/categories/dairy.jpg',
+                'is_active' => true,
+                'display_order' => 3
+            ],
+            [
+                'name' => 'Bakery Items',
+                'slug' => Str::slug('Bakery Items'),
+                'description' => 'Fresh baked goods',
+                'image_url' => 'images/categories/bakery.jpg',
+                'is_active' => true,
+                'display_order' => 4
             ],
             [
                 'name' => 'Beverages',
-                'description' => 'All types of drinks',
+                'slug' => Str::slug('Beverages'),
+                'description' => 'Refreshing drinks',
+                'image_url' => 'images/categories/beverages.jpg',
+                'is_active' => true,
+                'display_order' => 5
             ],
             [
-                'name' => 'Desserts',
-                'description' => 'Sweet treats and desserts',
-            ]
+                'name' => 'Snacks',
+                'slug' => Str::slug('Snacks'),
+                'description' => 'Delicious snacks',
+                'image_url' => 'images/categories/snacks.jpg',
+                'is_active' => true,
+                'display_order' => 6
+            ],
         ];
 
         foreach ($categories as $category) {
-            Category::create([
-                'name' => $category['name'],
-                'slug' => Str::slug($category['name']),
-                'description' => $category['description'],
-                'is_active' => true,
-            ]);
+            Category::create($category);
         }
     }
 } 

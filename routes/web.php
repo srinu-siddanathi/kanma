@@ -27,18 +27,28 @@ use App\Http\Controllers\ShopOwner\DashboardController as ShopOwnerDashboardCont
 use App\Http\Controllers\ShopOwner\ProductController as ShopOwnerProductController;
 use App\Http\Controllers\ShopOwner\OrderController as ShopOwnerOrderController;
 use App\Http\Controllers\ShopOwner\ProfileController as ShopOwnerProfileController;
-use App\Http\Controllers\Admin\ShopController;
+use App\Http\Controllers\Admin\ShopController as AdminShopController;
 use App\Http\Controllers\Admin\AdminProfileController;
 use App\Http\Controllers\Admin\AdminSettingsController;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\CartController;
+use App\Http\Controllers\Frontend\ShopController;
+use App\Http\Controllers\Frontend\ProductController as FrontendProductController;
 
 // Public routes
 Route::get('/', function () {
-    return view('home');
+    return view('coming-soon');
 })->name('home');
 
-Route::get('/shop', function () {
-    return view('shop');
-})->name('shop');
+Route::get('/home', [HomeController::class, 'index'])->name('home.original');
+
+Route::get('/shop', [ShopController::class, 'index'])->name('shop');
+Route::get('/product/{id}', [FrontendProductController::class, 'show'])->name('product.show');
+
+// Category route that redirects to shop with category parameter
+Route::get('/category/{category}', function ($category) {
+    return redirect()->route('shop', ['category' => $category]);
+})->name('category.show');
 
 Route::get('/about', function () {
     return view('about');
@@ -120,11 +130,19 @@ Route::prefix('admin')->group(function () {
         Route::resource('branches', BranchController::class);
 
         // Shop Management
-        Route::get('/shops', [ShopController::class, 'index'])->name('shops.index');
-        Route::get('/shops/{shop}', [ShopController::class, 'show'])->name('shops.show');
-        Route::post('/shops/{shop}/approve', [ShopController::class, 'approve'])->name('shops.approve');
-        Route::post('/shops/{shop}/reject', [ShopController::class, 'reject'])->name('shops.reject');
-        Route::post('/shops/{shop}/verify', [ShopController::class, 'verify'])->name('shops.verify');
+        Route::get('/shops', [AdminShopController::class, 'index'])->name('shops.index');
+        Route::get('/shops/{shop}', [AdminShopController::class, 'show'])->name('shops.show');
+        Route::post('/shops/{shop}/approve', [AdminShopController::class, 'approve'])->name('shops.approve');
+        Route::post('/shops/{shop}/reject', [AdminShopController::class, 'reject'])->name('shops.reject');
+        Route::post('/shops/{shop}/verify', [AdminShopController::class, 'verify'])->name('shops.verify');
+
+        // Delivery Boys Management
+        Route::get('/delivery-boys', [App\Http\Controllers\Admin\DeliveryBoyController::class, 'index'])->name('delivery-boys.index');
+        Route::get('/delivery-boys/create', [App\Http\Controllers\Admin\DeliveryBoyController::class, 'create'])->name('delivery-boys.create');
+        Route::post('/delivery-boys', [App\Http\Controllers\Admin\DeliveryBoyController::class, 'store'])->name('delivery-boys.store');
+        Route::get('/delivery-boys/{deliveryBoy}/edit', [App\Http\Controllers\Admin\DeliveryBoyController::class, 'edit'])->name('delivery-boys.edit');
+        Route::put('/delivery-boys/{deliveryBoy}', [App\Http\Controllers\Admin\DeliveryBoyController::class, 'update'])->name('delivery-boys.update');
+        Route::post('/delivery-boys/{deliveryBoy}/toggle-status', [App\Http\Controllers\Admin\DeliveryBoyController::class, 'toggleStatus'])->name('delivery-boys.toggle-status');
     });
 
     // Protected Branch Manager Routes
@@ -223,10 +241,6 @@ Route::get('/privacy', function () {
     return view('static.privacy');
 })->name('static.privacy');
 
-Route::get('/product/{id}', function ($id) {
-    return view('product');
-})->name('product.show');
-
 Route::get('/cart', function () {
     return view('cart');
 })->name('cart');
@@ -238,3 +252,8 @@ Route::get('/checkout', function () {
 Route::get('/orders', function () {
     return view('orders');
 })->name('orders');
+
+Route::post('/cart/add', [CartController::class, 'addToCart'])->name('cart.add');
+Route::get('/cart/items', [CartController::class, 'getCartItems'])->name('cart.items');
+Route::post('/cart/remove', [CartController::class, 'removeFromCart'])->name('cart.remove');
+Route::post('/cart/update', [CartController::class, 'updateCart'])->name('cart.update');

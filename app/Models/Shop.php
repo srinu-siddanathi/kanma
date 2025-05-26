@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 
 class Shop extends Model
 {
@@ -21,10 +22,19 @@ class Shop extends Model
         'user_id',
         'approval_status', // pending, approved, rejected
         'rejection_reason',
+        'latitude',
+        'longitude',
+        'working_hours',
+        'rating',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
+        'is_verified' => 'boolean',
+        'latitude' => 'decimal:8',
+        'longitude' => 'decimal:8',
+        'working_hours' => 'array',
+        'rating' => 'decimal:1'
     ];
 
     public function user()
@@ -40,5 +50,28 @@ class Shop extends Model
     public function orders()
     {
         return $this->hasMany(Order::class);
+    }
+
+    public function getImageUrlAttribute()
+    {
+        return $this->image_path ? Storage::url($this->image_path) : null;
+    }
+
+    public function getIsOpenAttribute()
+    {
+        if (!$this->working_hours) {
+            return false;
+        }
+
+        $now = now();
+        $dayOfWeek = strtolower($now->format('l'));
+        $currentTime = $now->format('H:i');
+
+        if (!isset($this->working_hours[$dayOfWeek])) {
+            return false;
+        }
+
+        $hours = $this->working_hours[$dayOfWeek];
+        return $currentTime >= $hours['open'] && $currentTime <= $hours['close'];
     }
 } 

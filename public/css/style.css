@@ -611,38 +611,81 @@ h1,h2,h3,h4,h5,h6 {
   color: #FFC43F;
 }
 .product-item .price {
-  display: block;
-  width: 100%;
-  font-weight: 600;
+  width: auto;
   font-size: 22px;
   line-height: 30px;
-  text-transform: capitalize;
-  color: #222222;
+  margin-right: 1rem;
 }
 .product-item .product-qty {
   width: 85px;
+  height: 31px;
+  display: flex;
+  align-items: center;
+  background: #FFFFFF;
+  border: 1px solid #E2E2E2;
+  border-radius: 6px;
+  overflow: hidden;
 }
-.product-item .btn-link {
-  text-decoration: none;
-}
-.product-item #quantity {
-  height: auto;
-  width: 28px;
-  text-align: center;
-  border: none;
-  margin: 0;
-  padding: 0;
-}
-.product-item .btn-number {
+.product-item .product-qty .btn-number {
   width: 26px;
   height: 26px;
-  line-height: 1;
-  text-align: center;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background: #FFFFFF;
   border: 1px solid #E2E2E2;
   border-radius: 6px;
   color: #222;
+  flex-shrink: 0;
+}
+.product-item .product-qty #quantity {
+  width: 33px;
+  height: 100%;
+  text-align: center;
+  border: none;
   padding: 0;
+  font-size: 14px;
+  background: transparent;
+  flex-grow: 0;
+  flex-shrink: 0;
+}
+.product-item .btn-link {
+  text-decoration: none;
+}
+.product-item .add-to-cart {
+  height: 31px;
+  padding: 0 0.75rem;
+  font-size: 14px;
+  background-color: var(--accent-color);
+  border: none;
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+}
+.product-item .add-to-cart svg {
+  margin-left: 0.25rem;
+  width: 14px;
+  height: 14px;
+}
+.product-item .cart-action {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+.product-item .product-qty input[type="number"]::-webkit-inner-spin-button,
+.product-item .product-qty input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.product-item .product-qty input[type="number"] {
+  -moz-appearance: textfield;
+}
+.product-item .product-qty .form-control:focus,
+.product-item .product-qty .btn-number:focus,
+.product-item .add-to-cart:focus {
+  box-shadow: none;
+  outline: none;
 }
 
 /* cart */

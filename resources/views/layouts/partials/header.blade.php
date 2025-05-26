@@ -47,73 +47,64 @@
             </div>
 
             <div class="col-sm-8 col-lg-2 d-flex justify-content-end gap-3 align-items-center mt-4 mt-sm-0">
-                <ul class="d-flex justify-content-end list-unstyled m-0">
-                    <li>
-                        <a href="#" class="rounded-circle bg-light p-2 mx-1" data-bs-toggle="offcanvas"
-                            data-bs-target="#offcanvasCart" aria-controls="offcanvasCart">
-                            <svg width="24" height="24">
-                                <use xlink:href="#cart"></use>
-                            </svg>
-                            <span class="badge bg-primary rounded-pill">3</span>
-                        </a>
-                    </li>
-                    @auth
-                    <li class="dropdown">
-                        <button class="btn btn-link dropdown-toggle" type="button" id="dropdownMenuButton1"
-                            data-bs-toggle="dropdown" aria-expanded="false">
-                            {{ Auth::user()->name }}
-                        </button>
-                        <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                            <li><a class="dropdown-item" href="#">Profile</a></li>
-                            <li><a class="dropdown-item" href="#">My Orders</a></li>
-                            <li>
-                                <form method="POST" action="">
-                                    @csrf
-                                    <button type="submit" class="dropdown-item">Logout</button>
-                                </form>
-                            </li>
-                        </ul>
-                    </li>
-                    @else
-                    <li>
-                        <a href="#" class="btn btn-outline-primary" data-bs-toggle="modal"
-                            data-bs-target="#loginModal">Login</a>
-                    </li>
-                    @endauth
-                </ul>
-
+                <div class="header-element">
+                    <a href="#" class="cart-toggle">
+                        <svg width="24" height="24"><use xlink:href="#cart"></use></svg>
+                        <span class="badge bg-primary rounded-pill cart-count">0</span>
+                    </a>
+                </div>
+                @auth
+                <li class="dropdown">
+                    <button class="btn btn-link dropdown-toggle" type="button" id="dropdownMenuButton1"
+                        data-bs-toggle="dropdown" aria-expanded="false">
+                        {{ Auth::user()->name }}
+                    </button>
+                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                        <li><a class="dropdown-item" href="#">Profile</a></li>
+                        <li><a class="dropdown-item" href="#">My Orders</a></li>
+                        <li>
+                            <form method="POST" action="">
+                                @csrf
+                                <button type="submit" class="dropdown-item">Logout</button>
+                            </form>
+                        </li>
+                    </ul>
+                </li>
+                @else
+                <li>
+                    <a href="#" class="btn btn-outline-primary" data-bs-toggle="modal"
+                        data-bs-target="#loginModal">Login</a>
+                </li>
+                @endauth
             </div>
         </div>
     </div>
 
     <!-- Navigation Bar -->
+    @hasSection('hide-menu')
+        {{-- Menu is hidden on this page --}}
+    @else
     <div class="container-fluid">
         <div class="row py-3">
             <div class="d-flex  justify-content-center justify-content-sm-between align-items-center">
                 <nav class="main-menu d-flex navbar navbar-expand-lg">
-
                     <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas"
                         data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar">
                         <span class="navbar-toggler-icon"></span>
                     </button>
-
                     <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasNavbar"
                         aria-labelledby="offcanvasNavbarLabel">
-
                         <div class="offcanvas-header justify-content-center">
                             <button type="button" class="btn-close" data-bs-dismiss="offcanvas"
                                 aria-label="Close"></button>
                         </div>
-
                         <div class="offcanvas-body">
-
                             <select class="filter-categories border-0 mb-0 me-5">
                                 <option>Shop by Departments</option>
                                 <option>Groceries</option>
                                 <option>Drinks</option>
                                 <option>Chocolates</option>
                             </select>
-
                             <ul class="navbar-nav justify-content-end menu-list list-unstyled d-flex gap-md-3 mb-0">
                                 <li class="nav-item">
                                     <a href="{{ route('home') }}" class="nav-link">Home</a>
@@ -160,6 +151,7 @@
             </div>
         </div>
     </div>
+    @endif
 </header>
 
 <!-- Location Modal -->

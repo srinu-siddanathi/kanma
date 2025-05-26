@@ -16,12 +16,68 @@ class ProductController extends Controller
 
     public function index()
     {
-        $products = Product::with(['category', 'subcategory', 'branches'])
-            ->whereNull('shop_id')
-            ->latest()
-            ->paginate(10);
+        $query = Product::with(['category', 'images']);
 
-        return view('admin.products.index', compact('products'));
+        // Apply search filter
+        if (request('search')) {
+            $search = request('search');
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%");
+            });
+        }
+
+        // Apply category filter
+        if (request('category')) {
+            $query->where('category_id', request('category'));
+        }
+
+        // Apply deal filter
+        if (request()->has('is_deal')) {
+            \Log::info('Deal filter:', [
+                'raw_value' => request('is_deal'),
+                'query' => $query->toSql(),
+                'bindings' => $query->getBindings()
+            ]);
+            
+            $query->where('is_deal', '=', 1);
+        }
+
+        // Apply featured filter
+        if (request()->has('is_featured')) {
+            \Log::info('Featured filter:', [
+                'raw_value' => request('is_featured'),
+                'query' => $query->toSql(),
+                'bindings' => $query->getBindings()
+            ]);
+            
+            $query->where('is_featured', '=', 1);
+        }
+
+        // Log the query before pagination
+        \Log::info('Products query before pagination:', [
+            'sql' => $query->toSql(),
+            'bindings' => $query->getBindings()
+        ]);
+
+        $products = $query->latest()->paginate(10);
+        $categories = Category::orderBy('name')->get();
+
+        // Log the results
+        \Log::info('Products results:', [
+            'total' => $products->total(),
+            'first_page_count' => $products->count(),
+            'first_page_items' => $products->map(function($product) {
+                return [
+                    'id' => $product->id,
+                    'name' => $product->name,
+                    'is_deal' => $product->is_deal,
+                    'is_featured' => $product->is_featured
+                ];
+            })->toArray()
+        ]);
+
+        return view('admin.products.index', compact('products', 'categories'));
     }
 
     public function create()
@@ -37,23 +93,44 @@ class ProductController extends Controller
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'category_id' => 'required|exists:categories,id',
-            'subcategory_id' => 'required|exists:subcategories,id',
             'variants' => 'required|array|min:1',
             'variants.*.quantity' => 'required|numeric|min:0',
             'variants.*.unit' => 'required|in:g,kg,ml,l',
             'variants.*.price' => 'required|numeric|min:0',
             'variants.*.stock' => 'required|integer|min:0',
+            'images' => 'required|array|min:1',
+            'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
+            'is_deal' => 'boolean',
+            'is_featured' => 'boolean',
+            'discount' => 'nullable|numeric|min:0|max:100|required_if:is_deal,1'
         ]);
+
+        // Get the first variant's price and unit
+        $firstVariant = $validated['variants'][0];
 
         $product = Product::create([
             'name' => $validated['name'],
             'slug' => Str::slug($validated['name']),
             'description' => $validated['description'],
             'category_id' => $validated['category_id'],
-            'subcategory_id' => $validated['subcategory_id'],
             'shop_id' => auth()->user()->shop->id ?? null,
             'is_active' => true,
+            'is_deal' => $request->boolean('is_deal'),
+            'is_featured' => $request->boolean('is_featured'),
+            'discount' => $request->input('discount'),
+            'price' => $firstVariant['price'],
+            'base_unit' => $firstVariant['quantity'] . $firstVariant['unit']
         ]);
+
+        // Handle multiple image uploads
+        foreach ($request->file('images') as $index => $image) {
+            $path = $image->store('products', 'public');
+            $product->images()->create([
+                'image_path' => $path,
+                'is_primary' => $index === 0, // First image is primary
+                'sort_order' => $index
+            ]);
+        }
 
         foreach ($validated['variants'] as $variantData) {
             $product->variants()->create($variantData);
@@ -76,22 +153,44 @@ class ProductController extends Controller
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'category_id' => 'required|exists:categories,id',
-            'subcategory_id' => 'required|exists:subcategories,id',
             'variants' => 'required|array|min:1',
             'variants.*.id' => 'nullable|exists:product_variants,id',
             'variants.*.quantity' => 'required|numeric|min:0',
             'variants.*.unit' => 'required|in:g,kg,ml,l',
             'variants.*.price' => 'required|numeric|min:0',
             'variants.*.stock' => 'required|integer|min:0',
+            'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'is_deal' => 'boolean',
+            'is_featured' => 'boolean',
+            'discount' => 'nullable|numeric|min:0|max:100|required_if:is_deal,1'
         ]);
+
+        // Get the first variant's price and unit
+        $firstVariant = $validated['variants'][0];
 
         $product->update([
             'name' => $validated['name'],
             'slug' => Str::slug($validated['name']),
             'description' => $validated['description'],
             'category_id' => $validated['category_id'],
-            'subcategory_id' => $validated['subcategory_id'],
+            'is_deal' => $request->boolean('is_deal'),
+            'is_featured' => $request->boolean('is_featured'),
+            'discount' => $request->input('discount'),
+            'price' => $firstVariant['price'],
+            'base_unit' => $firstVariant['quantity'] . $firstVariant['unit']
         ]);
+
+        // Handle new image uploads
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $index => $image) {
+                $path = $image->store('products', 'public');
+                $product->images()->create([
+                    'image_path' => $path,
+                    'is_primary' => $index === 0 && $product->images->isEmpty(), // First image is primary if no images exist
+                    'sort_order' => $product->images->count() + $index
+                ]);
+            }
+        }
 
         // Update existing variants and create new ones
         foreach ($validated['variants'] as $variantData) {

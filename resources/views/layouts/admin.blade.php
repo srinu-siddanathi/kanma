@@ -4,7 +4,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Admin') - {{ config('app.name') }}</title>
+    
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
     tailwind.config = {
@@ -18,20 +21,25 @@
         }
     }
     </script>
+
+    <!-- Alpine.js -->
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <!-- Custom Styles -->
+    <style>
+        [x-cloak] { display: none !important; }
+    </style>
 </head>
 
 <body class="bg-gradient-to-br from-yellow-50 to-red-50">
+    @auth
     <div class="min-h-screen flex">
         <!-- Sidebar -->
         <div
             class="bg-gradient-to-b from-brand-yellow to-brand-red text-white w-64 space-y-6 py-7 px-2 absolute inset-y-0 left-0 transform -translate-x-full md:relative md:translate-x-0 transition duration-200 ease-in-out">
             <!-- Logo and Title -->
             <div class="flex items-center space-x-2 px-4">
-                <svg class="h-8 w-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
-                <span class="text-2xl font-extrabold">{{ config('app.name') }}</span>
+                <img src="{{ asset('images/logo.png') }}" alt="{{ config('app.name') }}">
             </div>
 
             <nav class="space-y-2">
@@ -42,6 +50,24 @@
                             d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
                     </svg>
                     Dashboard
+                </a>
+
+                <a href="{{ route('admin.categories.index') }}"
+                    class="{{ request()->routeIs('admin.categories*') ? 'bg-white/20' : '' }} flex items-center mt-5 py-2.5 px-4 rounded transition duration-200 hover:bg-white/10">
+                    <svg class="h-5 w-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+                    </svg>
+                    Categories
+                </a>
+
+                <a href="{{ route('admin.products.index') }}"
+                    class="{{ request()->routeIs('admin.products.*') ? 'bg-white/20' : '' }} flex items-center px-4 py-2.5 rounded transition duration-200 hover:bg-white/10">
+                    <svg class="h-5 w-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                    </svg>
+                    Products
                 </a>
 
                 <a href="{{ route('admin.orders') }}"
@@ -80,18 +106,20 @@
                     Subscription Plans
                 </a>
 
-                <a href="{{ route('admin.products.index') }}"
-                    class="{{ request()->routeIs('admin.products.*') ? 'bg-white/20' : '' }} flex items-center px-4 py-2.5 rounded transition duration-200 hover:bg-white/10">
+                
+
+                <a href="{{ route('admin.delivery-boys.index') }}"
+                    class="{{ request()->routeIs('admin.delivery-boys.*') ? 'bg-white/20' : '' }} flex items-center px-4 py-2.5 rounded transition duration-200 hover:bg-white/10">
                     <svg class="h-5 w-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
-                    Products
+                    Delivery Boys
                 </a>
 
                 <!-- Shop Management -->
                 <a href="{{ route('admin.shops.index') }}" 
-                   class="flex items-center py-2.5 px-4 rounded transition duration-200 hover:bg-gray-700 {{ request()->routeIs('admin.shops.*') ? 'bg-gray-700' : '' }}">
+                   class="flex items-center py-2.5 px-4 rounded transition duration-200 hover:bg-white/20 {{ request()->routeIs('admin.shops.*') ? 'bg-white/10' : '' }}">
                     <svg class="h-6 w-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
                               d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
@@ -111,7 +139,7 @@
                             </svg>
                         </div>
                         <div class="ml-3">
-                            <p class="text-sm font-medium text-white">{{ auth()->user()->name }}</p>
+                            <p class="text-sm font-medium text-white">{{ auth()->user()->name ?? 'Guest' }}</p>
                             <div class="flex items-center space-x-3 text-xs">
                                 <a href="{{ route('admin.profile.edit') }}"
                                     class="text-white/80 hover:text-white transition duration-200">
@@ -142,9 +170,10 @@
                         <!-- Add any header content here -->
                         <div class="flex items-center ml-6">
                             <!-- Notifications Dropdown -->
-                            <div class="ml-3 relative">
+                            <div class="ml-3 relative" x-data="{ open: false }">
                                 <div>
                                     <button type="button" 
+                                            @click="open = !open"
                                             class="relative bg-white p-1 rounded-full text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                                             id="notifications-menu-button"
                                             aria-expanded="false"
@@ -162,9 +191,16 @@
                                 </div>
 
                                 <!-- Notifications Dropdown Menu -->
-                                <div class="hidden origin-top-right absolute right-0 mt-2 w-80 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 divide-y divide-gray-100 focus:outline-none" 
+                                <div x-show="open" 
+                                     @click.away="open = false"
+                                     x-transition:enter="transition ease-out duration-100"
+                                     x-transition:enter-start="transform opacity-0 scale-95"
+                                     x-transition:enter-end="transform opacity-100 scale-100"
+                                     x-transition:leave="transition ease-in duration-75"
+                                     x-transition:leave-start="transform opacity-100 scale-100"
+                                     x-transition:leave-end="transform opacity-0 scale-95"
+                                     class="origin-top-right absolute right-0 mt-2 w-80 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 divide-y divide-gray-100 focus:outline-none" 
                                      role="menu" 
-                                     id="notifications-menu"
                                      aria-orientation="vertical" 
                                      aria-labelledby="notifications-menu-button" 
                                      tabindex="-1">
@@ -188,24 +224,32 @@
                             </div>
 
                             <!-- Profile Dropdown -->
-                            <div class="ml-3 relative">
+                            <div class="ml-3 relative" x-data="{ open: false }">
                                 <div>
                                     <button type="button" 
+                                            @click="open = !open"
                                             class="bg-white flex text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" 
                                             id="user-menu-button" 
                                             aria-expanded="false" 
                                             aria-haspopup="true">
                                         <span class="sr-only">Open user menu</span>
                                         <img class="h-8 w-8 rounded-full" 
-                                             src="https://ui-avatars.com/api/?name={{ auth()->user()->name }}" 
-                                             alt="{{ auth()->user()->name }}">
+                                             src="https://ui-avatars.com/api/?name={{ auth()->user()->name ?? 'Guest' }}" 
+                                             alt="{{ auth()->user()->name ?? 'Guest' }}">
                                     </button>
                                 </div>
 
                                 <!-- Profile Dropdown Menu -->
-                                <div class="hidden origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none" 
+                                <div x-show="open"
+                                     @click.away="open = false"
+                                     x-transition:enter="transition ease-out duration-100"
+                                     x-transition:enter-start="transform opacity-0 scale-95"
+                                     x-transition:enter-end="transform opacity-100 scale-100"
+                                     x-transition:leave="transition ease-in duration-75"
+                                     x-transition:leave-start="transform opacity-100 scale-100"
+                                     x-transition:leave-end="transform opacity-0 scale-95"
+                                     class="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none" 
                                      role="menu" 
-                                     id="user-menu"
                                      aria-orientation="vertical" 
                                      aria-labelledby="user-menu-button" 
                                      tabindex="-1">
@@ -237,37 +281,32 @@
             @include('layouts.partials.admin-footer')
         </div>
     </div>
+    @else
+    <div class="min-h-screen flex items-center justify-center">
+        <div class="text-center">
+            <h1 class="text-2xl font-bold text-gray-900 mb-4">Access Denied</h1>
+            <p class="text-gray-600 mb-4">You must be logged in to access this page.</p>
+            <a href="{{ route('admin.login') }}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-brand-yellow hover:bg-brand-red focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-yellow">
+                Login
+            </a>
+        </div>
+    </div>
+    @endauth
 
-    @stack('scripts')
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <!-- Custom Scripts -->
     <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Notifications dropdown
-        const notificationsButton = document.getElementById('notifications-menu-button');
-        const notificationsMenu = document.getElementById('notifications-menu');
-        
-        notificationsButton.addEventListener('click', function() {
-            notificationsMenu.classList.toggle('hidden');
-        });
-
-        // User profile dropdown
-        const userMenuButton = document.getElementById('user-menu-button');
-        const userMenu = document.getElementById('user-menu');
-        
-        userMenuButton.addEventListener('click', function() {
-            userMenu.classList.toggle('hidden');
-        });
-
-        // Close dropdowns when clicking outside
-        document.addEventListener('click', function(event) {
-            if (!notificationsButton.contains(event.target) && !notificationsMenu.contains(event.target)) {
-                notificationsMenu.classList.add('hidden');
-            }
-            if (!userMenuButton.contains(event.target) && !userMenu.contains(event.target)) {
-                userMenu.classList.add('hidden');
-            }
-        });
+        // Initialize any global JavaScript functionality here
+        window.Swal = Swal;
     });
     </script>
+
+    @stack('scripts')
 </body>
 
 </html>

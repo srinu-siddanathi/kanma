@@ -35,4 +35,11 @@ return [
         ],
     ],
 
+    'juspay' => [
+        'base_url' => env('JUSPAY_BASE_URL', 'https://api.juspay.in'),
+        'api_key' => env('JUSPAY_API_KEY'),
+        'client_id' => env('JUSPAY_CLIENT_ID'),
+        'merchant_id' => env('JUSPAY_MERCHANT_ID'),
+    ],
+
 ];

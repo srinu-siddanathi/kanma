@@ -76,6 +76,85 @@ Success Response (200):
     }
 }
 
+Login with OTP
+-------------
+1. Send OTP
+URL: /api/login/otp/send
+Method: POST
+Auth Required: No
+
+Request Body:
+{
+    "phone": "string"
+}
+
+Success Response (200):
+{
+    "status": "success",
+    "message": "OTP sent successfully",
+    "is_new_user": "boolean"
+}
+
+Error Response (404):
+{
+    "status": "error",
+    "message": "Phone number not registered. Please register first.",
+    "requires_registration": true
+}
+
+2. Verify OTP
+URL: /api/login/otp/verify
+Method: POST
+Auth Required: No
+
+Request Body:
+{
+    "phone": "string",
+    "otp": "string"
+}
+
+Success Response (200):
+{
+    "status": "success",
+    "token": "string",
+    "user": {
+        "id": "integer",
+        "name": "string",
+        "email": "string",
+        "role": "string",
+        "profile_completed": "boolean"
+    },
+    "is_new_user": "boolean"
+}
+
+3. Complete Profile
+URL: /api/profile/complete
+Method: POST
+Auth Required: Yes
+Headers: Authorization: Bearer token
+
+Request Body:
+{
+    "name": "string",
+    "dob": "date (YYYY-MM-DD)",
+    "gender": "string (male|female|other)",
+    "referral_code": "string|optional"
+}
+
+Success Response (200):
+{
+    "status": "success",
+    "message": "Profile completed successfully",
+    "user": {
+        "id": "integer",
+        "name": "string",
+        "phone_number": "string",
+        "dob": "date",
+        "gender": "string",
+        "profile_completed": true
+    }
+}
+
 2. CATEGORIES
 ------------
 List Categories
@@ -387,6 +466,43 @@ Success Response (200):
             {
                 "id": "integer",
                 "name": "string"
+            }
+        ]
+    }
+}
+
+9. NEARBY SHOPS
+-------------
+Get Nearby Shops
+URL: /api/shops/nearby
+Method: GET
+Auth Required: No
+
+Query Parameters:
+- latitude: required|numeric|between:-90,90
+- longitude: required|numeric|between:-180,180
+- radius: optional|numeric|min:0|max:50 (in kilometers, default: 10)
+- limit: optional|integer|min:1|max:50 (default: 20)
+
+Success Response (200):
+{
+    "status": "success",
+    "data": {
+        "shops": [
+            {
+                "id": "integer",
+                "name": "string",
+                "description": "string",
+                "address": "string",
+                "phone": "string",
+                "email": "string",
+                "image_url": "string",
+                "latitude": "decimal",
+                "longitude": "decimal",
+                "distance": "decimal", // in kilometers
+                "is_open": "boolean",
+                "rating": "decimal",
+                "total_reviews": "integer"
             }
         ]
     }

@@ -17,9 +17,8 @@
         <div class="max-w-md w-full bg-white/10 backdrop-blur-lg p-8 rounded-xl shadow-2xl">
             <!-- Logo -->
             <div class="mb-8 text-center">
-                <h2 class="text-3xl font-bold text-white">
-                    {{ config('app.name', 'Laravel') }} Admin
-                </h2>
+                <img src="{{ asset('images/logo.png') }}" alt="{{ config('app.name') }}" class="mx-auto mb-4">
+
                 <p class="mt-2 text-white/80">Admin Control Panel</p>
             </div>
 

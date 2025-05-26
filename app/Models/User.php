@@ -23,9 +23,15 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'name',
+        'username',
         'email',
-        'phone',
         'password',
+        'phone',
+        'dob',
+        'gender',
+        'referral_code',
+        'referred_by',
+        'profile_completed',
         'role',
         'branch_id',
         'wallet_balance',
@@ -52,7 +58,9 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
+        'dob' => 'date',
         'wallet_balance' => 'decimal:2',
+        'profile_completed' => 'boolean',
         'is_active' => 'boolean',
         'is_working_today' => 'boolean',
         'last_status_update' => 'datetime',
@@ -95,6 +103,11 @@ class User extends Authenticatable
     public function shop()
     {
         return $this->hasOne(Shop::class);
+    }
+
+    public function addresses()
+    {
+        return $this->hasMany(Address::class);
     }
 
     public function isShopOwner(): bool

@@ -31,6 +31,9 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&family=Open+Sans:ital,wght@0,400;0,700;1,400;1,700&display=swap"
         rel="stylesheet">
+
+    <!-- Toastr CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
 </head>
 
 <body>
@@ -130,39 +133,54 @@
     <!-- Search Offcanvas -->
     @include('layouts.partials.search-offcanvas')
 
-    @include('layouts.partials.header')
+    @hasSection('hide-header')
+        {{-- Header is hidden on this page --}}
+    @else
+        @include('layouts.partials.header')
+    @endif
 
     @yield('content')
 
     @include('layouts.partials.footer')
 
-    <!-- Move scripts before closing body tag and reorder them -->
-    <!-- jQuery first -->
+    <!-- Scripts -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
-    <!-- Bootstrap Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
-
-    <!-- Swiper JS -->
     <script src="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.js"></script>
-
-    <!-- Custom JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
     <script src="{{ asset('js/plugins.js') }}"></script>
     <script src="{{ asset('js/script.js') }}"></script>
 
-    <!-- Page specific scripts -->
-    @stack('scripts')
-
     <script>
     $(document).ready(function() {
+        // Preloader
         $('body').addClass('preloader-site');
-    });
+        $(window).on('load', function() {
+            $('.preloader-wrapper').fadeOut();
+            $('body').removeClass('preloader-site');
+        });
 
-    $(window).on('load', function() {
-        $('.preloader-wrapper').fadeOut();
-        $('body').removeClass('preloader-site');
+        // Initialize Bootstrap offcanvas
+        var cartOffcanvas = new bootstrap.Offcanvas(document.getElementById('offcanvasCart'));
+        
+        // Show cart when clicking cart icon
+        $('.cart-toggle').click(function(e) {
+            e.preventDefault();
+            cartOffcanvas.show();
+        });
+
+        // Initialize cart
+        if (typeof updateCart === 'function') {
+            updateCart();
+        }
     });
     </script>
+
+    <!-- Cart functionality -->
+    @include('components.cart.add-to-cart-scripts')
+
+    <!-- Page specific scripts -->
+    @stack('scripts')
 </body>
 
 </html>

@@ -16,77 +16,71 @@ class ProductController extends Controller
     public function index(Request $request): JsonResponse
     {
         try {
-            $query = Product::query()
-                ->with(['category', 'subcategory', 'branches'])
-                ->whereNull('shop_id');
+            $query = Product::with(['category', 'images'])
+                ->where('is_active', true);
 
-            // Filter by branch if branch_id is provided
-            if ($request->has('branch_id')) {
-                $branchId = $request->branch_id;
-                
-                // Join with branch_products table
-                $query->join('branch_products', function($join) use ($branchId) {
-                    $join->on('products.id', '=', 'branch_products.product_id')
-                         ->where('branch_products.branch_id', '=', $branchId)
-                         ->where('branch_products.is_active', '=', true);
-                });
-
-                // Select specific fields including branch-specific price
-                $query->select([
-                    'products.*',
-                    'branch_products.price as branch_price',
-                    'branch_products.is_active as branch_is_active'
-                ]);
-            }
-
-            // Additional filters
+            // Apply filters
             if ($request->has('category_id')) {
-                $query->where('products.category_id', $request->category_id);
-            }
-
-            if ($request->has('subcategory_id')) {
-                $query->where('products.subcategory_id', $request->subcategory_id);
+                $query->where('category_id', $request->category_id);
             }
 
             if ($request->has('search')) {
-                $search = $request->search;
-                $query->where(function($q) use ($search) {
-                    $q->where('products.name', 'like', "%{$search}%")
-                      ->orWhere('products.description', 'like', "%{$search}%");
-                });
+                $query->where('name', 'like', '%' . $request->search . '%');
             }
 
-            // Only get active products
-            $query->where('products.is_active', true);
+            $products = $query->paginate(20);
 
-            // Get distinct products to avoid duplicates
-            $query->distinct('products.id');
+            $transformedProducts = $products->map(function ($product) {
+                $discountedPrice = $product->discount > 0 
+                    ? $product->price - ($product->price * ($product->discount / 100))
+                    : $product->price;
 
-            $products = $query->latest()->get();
+                $data = [
+                    'id' => $product->id,
+                    'name' => $product->name,
+                    'description' => $product->description,
+                    'images' => $product->images->map(function($image) {
+                        return [
+                            'id' => $image->id,
+                            'url' => $image->image_url,
+                            'is_primary' => $image->is_primary
+                        ];
+                    }),
+                    'category' => $product->category ? [
+                        'id' => $product->category->id,
+                        'name' => $product->category->name
+                    ] : null,
+                    'price' => $product->price,
+                    'discounted_price' => round($discountedPrice, 2),
+                    'unit' => $product->base_unit,
+                    'deal' => $product->is_deal,
+                    'discount' => $product->discount,
+                    'featured' => $product->is_featured,
+                    'is_available' => $product->is_active
+                ];
 
-            // Transform the response
-            $products = $products->map(function ($product) use ($request) {
-                $data = $product->toArray();
-                if ($request->has('branch_id')) {
-                    $data['price'] = $product->branch_price ?? $product->price;
-                    $data['is_active'] = $product->branch_is_active;
-                }
                 return $data;
             });
 
             return response()->json([
                 'status' => 'success',
-                'data' => $products
+                'data' => [
+                    'products' => $transformedProducts,
+                    'pagination' => [
+                        'current_page' => $products->currentPage(),
+                        'last_page' => $products->lastPage(),
+                        'per_page' => $products->perPage(),
+                        'total' => $products->total()
+                    ]
+                ]
             ]);
 
         } catch (\Exception $e) {
-            // Add error logging for debugging
             \Log::error('Product listing error: ' . $e->getMessage());
             
             return response()->json([
                 'status' => 'error',
-                'message' => 'Failed to fetch products',
-                'debug_message' => $e->getMessage() // Remove in production
+                'message' => 'Failed to fetch products'
             ], 500);
         }
     }
@@ -94,20 +88,50 @@ class ProductController extends Controller
     /**
      * Get product details
      */
-    public function show(Product $product): JsonResponse
+    public function show($id): JsonResponse
     {
-        if (!$product->is_active) {
+        try {
+            $product = Product::with(['category', 'images'])
+                ->findOrFail($id);
+
+            $discountedPrice = $product->discount > 0 
+                ? $product->price - ($product->price * ($product->discount / 100))
+                : $product->price;
+
+            $data = [
+                'id' => $product->id,
+                'name' => $product->name,
+                'description' => $product->description,
+                'images' => $product->images->map(function($image) {
+                    return [
+                        'id' => $image->id,
+                        'url' => $image->image_url,
+                        'is_primary' => $image->is_primary
+                    ];
+                }),
+                'category' => $product->category ? [
+                    'id' => $product->category->id,
+                    'name' => $product->category->name
+                ] : null,
+                'price' => $product->price,
+                'discounted_price' => round($discountedPrice, 2),
+                'unit' => $product->base_unit,
+                'deal' => $product->is_deal,
+                'discount' => $product->discount,
+                'featured' => $product->is_featured,
+                'is_available' => $product->is_active
+            ];
+
+            return response()->json([
+                'status' => 'success',
+                'data' => $data
+            ]);
+
+        } catch (\Exception $e) {
             return response()->json([
                 'status' => 'error',
                 'message' => 'Product not found'
             ], 404);
         }
-
-        $product->load(['category', 'subcategory', 'branches']);
-
-        return response()->json([
-            'status' => 'success',
-            'data' => $product
-        ]);
     }
 } 

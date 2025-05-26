@@ -18,8 +18,8 @@ class ProductVariant extends Model
 
     protected $casts = [
         'price' => 'decimal:2',
-        'quantity' => 'decimal:2',
-        'is_active' => 'boolean',
+        'stock' => 'integer',
+        'is_active' => 'boolean'
     ];
 
     public function product(): BelongsTo
@@ -30,5 +30,16 @@ class ProductVariant extends Model
     public function getDisplayNameAttribute(): string
     {
         return "{$this->quantity}{$this->unit}";
+    }
+
+    protected static function boot()
+    {
+        parent::boot();
+        
+        static::saving(function ($variant) {
+            if ($variant->discount_percentage > 0) {
+                $variant->discounted_price = $variant->price * (1 - $variant->discount_percentage / 100);
+            }
+        });
     }
 } 
