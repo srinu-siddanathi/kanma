@@ -70,9 +70,9 @@
                             
                             <!-- Existing Images -->
                             @if($product->images->count() > 0)
-                                <div class="mb-4 grid grid-cols-4 gap-4">
+                                <div class="mb-4 grid grid-cols-4 gap-4" id="existing-images">
                                     @foreach($product->images as $image)
-                                        <div class="relative">
+                                        <div class="relative" data-image-id="{{ $image->id }}">
                                             <img src="{{ $image->image_url }}" 
                                                  alt="{{ $product->name }}" 
                                                  class="w-full h-32 object-cover rounded-lg">
@@ -89,7 +89,12 @@
                             @endif
 
                             <!-- New Images Upload -->
-                            <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:border-indigo-500 transition-colors duration-200">
+                            <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:border-indigo-500 transition-colors duration-200"
+                                 id="drop-zone"
+                                 ondragover="handleDragOver(event)"
+                                 ondrop="handleDrop(event)"
+                                 ondragenter="handleDragEnter(event)"
+                                 ondragleave="handleDragLeave(event)">
                                 <div class="space-y-1 text-center">
                                     <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
                                         <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" 
@@ -180,9 +185,24 @@
     const imagePreview = document.getElementById('image-preview');
     let selectedFiles = [];
 
-    imageInput.addEventListener('change', function() {
-        selectedFiles = Array.from(this.files);
-        renderImagePreview();
+    imageInput.addEventListener('change', function(e) {
+        const files = Array.from(e.target.files);
+        
+        // Validate file types and sizes
+        const validFiles = files.filter(file => {
+            const isValidType = ['image/jpeg', 'image/png', 'image/gif'].includes(file.type);
+            const isValidSize = file.size <= 2 * 1024 * 1024; // 2MB
+            return isValidType && isValidSize;
+        });
+
+        if (validFiles.length !== files.length) {
+            alert('Some files were invalid. Please only upload JPG, PNG, or GIF files under 2MB.');
+        }
+
+        if (validFiles.length > 0) {
+            selectedFiles = validFiles;
+            renderImagePreview();
+        }
     });
 
     function renderImagePreview() {
@@ -207,47 +227,69 @@
             }
             reader.readAsDataURL(file);
         });
-        updateFileInput();
+
+        // Update the file input with the selected files
+        const dataTransfer = new DataTransfer();
+        selectedFiles.forEach(file => dataTransfer.items.add(file));
+        imageInput.files = dataTransfer.files;
     }
 
     function removeImage(index) {
-        console.log('Removing image at index:', index);
         selectedFiles.splice(index, 1);
         renderImagePreview();
     }
 
     function removeExistingImage(imageId) {
         if (confirm('Are you sure you want to remove this image?')) {
+            const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+            
             fetch(`/admin/products/images/${imageId}`, {
                 method: 'DELETE',
                 headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                    'Accept': 'application/json'
-                }
+                    'X-CSRF-TOKEN': token,
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'same-origin'
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
             .then(data => {
                 if (data.success) {
-                    // Remove the image element from the DOM
-                    const imageElement = document.querySelector(`[data-image-id="${imageId}"]`);
-                    if (imageElement) {
-                        imageElement.remove();
+                    // Find the image container
+                    const imageContainer = document.querySelector(`[data-image-id="${imageId}"]`);
+                    if (!imageContainer) {
+                        console.error('Image container not found:', imageId);
+                        return;
                     }
+
+                    // Add a fade-out effect
+                    imageContainer.style.transition = 'opacity 0.3s ease-out';
+                    imageContainer.style.opacity = '0';
+                    
+                    // Remove the element after the fade-out
+                    setTimeout(() => {
+                        imageContainer.remove();
+                        
+                        // Check if there are any remaining images
+                        const existingImages = document.getElementById('existing-images');
+                        if (existingImages && existingImages.children.length === 0) {
+                            existingImages.innerHTML = '<p class="text-gray-500 text-center col-span-4">No images uploaded yet</p>';
+                        }
+                    }, 300);
                 } else {
-                    alert('Failed to remove image');
+                    throw new Error(data.message || 'Failed to remove image');
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('Failed to remove image');
+                alert(error.message || 'Failed to remove image. Please try again.');
             });
         }
-    }
-
-    function updateFileInput() {
-        const dataTransfer = new DataTransfer();
-        selectedFiles.forEach(file => dataTransfer.items.add(file));
-        imageInput.files = dataTransfer.files;
     }
 
     // Handle deal checkbox and discount field
@@ -266,74 +308,146 @@
     const variantsContainer = document.getElementById('variants-container');
 
     addVariantBtn.addEventListener('click', function() {
-        const variantItem = document.createElement('div');
-        variantItem.className = 'variant-item space-y-4 mt-6';
-        variantItem.innerHTML = `
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Quantity</label>
-                    <div class="mt-1 relative rounded-md shadow-sm">
-                        <input type="number" 
-                               name="variants[${variantCount}][quantity]" 
-                               placeholder="Enter quantity"
-                               class="block w-full px-4 py-3 rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm placeholder-gray-400" 
-                               step="0.01" 
-                               min="0"
-                               required>
+        const variantHtml = `
+            <div class="variant-row bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200">
+                <div class="p-6">
+                    <div class="flex justify-between items-start mb-6">
+                        <h4 class="text-lg font-medium text-gray-900">New Variant</h4>
+                        <button type="button" onclick="removeVariant(this)" 
+                                class="inline-flex items-center text-sm text-red-600 hover:text-red-900 transition-colors duration-200">
+                            <svg class="h-5 w-5 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                            Remove
+                        </button>
                     </div>
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Unit</label>
-                    <select name="variants[${variantCount}][unit]" 
-                            class="block w-full px-4 py-3 rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-gray-900"
-                            required>
-                        <option value="">Select unit</option>
-                        <option value="g">Grams (g)</option>
-                        <option value="kg">Kilograms (kg)</option>
-                        <option value="ml">Milliliters (ml)</option>
-                        <option value="l">Liters (l)</option>
-                    </select>
-                </div>
 
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Price</label>
-                    <div class="mt-1 relative rounded-md shadow-sm">
-                        <input type="number" 
-                               name="variants[${variantCount}][price]" 
-                               placeholder="Enter price"
-                               class="block w-full px-4 py-3 rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm placeholder-gray-400" 
-                               step="0.01" 
-                               min="0"
-                               required>
-                    </div>
-                </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Quantity</label>
+                            <div class="mt-1 relative rounded-md shadow-sm">
+                                <input type="number" 
+                                       name="variants[${variantCount}][quantity]" 
+                                       placeholder="Enter quantity"
+                                       class="block w-full px-4 py-3 rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm placeholder-gray-400" 
+                                       step="0.01" 
+                                       min="0"
+                                       required>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Unit</label>
+                            <select name="variants[${variantCount}][unit]" 
+                                    class="block w-full px-4 py-3 rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-gray-900"
+                                    required>
+                                <option value="">Select unit</option>
+                                <option value="g">Grams (g)</option>
+                                <option value="kg">Kilograms (kg)</option>
+                                <option value="ml">Milliliters (ml)</option>
+                                <option value="l">Liters (l)</option>
+                            </select>
+                        </div>
 
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Stock</label>
-                    <div class="mt-1 relative rounded-md shadow-sm">
-                        <input type="number" 
-                               name="variants[${variantCount}][stock]" 
-                               placeholder="Available quantity"
-                               class="block w-full px-4 py-3 rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm placeholder-gray-400" 
-                               min="0"
-                               required>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Price</label>
+                            <div class="mt-1 relative rounded-md shadow-sm">
+                                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                    <span class="text-gray-500 sm:text-sm">₹</span>
+                                </div>
+                                <input type="number" 
+                                       name="variants[${variantCount}][price]" 
+                                       placeholder="0.00"
+                                       class="block w-full pl-8 pr-12 py-3 rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm placeholder-gray-400" 
+                                       step="0.01"
+                                       min="0" 
+                                       required>
+                                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                    <span class="text-gray-500 sm:text-sm">INR</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Stock</label>
+                            <div class="mt-1 relative rounded-md shadow-sm">
+                                <input type="number" 
+                                       name="variants[${variantCount}][stock]" 
+                                       placeholder="Available quantity"
+                                       class="block w-full px-4 py-3 rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm placeholder-gray-400" 
+                                       min="0"
+                                       required>
+                                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                    <span class="text-gray-500 sm:text-sm">units</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-            <button type="button" class="remove-variant text-red-600 hover:text-red-800">
-                Remove Variant
-            </button>
         `;
-
-        variantsContainer.appendChild(variantItem);
+        variantsContainer.insertAdjacentHTML('beforeend', variantHtml);
         variantCount++;
-
-        // Add event listener to remove button
-        variantItem.querySelector('.remove-variant').addEventListener('click', function() {
-            variantItem.remove();
-        });
     });
+
+    function removeVariant(button) {
+        const variantRow = button.closest('.variant-row');
+        if (variantRow) {
+            variantRow.remove();
+        }
+    }
+
+    // Drag and Drop handlers
+    function handleDragOver(event) {
+        event.preventDefault();
+        event.stopPropagation();
+        event.currentTarget.classList.add('border-indigo-500');
+    }
+
+    function handleDragEnter(event) {
+        event.preventDefault();
+        event.stopPropagation();
+        event.currentTarget.classList.add('border-indigo-500');
+    }
+
+    function handleDragLeave(event) {
+        event.preventDefault();
+        event.stopPropagation();
+        event.currentTarget.classList.remove('border-indigo-500');
+    }
+
+    function handleDrop(event) {
+        event.preventDefault();
+        event.stopPropagation();
+        
+        const dropZone = event.currentTarget;
+        dropZone.classList.remove('border-indigo-500');
+        
+        const files = event.dataTransfer.files;
+        if (files.length > 0) {
+            // Validate file types and sizes
+            const validFiles = Array.from(files).filter(file => {
+                const isValidType = ['image/jpeg', 'image/png', 'image/gif'].includes(file.type);
+                const isValidSize = file.size <= 2 * 1024 * 1024; // 2MB
+                return isValidType && isValidSize;
+            });
+
+            if (validFiles.length !== files.length) {
+                alert('Some files were invalid. Please only upload JPG, PNG, or GIF files under 2MB.');
+            }
+
+            if (validFiles.length > 0) {
+                // Update the file input
+                const dataTransfer = new DataTransfer();
+                validFiles.forEach(file => dataTransfer.items.add(file));
+                imageInput.files = dataTransfer.files;
+                
+                // Update the preview
+                selectedFiles = validFiles;
+                renderImagePreview();
+            }
+        }
+    }
 </script>
 @endpush
 @endsection 

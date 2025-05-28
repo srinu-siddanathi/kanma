@@ -20,7 +20,7 @@
         @endif
 
         <div class="bg-white shadow overflow-hidden sm:rounded-lg">
-            <form action="{{ route('admin.categories.store') }}" method="POST" class="p-6">
+            <form action="{{ route('admin.categories.store') }}" method="POST" enctype="multipart/form-data" class="p-6">
                 @csrf
                 <div class="grid grid-cols-1 gap-6">
                     <div>
@@ -33,6 +33,18 @@
                         <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
                         <textarea name="description" id="description" rows="3"
                             class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">{{ old('description') }}</textarea>
+                    </div>
+
+                    <div>
+                        <label for="image" class="block text-sm font-medium text-gray-700">Category Image</label>
+                        <div class="mt-1 flex items-center">
+                            <input type="file" name="image" id="image" accept="image/*"
+                                class="focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                        </div>
+                        <p class="mt-1 text-sm text-gray-500">Upload a category image (recommended size: 800x600 pixels)</p>
+                        @error('image')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
                     </div>
 
                     <div>

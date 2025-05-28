@@ -14,48 +14,75 @@
                                 @endphp
                                 @foreach($products as $product)
                                 <div class="col">
-                                    <div class="product-item">
-                                        <a href="/product/{{ $product->id }}" class="btn-wishlist">
-                                            <svg width="24" height="24"><use xlink:href="#heart"></use></svg>
-                                        </a>
-                                        <figure>
-                                            <a href="/product/{{ $product->id }}" title="{{ $product->name }}">
-                                                <img src="{{ asset($product->image_path) }}" class="tab-image" alt="{{ $product->name }}">
+                                    <div class="card product-card border-0 shadow-sm h-100">
+                                        <div class="card-image position-relative">
+                                            <a href="{{ route('product.show', $product->id) }}" class="btn-wishlist position-absolute top-0 end-0 m-2" style="width:28px; height:28px;">
+                                                <svg width="18" height="18">
+                                                    <use xlink:href="#heart"></use>
+                                                </svg>
                                             </a>
-                                        </figure>
-                                        <h3>{{ $product->name }}</h3>
-                                        @if($product->variants->isNotEmpty())
-                                            @php 
-                                                $variant = $product->variants->first(); 
-                                                $inCart = isset($cart[$variant->id]);
+                                            @php
+                                                $variant = $product->variants->first();
+                                                $hasDiscount = $variant && $variant->discount_percentage > 0;
                                             @endphp
-                                            <span class="qty">{{ $variant->quantity }} {{ $variant->unit }}</span>
-                                            <div class="d-flex justify-content-between align-items-center">
-                                                <span class="price">
-                                                    @if($variant->discount_percentage > 0)
-                                                        <span class="old-price">₹{{ number_format($variant->price, 2) }}</span>
-                                                        ₹{{ number_format($variant->discounted_price, 2) }}
-                                                    @else
-                                                        ₹{{ number_format($variant->price, 2) }}
-                                                    @endif
-                                                </span>
-                                                <div class="cart-action">
-                                                    @if($inCart)
-                                                        <div class="product-qty" data-variant-id="{{ $variant->id }}">
-                                                            <button type="button" class="btn btn-outline-secondary btn-sm quantity-left-minus" data-type="minus">-</button>
-                                                            <input type="text" name="quantity" class="form-control form-control-sm quantity" 
-                                                                   value="{{ $cart[$variant->id]['quantity'] }}" min="1" max="{{ $variant->stock }}" readonly>
-                                                            <button type="button" class="btn btn-outline-secondary btn-sm quantity-right-plus" data-type="plus">+</button>
-                                                        </div>
-                                                    @else
-                                                        <x-cart.add-to-cart-button 
-                                                            :product-id="$product->id" 
-                                                            :variant-id="$variant->id"
-                                                        />
-                                                    @endif
-                                                </div>
+                                            @if($hasDiscount)
+                                            <div class="badge bg-success position-absolute m-3">-{{ $variant->discount_percentage }}%</div>
+                                            @endif
+                                            <img src="{{ $product->image_url }}" class="card-img-top" alt="{{ $product->name }}"
+                                                 style="height: 200px; object-fit: cover;"
+                                                 onerror="this.onerror=null;this.src='{{ asset('images/no-image.png') }}';">
+                                        </div>
+                                        <div class="card-body d-flex flex-column">
+                                            <h5 class="card-title mb-2">
+                                                <a href="{{ route('product.show', $product->id) }}" class="text-decoration-none text-dark">
+                                                    {{ $product->name }}
+                                                </a>
+                                            </h5>
+                                            {!! '<span class="text-muted small mb-2">' . ($variant ? ($variant->quantity . ' ' . $variant->unit) : '&nbsp;') . '</span>' !!}
+                                            <div class="rating mb-2">
+                                                @for ($i = 1; $i <= 5; $i++)
+                                                    <svg class="{{ $i <= ($product->rating ?? 0) ? 'star-solid' : 'star-outline' }}" width="16" height="16">
+                                                        <use xlink:href="#{{ $i <= ($product->rating ?? 0) ? 'star-solid' : 'star-outline' }}"></use>
+                                                    </svg>
+                                                @endfor
                                             </div>
-                                        @endif
+                                            <div class="price-box mt-auto">
+                                                @php
+                                                    $price = $variant?->price ?? 0;
+                                                    $discountPrice = $hasDiscount 
+                                                        ? $price - ($price * $variant->discount_percentage / 100) 
+                                                        : $price;
+                                                @endphp
+                                                <span class="text-primary h5">₹{{ number_format($discountPrice, 2) }}</span>
+                                                @if($hasDiscount)
+                                                <span class="text-muted text-decoration-line-through ms-2">
+                                                    ₹{{ number_format($price, 2) }}
+                                                </span>
+                                                @endif
+                                            </div>
+                                            <div class="cart-action mt-3">
+                                                @if($variant)
+                                                    @php $inCart = isset($cart[$variant->id]); @endphp
+                                                    @if($inCart)
+                                                        @include('components.cart.quantity-control', ['variant' => $variant, 'max' => $variant->stock ?? 99, 'cart' => $cart])
+                                                    @else
+                                                        <button class="btn btn-primary add-to-cart" data-product-id="{{ $product->id }}" data-variant-id="{{ $variant->id }}">
+                                                            <svg width="18" height="18" class="me-2">
+                                                                <use xlink:href="#cart"></use>
+                                                            </svg>
+                                                            Add to Cart
+                                                        </button>
+                                                    @endif
+                                                @else
+                                                    <button class="btn btn-secondary" disabled>
+                                                        <svg width="18" height="18" class="me-2">
+                                                            <use xlink:href="#cart"></use>
+                                                        </svg>
+                                                        Not Available
+                                                    </button>
+                                                @endif
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                                 @endforeach

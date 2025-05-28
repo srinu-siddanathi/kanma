@@ -11,7 +11,17 @@
             </button>
         </div>
 
-        <input type="hidden" name="variants[{{ $index }}][id]" value="{{ $variant->id ?? '' }}">
+        @php
+            \Log::info('Variant data in partial:', [
+                'variant' => $variant,
+                'index' => $index,
+                'variant_id' => $variant->id ?? null
+            ]);
+        @endphp
+
+        @if(isset($variant) && $variant->id)
+            <input type="hidden" name="variants[{{ $index }}][id]" value="{{ $variant->id }}">
+        @endif
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <div>

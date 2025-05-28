@@ -84,10 +84,10 @@ class Product extends Model
 
     public function getImageUrlAttribute(): ?string
     {
-        if ($this->image_path) {
-            return Storage::url($this->image_path);
+        if ($this->images->isNotEmpty()) {
+            return Storage::url($this->images->first()->image_path);
         }
-        return null;
+        return asset('images/no-image.png');
     }
 
     public function variants()

@@ -107,23 +107,21 @@
                     <div class="col-md-4 mb-4 product-item">
                         <div class="card product-card border-0 shadow-sm h-100">
                             <div class="card-image position-relative">
+                                <a href="{{ route('product.show', $product->id) }}" class="btn-wishlist position-absolute top-0 end-0 m-2" style="width:28px; height:28px;">
+                                    <svg width="18" height="18">
+                                        <use xlink:href="#heart"></use>
+                                    </svg>
+                                </a>
                                 @php
                                     $variant = $product->variants->first();
                                     $hasDiscount = $variant && $variant->discount_percentage > 0;
-                                    $imagePath = $product->image_path ? public_path($product->image_path) : null;
-                                    $imageExists = $imagePath && file_exists($imagePath);
                                 @endphp
                                 @if($hasDiscount)
                                 <div class="badge bg-success position-absolute m-3">-{{ $variant->discount_percentage }}%</div>
                                 @endif
-                                <a href="{{ route('product.show', $product->id) }}" class="btn-wishlist position-absolute end-0 m-3">
-                                    <svg width="24" height="24">
-                                        <use xlink:href="#heart"></use>
-                                    </svg>
-                                </a>
-                                <img src="{{ $imageExists ? asset($product->image_path) : 'https://placehold.co/400x400/e2e8f0/1e293b?text=No+Image' }}" 
-                                     class="card-img-top" alt="{{ $product->name }}"
-                                     style="height: 200px; object-fit: cover;">
+                                <img src="{{ $product->image_url }}" class="card-img-top" alt="{{ $product->name }}"
+                                     style="height: 200px; object-fit: cover;"
+                                     onerror="this.onerror=null;this.src='{{ asset('images/no-image.png') }}';">
                             </div>
                             <div class="card-body d-flex flex-column">
                                 <h5 class="card-title mb-2">
@@ -131,7 +129,7 @@
                                         {{ $product->name }}
                                     </a>
                                 </h5>
-                                <span class="text-muted small mb-2">{{ $variant?->unit ?? 'Unit' }}</span>
+                                {!! '<span class="text-muted small mb-2">' . ($variant ? ($variant->quantity . ' ' . $variant->unit) : '&nbsp;') . '</span>' !!}
                                 <div class="rating mb-2">
                                     @for ($i = 1; $i <= 5; $i++)
                                         <svg class="{{ $i <= ($product->rating ?? 0) ? 'star-solid' : 'star-outline' }}" width="16" height="16">
@@ -153,21 +151,28 @@
                                     </span>
                                     @endif
                                 </div>
-                                @if($variant)
-                                <button class="btn btn-primary mt-3 add-to-cart" data-product-id="{{ $product->id }}" data-variant-id="{{ $variant->id }}">
-                                    <svg width="18" height="18" class="me-2">
-                                        <use xlink:href="#cart"></use>
-                                    </svg>
-                                    Add to Cart
-                                </button>
-                                @else
-                                <button class="btn btn-secondary mt-3" disabled>
-                                    <svg width="18" height="18" class="me-2">
-                                        <use xlink:href="#cart"></use>
-                                    </svg>
-                                    Not Available
-                                </button>
-                                @endif
+                                <div class="cart-action mt-3">
+                                    @if($variant)
+                                        @php $inCart = isset($cart[$variant->id]); @endphp
+                                        @if($inCart)
+                                            @include('components.cart.quantity-control', ['max' => $variant->stock ?? 99])
+                                        @else
+                                            <button class="btn btn-primary add-to-cart" data-product-id="{{ $product->id }}" data-variant-id="{{ $variant->id }}">
+                                                <svg width="18" height="18" class="me-2">
+                                                    <use xlink:href="#cart"></use>
+                                                </svg>
+                                                Add to Cart
+                                            </button>
+                                        @endif
+                                    @else
+                                        <button class="btn btn-secondary" disabled>
+                                            <svg width="18" height="18" class="me-2">
+                                                <use xlink:href="#cart"></use>
+                                            </svg>
+                                            Not Available
+                                        </button>
+                                    @endif
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -356,6 +361,32 @@
 }
 .promo-banner-card:hover {
     box-shadow: 0 4px 24px 0 rgba(0,0,0,0.12);
+}
+
+.product-qty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    margin-bottom: 0;
+}
+.product-qty .btn {
+    min-width: 32px;
+    height: 32px;
+    padding: 0;
+    font-size: 1.2rem;
+    border-radius: 0.5rem;
+}
+.product-qty .quantity {
+    width: 40px;
+    text-align: center;
+    border-radius: 0.5rem;
+    margin: 0 2px;
+    height: 32px;
+    padding: 0;
+}
+.card-body {
+    padding-bottom: 1rem !important;
 }
 </style>
 @endpush

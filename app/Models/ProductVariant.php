@@ -18,6 +18,7 @@ class ProductVariant extends Model
 
     protected $casts = [
         'price' => 'decimal:2',
+        'quantity' => 'decimal:2',
         'stock' => 'integer',
         'is_active' => 'boolean'
     ];

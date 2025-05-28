@@ -47,19 +47,22 @@
             </div>
 
             <div class="col-sm-8 col-lg-2 d-flex justify-content-end gap-3 align-items-center mt-4 mt-sm-0">
-                <div class="header-element">
+                <div class="header-element ms-4">
                     <a href="#" class="cart-toggle">
-                        <svg width="24" height="24"><use xlink:href="#cart"></use></svg>
-                        <span class="badge bg-primary rounded-pill cart-count">0</span>
+                        <div class="cart-icon-wrapper position-relative d-inline-block">
+                            <svg width="24" height="24"><use xlink:href="#cart"></use></svg>
+                            <span class="cart-badge position-absolute top-0 start-100 translate-middle">
+                                <span class="cart-count">0</span>
+                            </span>
+                        </div>
                     </a>
                 </div>
                 @auth
-                <li class="dropdown">
-                    <button class="btn btn-link dropdown-toggle" type="button" id="dropdownMenuButton1"
-                        data-bs-toggle="dropdown" aria-expanded="false">
-                        {{ Auth::user()->name }}
-                    </button>
-                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                <div class="header-element ms-3 dropdown">
+                    <a href="#" class="dropdown-toggle d-flex align-items-center" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false" title="Account" aria-label="Account">
+                        <i class="bi bi-person-circle" style="font-size: 1.8rem;"></i>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
                         <li><a class="dropdown-item" href="#">Profile</a></li>
                         <li><a class="dropdown-item" href="#">My Orders</a></li>
                         <li>
@@ -69,7 +72,7 @@
                             </form>
                         </li>
                     </ul>
-                </li>
+                </div>
                 @else
                 <li>
                     <a href="#" class="btn btn-outline-primary" data-bs-toggle="modal"

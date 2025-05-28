@@ -125,6 +125,7 @@ Route::prefix('admin')->group(function () {
         Route::post('/products/verify-multiple', [AdminProductController::class, 'verifyMultiple'])->name('products.verify-multiple');
         Route::post('/products/{product}/reject', [AdminProductController::class, 'reject'])->name('products.reject');
         Route::get('/products/{product}', [AdminProductController::class, 'show'])->name('products.show');
+        Route::delete('/products/images/{image}', [AdminProductController::class, 'deleteImage'])->name('products.images.delete');
 
         // Branch management routes (using resource controller)
         Route::resource('branches', BranchController::class);
@@ -241,6 +242,12 @@ Route::get('/privacy', function () {
     return view('static.privacy');
 })->name('static.privacy');
 
+// Cart routes
+Route::post('/cart/add', [CartController::class, 'addToCart'])->name('cart.add');
+Route::post('/cart/remove', [CartController::class, 'removeFromCart'])->name('cart.remove');
+Route::post('/cart/update', [CartController::class, 'updateCart'])->name('cart.update');
+Route::get('/cart/items', [CartController::class, 'getCartItems'])->name('cart.items');
+
 Route::get('/cart', function () {
     return view('cart');
 })->name('cart');
@@ -252,8 +259,3 @@ Route::get('/checkout', function () {
 Route::get('/orders', function () {
     return view('orders');
 })->name('orders');
-
-Route::post('/cart/add', [CartController::class, 'addToCart'])->name('cart.add');
-Route::get('/cart/items', [CartController::class, 'getCartItems'])->name('cart.items');
-Route::post('/cart/remove', [CartController::class, 'removeFromCart'])->name('cart.remove');
-Route::post('/cart/update', [CartController::class, 'updateCart'])->name('cart.update');

@@ -192,8 +192,22 @@
     const imagePreview = document.getElementById('image-preview');
     let selectedFiles = [];
 
-    imageInput.addEventListener('change', function() {
-        selectedFiles = Array.from(this.files);
+    imageInput.addEventListener('change', function(e) {
+        // Get the files from the input
+        const files = Array.from(e.target.files);
+        
+        // Validate file types and sizes
+        const validFiles = files.filter(file => {
+            const isValidType = ['image/jpeg', 'image/png', 'image/gif'].includes(file.type);
+            const isValidSize = file.size <= 2 * 1024 * 1024; // 2MB
+            return isValidType && isValidSize;
+        });
+
+        if (validFiles.length !== files.length) {
+            alert('Some files were invalid. Please only upload JPG, PNG, or GIF files under 2MB.');
+        }
+
+        selectedFiles = validFiles;
         renderImagePreview();
     });
 
@@ -219,20 +233,27 @@
             }
             reader.readAsDataURL(file);
         });
-        updateFileInput();
-    }
 
-    function removeImage(index) {
-        console.log('Removing image at index:', index);
-        selectedFiles.splice(index, 1);
-        renderImagePreview();
-    }
-
-    function updateFileInput() {
+        // Update the file input with the selected files
         const dataTransfer = new DataTransfer();
         selectedFiles.forEach(file => dataTransfer.items.add(file));
         imageInput.files = dataTransfer.files;
     }
+
+    function removeImage(index) {
+        selectedFiles.splice(index, 1);
+        renderImagePreview();
+    }
+
+    // Form submission validation
+    document.querySelector('form').addEventListener('submit', function(e) {
+        if (selectedFiles.length === 0) {
+            e.preventDefault();
+            alert('Please select at least one image for the product.');
+            return false;
+        }
+        return true;
+    });
 
     // Handle deal checkbox and discount field
     const dealCheckbox = document.querySelector('input[name="is_deal"]');
@@ -250,74 +271,74 @@
     const variantsContainer = document.getElementById('variants-container');
 
     addVariantBtn.addEventListener('click', function() {
-        const variantItem = document.createElement('div');
-        variantItem.className = 'variant-item space-y-4 mt-6';
-        variantItem.innerHTML = `
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Quantity</label>
-                    <div class="mt-1 relative rounded-md shadow-sm">
-                        <input type="number" 
-                               name="variants[${variantCount}][quantity]" 
-                               placeholder="Enter quantity"
-                               class="block w-full px-4 py-3 rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm placeholder-gray-400" 
-                               step="0.01" 
-                               min="0"
-                               required>
+        const variantHtml = `
+            <div class="variant-item space-y-4 mt-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Quantity</label>
+                        <div class="mt-1 relative rounded-md shadow-sm">
+                            <input type="number" 
+                                   name="variants[${variantCount}][quantity]" 
+                                   placeholder="Enter quantity"
+                                   class="block w-full px-4 py-3 rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm placeholder-gray-400" 
+                                   step="0.01" 
+                                   min="0"
+                                   required>
+                        </div>
                     </div>
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Unit</label>
-                    <select name="variants[${variantCount}][unit]" 
-                            class="block w-full px-4 py-3 rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-gray-900"
-                            required>
-                        <option value="">Select unit</option>
-                        <option value="g">Grams (g)</option>
-                        <option value="kg">Kilograms (kg)</option>
-                        <option value="ml">Milliliters (ml)</option>
-                        <option value="l">Liters (l)</option>
-                    </select>
-                </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Unit</label>
+                        <select name="variants[${variantCount}][unit]" 
+                                class="block w-full px-4 py-3 rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-gray-900"
+                                required>
+                            <option value="">Select unit</option>
+                            <option value="g">Grams (g)</option>
+                            <option value="kg">Kilograms (kg)</option>
+                            <option value="ml">Milliliters (ml)</option>
+                            <option value="l">Liters (l)</option>
+                        </select>
+                    </div>
 
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Price</label>
-                    <div class="mt-1 relative rounded-md shadow-sm">
-                        <input type="number" 
-                               name="variants[${variantCount}][price]" 
-                               placeholder="Enter price"
-                               class="block w-full px-4 py-3 rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm placeholder-gray-400" 
-                               step="0.01" 
-                               min="0"
-                               required>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Price</label>
+                        <div class="mt-1 relative rounded-md shadow-sm">
+                            <input type="number" 
+                                   name="variants[${variantCount}][price]" 
+                                   placeholder="Enter price"
+                                   class="block w-full px-4 py-3 rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm placeholder-gray-400" 
+                                   step="0.01" 
+                                   min="0"
+                                   required>
+                        </div>
                     </div>
-                </div>
 
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Stock</label>
-                    <div class="mt-1 relative rounded-md shadow-sm">
-                        <input type="number" 
-                               name="variants[${variantCount}][stock]" 
-                               placeholder="Available quantity"
-                               class="block w-full px-4 py-3 rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm placeholder-gray-400" 
-                               min="0"
-                               required>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Stock</label>
+                        <div class="mt-1 relative rounded-md shadow-sm">
+                            <input type="number" 
+                                   name="variants[${variantCount}][stock]" 
+                                   placeholder="Available quantity"
+                                   class="block w-full px-4 py-3 rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm placeholder-gray-400" 
+                                   min="0"
+                                   required>
+                        </div>
                     </div>
                 </div>
+                <button type="button" 
+                        class="text-red-600 hover:text-red-800 text-sm font-medium remove-variant-btn"
+                        onclick="removeVariant(this)">
+                    Remove Variant
+                </button>
             </div>
-            <button type="button" class="remove-variant text-red-600 hover:text-red-800">
-                Remove Variant
-            </button>
         `;
-
-        variantsContainer.appendChild(variantItem);
+        variantsContainer.insertAdjacentHTML('beforeend', variantHtml);
         variantCount++;
-
-        // Add event listener to remove button
-        variantItem.querySelector('.remove-variant').addEventListener('click', function() {
-            variantItem.remove();
-        });
     });
+
+    function removeVariant(button) {
+        button.closest('.variant-item').remove();
+    }
 </script>
 @endpush
 @endsection 

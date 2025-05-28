@@ -20,7 +20,7 @@
         @endif
 
         <div class="bg-white shadow overflow-hidden sm:rounded-lg">
-            <form action="{{ route('admin.categories.update', $category) }}" method="POST" class="p-6">
+            <form action="{{ route('admin.categories.update', $category) }}" method="POST" enctype="multipart/form-data" class="p-6">
                 @csrf
                 @method('PUT')
                 
@@ -35,6 +35,21 @@
                         <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
                         <textarea name="description" id="description" rows="3"
                             class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">{{ old('description', $category->description) }}</textarea>
+                    </div>
+
+                    <div>
+                        <label for="image" class="block text-sm font-medium text-gray-700">Category Image</label>
+                        @if($category->image_url)
+                            <div class="mt-2 mb-4">
+                                <img src="{{ asset($category->image_url) }}" alt="{{ $category->name }}" class="h-32 w-auto object-cover rounded">
+                            </div>
+                        @endif
+                        <input type="file" name="image" id="image" accept="image/*"
+                            class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                        <p class="mt-1 text-sm text-gray-500">Upload a new category image (recommended size: 800x600 pixels)</p>
+                        @error('image')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
                     </div>
 
                     <div>
