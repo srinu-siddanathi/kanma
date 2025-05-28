@@ -142,7 +142,9 @@ class ProductController extends Controller
             if ($request->hasFile('images')) {
                 foreach ($request->file('images') as $index => $image) {
                     if ($image->isValid()) {
-                        $path = $image->store('products', 'public');
+                        $filename = time() . '_' . $image->getClientOriginalName();
+                        $image->move(public_path('uploads/products'), $filename);
+                        $path = 'uploads/products/' . $filename;
                         $product->images()->create([
                             'image_path' => $path,
                             'is_primary' => $index === 0, // First image is primary
@@ -249,7 +251,9 @@ class ProductController extends Controller
             if ($request->hasFile('images')) {
                 foreach ($request->file('images') as $index => $image) {
                     if ($image->isValid()) {
-                        $path = $image->store('products', 'public');
+                        $filename = time() . '_' . $image->getClientOriginalName();
+                        $image->move(public_path('uploads/products'), $filename);
+                        $path = 'uploads/products/' . $filename;
                         $product->images()->create([
                             'image_path' => $path,
                             'is_primary' => $index === 0 && $product->images->isEmpty(),
@@ -422,8 +426,8 @@ class ProductController extends Controller
             $image = \App\Models\ProductImage::findOrFail($imageId);
             
             // Delete the file from storage
-            if ($image->image_path && Storage::disk('public')->exists($image->image_path)) {
-                Storage::disk('public')->delete($image->image_path);
+            if ($image->image_path && file_exists(public_path($image->image_path))) {
+                unlink(public_path($image->image_path));
             }
             
             // Delete the database record

@@ -73,7 +73,7 @@
                                 <div class="mb-4 grid grid-cols-4 gap-4" id="existing-images">
                                     @foreach($product->images as $image)
                                         <div class="relative" data-image-id="{{ $image->id }}">
-                                            <img src="{{ $image->image_url }}" 
+                                            <img src="{{ asset($image->image_path) }}" 
                                                  alt="{{ $product->name }}" 
                                                  class="w-full h-32 object-cover rounded-lg">
                                             <button type="button" 

@@ -100,7 +100,7 @@
                 <tr>
                     <td class="px-6 py-4">
                         @if($product->images->isNotEmpty())
-                            <img src="{{ Storage::url($product->images->first()->image_path) }}" alt="{{ $product->name }}" 
+                            <img src="{{ asset($product->images->first()->image_path) }}" alt="{{ $product->name }}" 
                                  class="h-12 w-12 object-cover rounded">
                         @else
                             <div class="h-12 w-12 bg-gray-100 rounded flex items-center justify-center">
