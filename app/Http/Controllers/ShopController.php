@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use App\Models\Category;
+use App\Models\Shop;
 use Illuminate\Http\Request;
 
 class ShopController extends Controller
@@ -74,5 +75,27 @@ class ShopController extends Controller
                 'error' => 'An error occurred while loading the shop page.'
             ]);
         }
+    }
+
+    public function show($id)
+    {
+        $shop = Shop::where('is_active', 1)->findOrFail($id);
+        $products = $shop->products()
+                        ->where('is_active', 1)
+                        ->with(['variants' => function($query) {
+                            $query->where('is_active', 1);
+                        }])
+                        ->paginate(12);
+        
+        return view('shop.show', compact('shop', 'products'));
+    }
+
+    public function allShops()
+    {
+        $shops = Shop::where('is_active', 1)
+            // ->where('is_verified', 1)
+            // ->where('approval_status', 'approved')
+            ->paginate(12);
+        return view('shops.index', compact('shops'));
     }
 } 

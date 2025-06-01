@@ -4,6 +4,11 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize cart items on page load
     initializeCartItems();
 
+    // Remove any existing handlers first
+    $(document).off('click', '.quantity-right-plus');
+    $(document).off('click', '.quantity-left-minus');
+    $(document).off('click', '.add-to-cart');
+
     // Add to cart functionality
     $(document).on('click', '.add-to-cart', function() {
         const button = $(this);
@@ -18,34 +23,54 @@ document.addEventListener('DOMContentLoaded', function() {
     // Quantity controls with event delegation
     $(document).on('click', '.quantity-right-plus', function(e) {
         e.preventDefault();
-        const input = $(this).closest('.product-qty').find('.quantity');
-        const max = parseInt(input.attr('max'));
-        const currentQty = parseInt(input.val());
+        e.stopPropagation(); // Prevent event bubbling
+        
+        console.log('Plus button clicked');
+        const productQty = $(this).closest('.product-qty');
+        const input = productQty.find('.quantity');
+        const max = parseInt(input.attr('max')) || 99;
+        const currentQty = parseInt(input.val()) || 1;
+        
+        console.log('Current quantity:', currentQty, 'Max:', max);
         
         if (currentQty < max) {
-            input.val(currentQty + 1);
-            const productItem = $(this).closest('.product-item');
-            updateCartQuantity(productItem);
+            const newQty = currentQty + 1;
+            console.log('Updating to new quantity:', newQty);
+            input.val(newQty);
+            updateCartQuantity(productQty);
+        } else {
+            console.log('Max quantity reached');
+            toastr.warning('Maximum quantity reached');
         }
     });
 
     $(document).on('click', '.quantity-left-minus', function(e) {
         e.preventDefault();
-        const input = $(this).closest('.product-qty').find('.quantity');
-        const currentQty = parseInt(input.val());
+        e.stopPropagation(); // Prevent event bubbling
+        
+        console.log('Minus button clicked');
+        const productQty = $(this).closest('.product-qty');
+        const input = productQty.find('.quantity');
+        const currentQty = parseInt(input.val()) || 1;
         
         if (currentQty > 1) {
-            input.val(currentQty - 1);
-            const productItem = $(this).closest('.product-item');
-            updateCartQuantity(productItem);
+            const newQty = currentQty - 1;
+            console.log('Updating to new quantity:', newQty);
+            input.val(newQty);
+            updateCartQuantity(productQty);
         } else {
+            console.log('Removing item from cart');
             removeFromCart($(this).closest('.product-item'));
         }
     });
 
-    function updateCartQuantity(productItem) {
-        const variantId = productItem.find('.product-qty').data('variant-id');
-        const quantity = productItem.find('.quantity').val();
+    function updateCartQuantity(productQty) {
+        const variantId = productQty.data('variant-id');
+        const quantity = parseInt(productQty.find('.quantity').val()) || 1;
+        console.log('Updating cart quantity:', { variantId, quantity });
+
+        // Disable buttons during update
+        productQty.find('button').prop('disabled', true);
 
         $.ajax({
             url: '{{ route("cart.update") }}',
@@ -56,6 +81,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 quantity: quantity
             },
             success: function(response) {
+                console.log('Cart update success:', response);
                 if (response.success) {
                     $('.cart-count').text(response.cart_count);
                     $(document).trigger('cart:updated');
@@ -63,10 +89,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             },
             error: function(xhr) {
+                console.error('Cart update error:', xhr.responseJSON);
                 // Revert quantity on error
                 const oldQuantity = xhr.responseJSON?.old_quantity || 1;
-                productItem.find('.quantity').val(oldQuantity);
+                productQty.find('.quantity').val(oldQuantity);
                 toastr.error(xhr.responseJSON?.message || 'Failed to update cart');
+            },
+            complete: function() {
+                // Re-enable buttons after update
+                productQty.find('button').prop('disabled', false);
             }
         });
     }
@@ -107,7 +138,7 @@ document.addEventListener('DOMContentLoaded', function() {
             },
             complete: function() {
                 productItem.find('.add-to-cart').prop('disabled', false)
-                    .html('Add <svg width="16" height="16"><use xlink:href="#cart"></use></svg>');
+                    .html('<svg width="18" height="18" class="me-2"><use xlink:href="#cart"></use></svg>Add to Cart');
             }
         });
     }

@@ -18,9 +18,9 @@ use App\Http\Controllers\Admin\SubscriptionPlanController;
 use App\Http\Controllers\Branch\ProductController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
-use App\Http\Controllers\Auth\RegisteredUserController;
-use App\Http\Controllers\Auth\PasswordResetLinkController;
-use App\Http\Controllers\Auth\NewPasswordController;
+// use App\Http\Controllers\Auth\RegisteredUserController;
+// use App\Http\Controllers\Auth\PasswordResetLinkController;
+// use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Branch\DeliveryBoyController;
 use App\Http\Controllers\Branch\OrderAssignmentController;
 use App\Http\Controllers\ShopOwner\DashboardController as ShopOwnerDashboardController;
@@ -34,16 +34,26 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\Frontend\ShopController;
 use App\Http\Controllers\Frontend\ProductController as FrontendProductController;
+use App\Http\Controllers\CheckoutController;
+use App\Http\Controllers\NewsletterController;
+use App\Http\Controllers\Admin\SubscriptionController as AdminSubscriptionController;
+use App\Http\Controllers\SubscriptionController;
 
 // Public routes
-Route::get('/', function () {
-    return view('coming-soon');
-})->name('home');
+Route::get('/', [HomeController::class, 'index'])->name('home');
 
 Route::get('/home', [HomeController::class, 'index'])->name('home.original');
 
 Route::get('/shop', [ShopController::class, 'index'])->name('shop');
 Route::get('/product/{id}', [FrontendProductController::class, 'show'])->name('product.show');
+Route::get('/shop/{id}', [App\Http\Controllers\ShopController::class, 'show'])->name('shop.show');
+
+// Subscription routes
+Route::middleware(['auth'])->group(function () {
+    Route::get('/subscription/checkout/{plan}', [SubscriptionController::class, 'checkout'])->name('subscription.checkout');
+    Route::post('/subscription/process/{plan}', [SubscriptionController::class, 'process'])->name('subscription.process');
+    Route::post('/subscription/verify-payment', [SubscriptionController::class, 'verifyPayment'])->name('subscription.verify-payment');
+});
 
 // Category route that redirects to shop with category parameter
 Route::get('/category/{category}', function ($category) {
@@ -109,6 +119,11 @@ Route::prefix('admin')->group(function () {
         Route::put('/subscription-plans/{plan}', [SubscriptionPlanController::class, 'update'])->name('subscription-plans.update');
         Route::delete('/subscription-plans/{plan}', [SubscriptionPlanController::class, 'destroy'])->name('subscription-plans.destroy');
 
+        // Active Subscriptions Management
+        Route::get('/subscriptions', [AdminSubscriptionController::class, 'index'])->name('subscriptions.index');
+        Route::get('/subscriptions/{subscription}', [AdminSubscriptionController::class, 'show'])->name('subscriptions.show');
+        Route::put('/subscriptions/{subscription}/cancel', [AdminSubscriptionController::class, 'cancel'])->name('subscriptions.cancel');
+
         // Order routes
         Route::get('/orders', [OrderController::class, 'index'])->name('orders');
         Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
@@ -144,6 +159,15 @@ Route::prefix('admin')->group(function () {
         Route::get('/delivery-boys/{deliveryBoy}/edit', [App\Http\Controllers\Admin\DeliveryBoyController::class, 'edit'])->name('delivery-boys.edit');
         Route::put('/delivery-boys/{deliveryBoy}', [App\Http\Controllers\Admin\DeliveryBoyController::class, 'update'])->name('delivery-boys.update');
         Route::post('/delivery-boys/{deliveryBoy}/toggle-status', [App\Http\Controllers\Admin\DeliveryBoyController::class, 'toggleStatus'])->name('delivery-boys.toggle-status');
+
+        // Newsletter Management
+        Route::get('/newsletters', [\App\Http\Controllers\Admin\NewsletterSubscriberController::class, 'index'])->name('newsletters.index');
+        Route::get('/newsletters/export', [\App\Http\Controllers\Admin\NewsletterSubscriberController::class, 'exportCsv'])->name('newsletters.export');
+        Route::delete('/newsletters/{id}', [\App\Http\Controllers\Admin\NewsletterSubscriberController::class, 'destroy'])->name('newsletters.destroy');
+
+        // Admin Settings Routes
+        Route::get('/settings', [App\Http\Controllers\Admin\SettingController::class, 'index'])->name('settings.index');
+        Route::put('/settings', [App\Http\Controllers\Admin\SettingController::class, 'update'])->name('settings.update');
     });
 
     // Protected Branch Manager Routes
@@ -182,6 +206,8 @@ Route::prefix('admin')->group(function () {
 
         Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
         Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+        Route::put('/password', [ProfileController::class, 'updatePassword'])->name('password.update');
+        Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
         // Delivery Boy Management
         Route::resource('delivery-boys', DeliveryBoyController::class);
@@ -252,10 +278,55 @@ Route::get('/cart', function () {
     return view('cart');
 })->name('cart');
 
-Route::get('/checkout', function () {
-    return view('checkout');
-})->name('checkout');
+// Checkout routes
+Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout');
+Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
 
-Route::get('/orders', function () {
-    return view('orders');
-})->name('orders');
+// Location Modal Routes (public)
+Route::post('/location/check-serviceability', [App\Http\Controllers\AddressController::class, 'checkServiceability'])->name('location.check-serviceability');
+Route::post('/location/clear', [App\Http\Controllers\AddressController::class, 'clearSelectedAddress'])->name('location.clear');
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/orders', [App\Http\Controllers\OrderController::class, 'index'])->name('orders');
+    Route::get('/orders/{order}', [App\Http\Controllers\OrderController::class, 'show'])->name('orders.show');
+    Route::get('/subscriptions', [App\Http\Controllers\SubscriptionController::class, 'index'])->name('subscriptions');
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::put('/password', [ProfileController::class, 'updatePassword'])->name('password.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    
+    // Address Management Routes
+    Route::get('/addresses', [App\Http\Controllers\AddressController::class, 'index'])->name('addresses.index');
+    Route::get('/addresses/create', [App\Http\Controllers\AddressController::class, 'create'])->name('addresses.create');
+    Route::post('/addresses', [App\Http\Controllers\AddressController::class, 'store'])->name('addresses.store');
+    Route::get('/addresses/{address}', [App\Http\Controllers\AddressController::class, 'show'])->name('addresses.show');
+    Route::get('/addresses/{address}/edit', [App\Http\Controllers\AddressController::class, 'edit'])->name('addresses.edit');
+    Route::put('/addresses/{address}', [App\Http\Controllers\AddressController::class, 'update'])->name('addresses.update');
+    Route::delete('/addresses/{address}', [App\Http\Controllers\AddressController::class, 'destroy'])->name('addresses.destroy');
+    Route::post('/addresses/{address}/set-default', [App\Http\Controllers\AddressController::class, 'setDefault'])->name('addresses.set-default');
+
+    // Location Modal Routes (authenticated)
+    Route::get('/location/addresses', [App\Http\Controllers\AddressController::class, 'getAddressesForModal'])->name('location.addresses');
+});
+
+// Auth routes
+Route::get('/login', [AuthenticatedSessionController::class, 'create'])->name('login');
+Route::post('/login', [AuthenticatedSessionController::class, 'store']);
+Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
+// Route::get('/register', [RegisteredUserController::class, 'create'])->name('register');
+// Route::post('/register', [RegisteredUserController::class, 'store']);
+
+Route::post('/ajax-login', [App\Http\Controllers\Auth\AuthenticatedSessionController::class, 'ajaxLogin'])->name('ajax.login');
+
+Route::post('/newsletter', [NewsletterController::class, 'store'])->name('newsletter.store');
+
+Route::get('/search', [App\Http\Controllers\Frontend\ShopController::class, 'search'])->name('search');
+
+Route::get('/api/search-suggestions', [App\Http\Controllers\Frontend\ShopController::class, 'searchSuggestions'])->name('search.suggestions');
+
+Route::get('/shops', [App\Http\Controllers\ShopController::class, 'allShops'])->name('shops.all');
+
+// Registration routes
+Route::post('/send-otp', [App\Http\Controllers\Auth\RegisterController::class, 'sendOtp'])->name('send.otp');
+Route::post('/verify-otp', [App\Http\Controllers\Auth\RegisterController::class, 'verifyOtp'])->name('verify.otp');
+Route::post('/register', [App\Http\Controllers\Auth\RegisterController::class, 'register'])->name('register');

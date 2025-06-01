@@ -68,6 +68,38 @@
                            class="mt-1 block w-full rounded-md border-gray-300">
                 </div>
 
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Pincode</label>
+                        <input type="text" name="pincode" value="{{ old('pincode', $branch->pincode) }}" 
+                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                               pattern="[0-9]{6}" maxlength="6" placeholder="e.g., 500081">
+                        @error('pincode')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Latitude</label>
+                        <input type="number" name="latitude" value="{{ old('latitude', $branch->latitude) }}" step="any"
+                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                               placeholder="e.g., 17.4486">
+                        @error('latitude')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Longitude</label>
+                        <input type="number" name="longitude" value="{{ old('longitude', $branch->longitude) }}" step="any"
+                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                               placeholder="e.g., 78.3908">
+                        @error('longitude')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+                </div>
+
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Status</label>
                     <div class="mt-2">

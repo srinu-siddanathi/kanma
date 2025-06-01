@@ -122,4 +122,29 @@ class ShopController extends Controller
             ]);
         }
     }
+
+    public function search(Request $request)
+    {
+        $query = $request->input('q');
+        $products = [];
+        if ($query) {
+            $products = \App\Models\Product::where('name', 'like', "%$query%")
+                ->orWhere('description', 'like', "%$query%")
+                ->latest()
+                ->paginate(20);
+        }
+        return view('shop.search', compact('products', 'query'));
+    }
+
+    public function searchSuggestions(Request $request)
+    {
+        $query = $request->input('q');
+        $suggestions = [];
+        if ($query) {
+            $suggestions = Product::where('name', 'like', "%$query%")
+                ->limit(8)
+                ->pluck('name', 'id');
+        }
+        return response()->json($suggestions);
+    }
 } 

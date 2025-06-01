@@ -11,6 +11,7 @@
     <meta name="author" content="">
     <meta name="keywords" content="">
     <meta name="description" content="">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="{{ asset('images/favicon.png') }}">
@@ -38,6 +39,22 @@
 
     <!-- Toastr CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+
+    <!-- Google Maps JavaScript API -->
+    <script>
+        // Global initialization function
+        window.initGoogleMaps = function() {
+            console.log('Google Maps API loaded!');
+            if (typeof google !== 'undefined' && google.maps) {
+                console.log('Google Maps API is available');
+                // Trigger a custom event that our other scripts can listen for
+                window.dispatchEvent(new Event('googleMapsLoaded'));
+            } else {
+                console.error('Google Maps API is not available');
+            }
+        };
+    </script>
+    <script src="https://maps.googleapis.com/maps/api/js?key={{ config('services.google.maps_api_key') }}&libraries=places&v=beta&callback=initGoogleMaps"></script>
 </head>
 
 <body>
@@ -140,7 +157,7 @@
     @hasSection('hide-header')
         {{-- Header is hidden on this page --}}
     @else
-        @include('layouts.partials.header')
+        @include('layouts.partials.header', ['userAddresses' => auth()->user() ? auth()->user()->addresses : collect()])
     @endif
 
     @yield('content')

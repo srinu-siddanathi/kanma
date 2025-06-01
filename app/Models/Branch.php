@@ -19,6 +19,7 @@ class Branch extends Model
         'email',
         'latitude',
         'longitude',
+        'pincode',
         'user_id',
         'is_active'
     ];

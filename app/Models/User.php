@@ -110,6 +110,20 @@ class User extends Authenticatable
         return $this->hasMany(Address::class);
     }
 
+    public function subscriptions()
+    {
+        return $this->hasMany(Subscription::class);
+    }
+
+    public function currentSubscription()
+    {
+        return $this->subscriptions()
+            ->where('status', 'active')
+            ->where('ends_at', '>', now())
+            ->latest()
+            ->first();
+    }
+
     public function isShopOwner(): bool
     {
         return $this->role === 'shop_owner';

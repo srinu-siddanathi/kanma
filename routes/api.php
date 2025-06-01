@@ -16,6 +16,8 @@ use App\Http\Controllers\Api\CartController;
 use App\Http\Controllers\Api\HomeController;
 use App\Http\Controllers\Api\AddressController;
 use App\Http\Controllers\Api\PaymentController;
+use App\Http\Controllers\Api\RazorpayController;
+use App\Http\Controllers\Api\LocationController;
 
 /*
 |--------------------------------------------------------------------------
@@ -36,6 +38,7 @@ Route::get('/products/{product}', [ProductController::class, 'show']);
 Route::get('/categories', [CategoryController::class, 'index']);
 Route::get('/categories/{category}/subcategories', [CategoryController::class, 'subcategories']);
 Route::get('/branches', [BranchController::class, 'index']);
+Route::post('/branches/check-serviceability', [BranchController::class, 'checkServiceability']);
 Route::get('/branches/{branch}', [BranchController::class, 'show']);
 Route::get('/shops/nearby', [ShopController::class, 'nearby']);
 Route::get('/home', [HomeController::class, 'index']);
@@ -49,8 +52,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('user/profile', [UserController::class, 'update']);
     
     // Address Management
-    Route::apiResource('addresses', AddressController::class);
-    Route::post('addresses/{address}/default', [AddressController::class, 'setDefault']);
+    Route::get('/addresses', [AddressController::class, 'index']);
+    Route::post('/addresses', [AddressController::class, 'store']);
+    Route::put('/addresses/{address}', [AddressController::class, 'update']);
+    Route::delete('/addresses/{address}', [AddressController::class, 'destroy']);
+    Route::post('/addresses/{address}/set-default', [AddressController::class, 'setDefault']);
     
     // Orders
     Route::get('/orders', [OrderController::class, 'userOrders']);
@@ -121,6 +127,16 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/payments/status', [PaymentController::class, 'getPaymentStatus']);
     Route::get('/payments/methods', [PaymentController::class, 'getSavedPaymentMethods']);
     Route::delete('/payments/methods/{card_id}', [PaymentController::class, 'deletePaymentMethod']);
+
+    // Razorpay Payment Routes
+    Route::post('/razorpay/create-order', [RazorpayController::class, 'createOrder']);
+    Route::post('/razorpay/verify-payment', [RazorpayController::class, 'verifyPayment']);
+    Route::post('/razorpay/payment-failure', [RazorpayController::class, 'handlePaymentFailure']);
+    Route::get('/razorpay/payment-status', [RazorpayController::class, 'getPaymentStatus']);
+
+    // Location Modal API Routes
+    Route::get('/location/addresses', [App\Http\Controllers\Api\AddressController::class, 'index'])->name('api.location.addresses');
+    Route::post('/location/check-serviceability', [App\Http\Controllers\Api\AddressController::class, 'checkServiceability'])->name('api.location.check-serviceability');
 });
 
 // Juspay Callback Route (no auth required as it's called by Juspay)
@@ -128,4 +144,7 @@ Route::post('/payments/callback', [PaymentController::class, 'handleCallback']);
 
 Route::get('/categories/{category}/subcategories', function (Category $category) {
     return $category->subcategories()->where('is_active', true)->get();
-}); 
+});
+
+// Location routes
+Route::post('/check-serviceability', [LocationController::class, 'checkServiceability']); 

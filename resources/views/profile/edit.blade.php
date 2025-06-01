@@ -1,77 +1,123 @@
-@extends($user->isAdmin() ? 'layouts.admin' : 'layouts.branch-manager')
-
-@section('title', 'Edit Profile')
+@extends('layouts.main')
 
 @section('content')
-<div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-    <div class="px-4 py-6 sm:px-0">
-        <div class="mb-6">
-            <h2 class="text-2xl font-bold text-gray-900">Edit Profile</h2>
-        </div>
-
-        @if(session('success'))
-        <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
-            {{ session('success') }}
-        </div>
-        @endif
-
-        <div class="bg-white shadow overflow-hidden sm:rounded-lg">
-            <form action="{{ $user->isAdmin() ? route('admin.profile.update') : route('branch.profile.update') }}" method="POST" class="p-6">
-                @csrf
-                @method('PUT')
-
-                <div class="grid grid-cols-1 gap-6">
-                    <div>
-                        <label for="name" class="block text-sm font-medium text-gray-700">Name</label>
-                        <input type="text" name="name" id="name" value="{{ old('name', $user->name) }}" required
-                            class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
-                        @error('name')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row">
+            @include('layouts.partials.user-sidebar')
+            
+            <div class="col-md-9">
+                <h1 class="display-4 mb-4">My Profile</h1>
+                
+                @if (session('status') === 'profile-updated')
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        Profile updated successfully!
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
+                @endif
 
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Email</label>
-                        <div class="mt-1 text-sm text-gray-500">{{ $user->email }}</div>
-                    </div>
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <form method="POST" action="{{ route('profile.update') }}" class="row g-3">
+                            @csrf
+                            @method('patch')
 
-                    <div class="border-t border-gray-200 pt-4">
-                        <h3 class="text-lg font-medium text-gray-900">Change Password</h3>
-                        <p class="mt-1 text-sm text-gray-500">Leave password fields empty if you don't want to change it.</p>
-                    </div>
+                            <div class="col-md-6">
+                                <label for="name" class="form-label">Name</label>
+                                <input type="text" class="form-control @error('name') is-invalid @enderror" 
+                                    id="name" name="name" value="{{ old('name', $user->name) }}" required>
+                                @error('name')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
 
-                    <div>
-                        <label for="current_password" class="block text-sm font-medium text-gray-700">Current Password</label>
-                        <input type="password" name="current_password" id="current_password"
-                            class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
-                        @error('current_password')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
-                    </div>
+                            <div class="col-md-6">
+                                <label for="email" class="form-label">Email</label>
+                                <input type="email" class="form-control @error('email') is-invalid @enderror" 
+                                    id="email" name="email" value="{{ old('email', $user->email) }}" required>
+                                @error('email')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
 
-                    <div>
-                        <label for="password" class="block text-sm font-medium text-gray-700">New Password</label>
-                        <input type="password" name="password" id="password"
-                            class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
-                        @error('password')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
-                    </div>
+                            <div class="col-md-6">
+                                <label for="phone" class="form-label">Phone</label>
+                                <input type="tel" class="form-control @error('phone') is-invalid @enderror" 
+                                    id="phone" name="phone" value="{{ old('phone', $user->phone) }}">
+                                @error('phone')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
 
-                    <div>
-                        <label for="password_confirmation" class="block text-sm font-medium text-gray-700">Confirm New Password</label>
-                        <input type="password" name="password_confirmation" id="password_confirmation"
-                            class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-primary">Update Profile</button>
+                            </div>
+                        </form>
                     </div>
                 </div>
 
-                <div class="mt-6 flex justify-end">
-                    <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                        Update Profile
-                    </button>
+                <div class="card shadow-sm mt-4">
+                    <div class="card-body">
+                        <h5 class="card-title mb-4">Update Password</h5>
+                        
+                        @if (session('status') === 'password-updated')
+                            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                Password updated successfully!
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        @endif
+
+                        <form method="POST" action="{{ route('password.update') }}" class="row g-3">
+                            @csrf
+                            @method('put')
+
+                            <div class="col-md-6">
+                                <label for="current_password" class="form-label">Current Password</label>
+                                <input type="password" class="form-control @error('current_password') is-invalid @enderror" 
+                                    id="current_password" name="current_password" required>
+                                @error('current_password')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="password" class="form-label">New Password</label>
+                                <input type="password" class="form-control @error('password') is-invalid @enderror" 
+                                    id="password" name="password" required>
+                                @error('password')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="password_confirmation" class="form-label">Confirm New Password</label>
+                                <input type="password" class="form-control" 
+                                    id="password_confirmation" name="password_confirmation" required>
+                            </div>
+
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-primary">Update Password</button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
-            </form>
+
+                <div class="card shadow-sm mt-4">
+                    <div class="card-body">
+                        <h5 class="card-title mb-4">Delete Account</h5>
+                        <p class="text-muted">Once your account is deleted, all of its resources and data will be permanently deleted.</p>
+                        
+                        <form method="POST" action="{{ route('profile.destroy') }}" class="mt-3">
+                            @csrf
+                            @method('delete')
+                            <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete your account? This action cannot be undone.')">
+                                Delete Account
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-</div>
+</section>
 @endsection 

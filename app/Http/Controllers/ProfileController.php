@@ -2,36 +2,64 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ProfileUpdateRequest;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Redirect;
+use Illuminate\View\View;
 
 class ProfileController extends Controller
 {
-    public function edit()
+    public function edit(Request $request): View
     {
         return view('profile.edit', [
-            'user' => auth()->user()
+            'user' => $request->user(),
         ]);
     }
 
-    public function update(Request $request)
+    public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $user = auth()->user();
+        $request->user()->fill($request->validated());
 
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'current_password' => 'nullable|required_with:password|current_password',
-            'password' => 'nullable|min:8|confirmed',
-        ]);
-
-        $updateData = ['name' => $validated['name']];
-
-        if (isset($validated['password'])) {
-            $updateData['password'] = Hash::make($validated['password']);
+        if ($request->user()->isDirty('email')) {
+            $request->user()->email_verified_at = null;
         }
 
-        $user->update($updateData);
+        $request->user()->save();
 
-        return back()->with('success', 'Profile updated successfully.');
+        return Redirect::route('profile.edit')->with('status', 'profile-updated');
+    }
+
+    public function updatePassword(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'current_password' => ['required', 'current_password'],
+            'password' => ['required', 'min:8', 'confirmed'],
+        ]);
+
+        $request->user()->update([
+            'password' => Hash::make($validated['password']),
+        ]);
+
+        return Redirect::route('profile.edit')->with('status', 'password-updated');
+    }
+
+    public function destroy(Request $request): RedirectResponse
+    {
+        $request->validateWithBag('userDeletion', [
+            'password' => ['required', 'current_password'],
+        ]);
+
+        $user = $request->user();
+        Auth::logout();
+
+        $user->delete();
+
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return Redirect::to('/');
     }
 } 

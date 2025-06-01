@@ -56,6 +56,9 @@ class BranchController extends Controller
             'phone' => 'nullable|string|max:20|regex:/^([0-9\s\-\+\(\)]*)$/',
             'email' => 'required|email|unique:users,email,' . ($branch->user_id ?? ''),
             'password' => 'nullable|string|min:8|confirmed',
+            'latitude' => 'nullable|numeric|between:-90,90',
+            'longitude' => 'nullable|numeric|between:-180,180',
+            'pincode' => 'nullable|string|size:6',
             'is_active' => 'boolean'
         ]);
 
@@ -90,6 +93,9 @@ class BranchController extends Controller
             'name' => $validated['name'],
             'address' => $validated['address'],
             'phone' => $validated['phone'],
+            'latitude' => $validated['latitude'],
+            'longitude' => $validated['longitude'],
+            'pincode' => $validated['pincode'],
             'is_active' => $request->boolean('is_active', true)
         ]);
 
@@ -99,6 +105,9 @@ class BranchController extends Controller
         // Debug log
         \Log::info('Branch update data:', [
             'phone' => $validated['phone'],
+            'latitude' => $validated['latitude'],
+            'longitude' => $validated['longitude'],
+            'pincode' => $validated['pincode'],
             'updated_branch' => $branch->fresh()
         ]);
 

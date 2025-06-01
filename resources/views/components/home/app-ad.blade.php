@@ -8,7 +8,7 @@
                         <img src="{{ asset('images/phone.png') }}" alt="phone" class="image-float img-fluid">
                     </div>
                     <div class="col-md-8">
-                        <h2 class="my-5">Shop faster with foodmart App</h2>
+                        <h2 class="my-5">Shop faster with kanma App</h2>
                         <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sagittis sed ptibus liberolectus
                             nonet psryroin. Amet sed lorem posuere sit iaculis amet, ac urna. Adipiscing fames semper
                             erat ac in suspendisse iaculis. Amet blandit tortor praesent ante vitae. A, enim pretiummi

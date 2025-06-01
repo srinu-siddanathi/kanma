@@ -59,7 +59,8 @@ class CartController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Product added to cart successfully',
-            'cart_count' => count($cart)
+            'cart_count' => count($cart),
+            'max_stock' => $variant->stock
         ]);
     }
 
@@ -126,6 +127,16 @@ class CartController extends Controller
             'quantity' => 'required|integer|min:1'
         ]);
 
+        $variant = ProductVariant::findOrFail($request->variant_id);
+        
+        if ($request->quantity > $variant->stock) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Requested quantity is not available',
+                'old_quantity' => $request->quantity - 1
+            ], 400);
+        }
+
         $cart = Session::get('cart', []);
         
         if (isset($cart[$request->variant_id])) {
@@ -135,7 +146,8 @@ class CartController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Cart updated',
-                'cart_count' => count($cart)
+                'cart_count' => count($cart),
+                'max_stock' => $variant->stock
             ]);
         }
 

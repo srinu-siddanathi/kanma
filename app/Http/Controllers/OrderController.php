@@ -72,22 +72,30 @@ class OrderController extends Controller
         }
     }
 
-    public function index(Request $request)
+    public function index()
     {
-        $orders = $request->user()->orders()
-            ->with(['branch'])
+        $orders = Order::where('user_id', auth()->id())
+            ->with(['items.product'])
             ->latest()
-            ->paginate();
+            ->paginate(10);
 
-        return response()->json($orders);
+        return view('orders.index', compact('orders'));
     }
 
     public function show(Order $order)
     {
-        $this->authorize('view', $order);
+        // Check if the order belongs to the authenticated user
+        if ($order->user_id !== auth()->id()) {
+            abort(403);
+        }
+
+        $order->load(['items.product']);
 
         return response()->json([
-            'order' => $order->load(['branch', 'items.product']),
+            'status' => 'success',
+            'data' => [
+                'order' => $order
+            ]
         ]);
     }
 } 
