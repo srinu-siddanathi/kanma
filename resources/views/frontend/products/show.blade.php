@@ -43,7 +43,7 @@
                         <div class="mb-3 d-flex flex-md-column gap-2">
                             @if($product->images->isNotEmpty())
                                 @foreach($product->images as $img)
-                                    <img src="{{ Storage::url($img->image_path) }}" alt="thumb" class="img-thumbnail" style="width: 60px; height: 60px; object-fit: cover;">
+                                    <img src="{{ asset($img->image_path) }}" alt="thumb" class="img-thumbnail" style="width: 60px; height: 60px; object-fit: cover;">
                                 @endforeach
                             @else
                                 <img src="{{ asset('images/no-image.png') }}" alt="thumb" class="img-thumbnail" style="width: 60px; height: 60px; object-fit: cover;">
@@ -51,7 +51,7 @@
                         </div>
                         <!-- Main Image -->
                         @if($product->images->isNotEmpty())
-                            <img src="{{ Storage::url($product->images->first()->image_path) }}" alt="{{ $product->name }}" class="img-fluid rounded" style="max-height: 350px; object-fit: contain;">
+                            <img src="{{ asset($product->images->first()->image_path) }}" alt="{{ $product->name }}" class="img-fluid rounded" style="max-height: 350px; object-fit: contain;">
                         @else
                             <img src="{{ asset('images/no-image.png') }}" alt="{{ $product->name }}" class="img-fluid rounded" style="max-height: 350px; object-fit: contain;">
                         @endif

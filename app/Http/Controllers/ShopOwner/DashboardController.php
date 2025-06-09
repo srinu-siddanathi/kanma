@@ -9,7 +9,8 @@ class DashboardController extends Controller
 {
     public function index()
     {
-        $shop = auth()->user()->shop;
+        $user = auth()->user()->load('shop');
+        $shop = $user->shop;
         
         $stats = [
             'total_products' => $shop->products()->count(),

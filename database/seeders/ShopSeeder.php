@@ -42,6 +42,15 @@ class ShopSeeder extends Seeder
                     'is_active' => true,
                     'is_verified' => true,
                     'approval_status' => 'approved',
+                    'working_hours' => [
+                        'monday' => ['open' => '09:00', 'close' => '18:00'],
+                        'tuesday' => ['open' => '09:00', 'close' => '18:00'],
+                        'wednesday' => ['open' => '09:00', 'close' => '18:00'],
+                        'thursday' => ['open' => '09:00', 'close' => '18:00'],
+                        'friday' => ['open' => '09:00', 'close' => '18:00'],
+                        'saturday' => ['open' => '10:00', 'close' => '16:00'],
+                        'sunday' => ['open' => '10:00', 'close' => '16:00']
+                    ]
                 ],
                 'products_count' => 5,
             ],
@@ -132,7 +141,6 @@ class ShopSeeder extends Seeder
             if (isset($data['products'])) {
                 foreach ($data['products'] as $specificProduct) {
                     $category = $categories->random();
-                    $subcategory = $category->subcategories->first();
 
                     Product::create([
                         'name' => $specificProduct['name'],
@@ -140,7 +148,6 @@ class ShopSeeder extends Seeder
                         'description' => "A {$specificProduct['name']} from {$shop->name}",
                         'price' => $specificProduct['price'],
                         'category_id' => $category->id,
-                        'subcategory_id' => $subcategory->id,
                         'shop_id' => $shop->id,
                         'is_active' => true,
                         'status' => $shop->is_verified ? 'verified' : 'pending',
@@ -153,7 +160,6 @@ class ShopSeeder extends Seeder
             // Create remaining generic products
             for ($i = 1; $i <= $productsToCreate; $i++) {
                 $category = $categories->random();
-                $subcategory = $category->subcategories->first();
 
                 Product::create([
                     'name' => "{$shop->name} Product {$i}",
@@ -161,7 +167,6 @@ class ShopSeeder extends Seeder
                     'description' => "Product {$i} from {$shop->name}",
                     'price' => rand(50, 500) + 0.99,
                     'category_id' => $category->id,
-                    'subcategory_id' => $subcategory->id,
                     'shop_id' => $shop->id,
                     'is_active' => true,
                     'status' => $shop->is_verified ? 'verified' : 'pending',

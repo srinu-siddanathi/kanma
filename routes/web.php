@@ -168,6 +168,9 @@ Route::prefix('admin')->group(function () {
         // Admin Settings Routes
         Route::get('/settings', [App\Http\Controllers\Admin\SettingController::class, 'index'])->name('settings.index');
         Route::put('/settings', [App\Http\Controllers\Admin\SettingController::class, 'update'])->name('settings.update');
+
+        // User Management Routes
+        Route::resource('users', UserController::class);
     });
 
     // Protected Branch Manager Routes

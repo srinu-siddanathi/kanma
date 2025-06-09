@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('role')->default('customer');
             $table->boolean('is_active')->default(true);
             $table->decimal('wallet_balance', 10, 2)->default(0);
-            $table->string('phone_number')->nullable();
+            $table->string('phone')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });

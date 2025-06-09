@@ -19,7 +19,7 @@
                         <div>
                             <label class="block text-sm font-medium text-gray-700">Current Image</label>
                             <div class="mt-1">
-                                <img src="{{ Storage::url($product->image_path) }}" 
+                                <img src="{{ asset($product->image_path) }}" 
                                      alt="{{ $product->name }}" 
                                      class="h-32 w-32 object-cover rounded">
                             </div>
@@ -58,17 +58,6 @@
                                     @endforeach
                                 </select>
                                 @error('category_id')
-                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                @enderror
-                            </div>
-
-                            <div>
-                                <label for="subcategory_id" class="block text-sm font-medium text-gray-700">Subcategory</label>
-                                <select name="subcategory_id" id="subcategory_id" required
-                                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                                    <option value="">Select Subcategory</option>
-                                </select>
-                                @error('subcategory_id')
                                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                 @enderror
                             </div>
@@ -113,31 +102,7 @@
 
 @push('scripts')
 <script>
-    const categorySelect = document.getElementById('category_id');
-    const subcategorySelect = document.getElementById('subcategory_id');
-    const categories = @json($categories);
-    const currentSubcategoryId = {{ $product->subcategory_id }};
-
-    function updateSubcategories(categoryId) {
-        const selectedCategory = categories.find(c => c.id == categoryId);
-        subcategorySelect.innerHTML = '<option value="">Select Subcategory</option>';
-        
-        if (selectedCategory) {
-            selectedCategory.subcategories.forEach(sub => {
-                const option = new Option(sub.name, sub.id);
-                option.selected = sub.id == currentSubcategoryId;
-                subcategorySelect.add(option);
-            });
-        }
-    }
-
-    // Initial load
-    updateSubcategories(categorySelect.value);
-
-    // On category change
-    categorySelect.addEventListener('change', function() {
-        updateSubcategories(this.value);
-    });
+    // No need for subcategory handling anymore
 </script>
 @endpush
 @endsection 

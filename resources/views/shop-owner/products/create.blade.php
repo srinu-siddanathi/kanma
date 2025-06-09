@@ -46,17 +46,6 @@
                                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                 @enderror
                             </div>
-
-                            <div>
-                                <label for="subcategory_id" class="block text-sm font-medium text-gray-700">Subcategory</label>
-                                <select name="subcategory_id" id="subcategory_id" required
-                                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                                    <option value="">Select Subcategory</option>
-                                </select>
-                                @error('subcategory_id')
-                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                @enderror
-                            </div>
                         </div>
 
                         <div>
@@ -97,22 +86,7 @@
 
 @push('scripts')
 <script>
-    // Dynamic subcategory loading based on selected category
-    const categorySelect = document.getElementById('category_id');
-    const subcategorySelect = document.getElementById('subcategory_id');
-    const categories = @json($categories);
-
-    categorySelect.addEventListener('change', function() {
-        const selectedCategory = categories.find(c => c.id == this.value);
-        subcategorySelect.innerHTML = '<option value="">Select Subcategory</option>';
-        
-        if (selectedCategory) {
-            selectedCategory.subcategories.forEach(sub => {
-                const option = new Option(sub.name, sub.id);
-                subcategorySelect.add(option);
-            });
-        }
-    });
+    // No need for subcategory handling anymore
 </script>
 @endpush
 @endsection 

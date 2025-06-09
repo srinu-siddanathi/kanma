@@ -4,80 +4,167 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Shop;
+use App\Models\Category;
+use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class ShopController extends Controller
 {
-    public function nearby(Request $request)
+    public function index()
     {
-        try {
-            $request->validate([
-                'latitude' => 'required|numeric|between:-90,90',
-                'longitude' => 'required|numeric|between:-180,180',
-                'radius' => 'nullable|numeric|min:0|max:50', // radius in kilometers
-                'limit' => 'nullable|integer|min:1|max:50'
-            ]);
-
-            $latitude = $request->latitude;
-            $longitude = $request->longitude;
-            $radius = $request->radius ?? 10; // Default 10km
-            $limit = $request->limit ?? 20; // Default 20 shops
-
-            // Haversine formula to calculate distances
-            $shops = Shop::select([
-                'shops.*',
-                DB::raw('(
-                    6371 * acos(
-                        cos(radians(' . $latitude . ')) 
-                        * cos(radians(latitude)) 
-                        * cos(radians(longitude) - radians(' . $longitude . ')) 
-                        + sin(radians(' . $latitude . ')) 
-                        * sin(radians(latitude))
-                    )
-                ) as distance')
-            ])
+        $shops = Shop::with(['branch', 'owner'])
             ->where('is_active', true)
             ->where('is_verified', true)
-            ->where('approval_status', 'approved')
-            ->having('distance', '<=', $radius)
-            ->orderBy('distance')
-            ->limit($limit)
-            ->get();
+            ->withCount(['products' => function ($query) {
+                $query->where('is_active', true);
+            }])
+            ->latest()
+            ->paginate(10);
 
-            // Transform the response
-            $transformedShops = $shops->map(function ($shop) {
-                return [
-                    'id' => $shop->id,
-                    'name' => $shop->name,
-                    'description' => $shop->description,
-                    'address' => $shop->address,
-                    'phone' => $shop->phone,
-                    'email' => $shop->email,
-                    'image_url' => $shop->image_url,
-                    'latitude' => $shop->latitude,
-                    'longitude' => $shop->longitude,
-                    'distance' => round($shop->distance, 2), // Distance in kilometers
-                    'is_open' => $shop->is_open, // You'll need to add this logic
-                    'rating' => $shop->rating, // You'll need to add this if you have ratings
-                    'total_reviews' => $shop->reviews_count // You'll need to add this if you have reviews
-                ];
-            });
+        return response()->json([
+            'status' => 'success',
+            'data' => $shops
+        ]);
+    }
 
-            return response()->json([
-                'status' => 'success',
-                'data' => [
-                    'shops' => $transformedShops
-                ]
-            ]);
-
-        } catch (\Exception $e) {
-            \Log::error('Nearby shops error: ' . $e->getMessage());
-            
+    public function show(Shop $shop)
+    {
+        if (!$shop->is_active || !$shop->is_verified) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Failed to fetch nearby shops'
-            ], 500);
+                'message' => 'Shop not found or inactive'
+            ], 404);
         }
+
+        $shop->load(['branch', 'owner']);
+        $shop->loadCount(['products' => function ($query) {
+            $query->where('is_active', true);
+        }]);
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $shop
+        ]);
+    }
+
+    public function categories(Shop $shop)
+    {
+        if (!$shop->is_active || !$shop->is_verified) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Shop not found or inactive'
+            ], 404);
+        }
+
+        $categories = Category::whereHas('products', function ($query) use ($shop) {
+            $query->where('shop_id', $shop->id)
+                ->where('is_active', true);
+        })
+        ->withCount(['products' => function ($query) use ($shop) {
+            $query->where('shop_id', $shop->id)
+                ->where('is_active', true);
+        }])
+        ->get();
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $categories
+        ]);
+    }
+
+    public function products(Shop $shop, Category $category)
+    {
+        if (!$shop->is_active || !$shop->is_verified) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Shop not found or inactive'
+            ], 404);
+        }
+
+        $products = Product::where('shop_id', $shop->id)
+            ->where('category_id', $category->id)
+            ->where('is_active', true)
+            ->with(['category', 'images'])
+            ->paginate(20);
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $products
+        ]);
+    }
+
+    public function search(Shop $shop, Request $request)
+    {
+        if (!$shop->is_active || !$shop->is_verified) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Shop not found or inactive'
+            ], 404);
+        }
+
+        $request->validate([
+            'query' => 'required|string|min:2',
+            'category_id' => 'nullable|exists:categories,id'
+        ]);
+
+        $searchQuery = $request->input('query');
+
+        $query = Product::where('shop_id', $shop->id)
+            ->where('is_active', true)
+            ->where(function ($q) use ($searchQuery) {
+                $q->where('name', 'like', '%' . $searchQuery . '%')
+                    ->orWhere('description', 'like', '%' . $searchQuery . '%');
+            });
+
+        if ($request->has('category_id')) {
+            $query->where('category_id', $request->category_id);
+        }
+
+        $products = $query->with(['category', 'images'])
+            ->paginate(20);
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $products
+        ]);
+    }
+
+    public function nearby(Request $request)
+    {
+        $request->validate([
+            'latitude' => 'required|numeric',
+            'longitude' => 'required|numeric',
+            'radius' => 'nullable|numeric|min:1|max:50' // radius in kilometers
+        ]);
+
+        $radius = $request->radius ?? 10; // default 10km radius
+
+        $shops = Shop::select(
+            'shops.*',
+            DB::raw("
+                6371 * acos(
+                    cos(radians({$request->latitude})) * 
+                    cos(radians(latitude)) * 
+                    cos(radians(longitude) - radians({$request->longitude})) + 
+                    sin(radians({$request->latitude})) * 
+                    sin(radians(latitude))
+                ) AS distance
+            ")
+        )
+        ->having('distance', '<=', $radius)
+        ->where('is_active', true)
+        ->where('is_verified', true)
+        ->with(['branch', 'owner'])
+        ->withCount(['products' => function ($query) {
+            $query->where('is_active', true);
+        }])
+        ->orderBy('distance')
+        ->paginate(10);
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $shops
+        ]);
     }
 } 

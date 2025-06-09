@@ -1,0 +1,435 @@
+{
+	"info": {
+		"_postman_id": "chat-ordering-system",
+		"name": "Chat Ordering System",
+		"description": "APIs for chat-based ordering system with text, voice, and image messages",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Chat Orders",
+			"item": [
+				{
+					"name": "List Chat Orders",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/chat-orders",
+							"host": ["{{base_url}}"],
+							"path": ["api", "chat-orders"]
+						}
+					}
+				},
+				{
+					"name": "Create Chat Order",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"My Order\",\n    \"notes\": \"Order notes\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/chat-orders",
+							"host": ["{{base_url}}"],
+							"path": ["api", "chat-orders"]
+						}
+					}
+				},
+				{
+					"name": "Get Chat Order Details",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/chat-orders/1",
+							"host": ["{{base_url}}"],
+							"path": ["api", "chat-orders", "1"]
+						}
+					}
+				},
+				{
+					"name": "Update Chat Order",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"scheduled_at\": \"2024-03-22 15:00:00\",\n    \"notes\": \"Updated order notes\",\n    \"status\": \"confirmed\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/chat-orders/1",
+							"host": ["{{base_url}}"],
+							"path": ["api", "chat-orders", "1"]
+						}
+					}
+				},
+				{
+					"name": "Delete Chat Order",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/chat-orders/1",
+							"host": ["{{base_url}}"],
+							"path": ["api", "chat-orders", "1"]
+						}
+					}
+				},
+				{
+					"name": "Get Available Slots",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/chat-orders/slots/available?shop_id=1&date=2024-03-22",
+							"host": ["{{base_url}}"],
+							"path": ["api", "chat-orders", "slots", "available"],
+							"query": [
+								{
+									"key": "shop_id",
+									"value": "1"
+								},
+								{
+									"key": "date",
+									"value": "2024-03-22"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Schedule Order",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"scheduled_at\": \"2024-03-22 14:30:00\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/chat-orders/1/schedule",
+							"host": ["{{base_url}}"],
+							"path": ["api", "chat-orders", "1", "schedule"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Chat Messages",
+			"item": [
+				{
+					"name": "List Messages",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/chat-orders/1/messages",
+							"host": ["{{base_url}}"],
+							"path": ["api", "chat-orders", "1", "messages"]
+						}
+					}
+				},
+				{
+					"name": "Send Text Message",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"type\": \"text\",\n    \"content\": \"Hello, I'd like to order...\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/chat-orders/1/messages",
+							"host": ["{{base_url}}"],
+							"path": ["api", "chat-orders", "1", "messages"]
+						}
+					}
+				},
+				{
+					"name": "Send Voice Message",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "type",
+									"value": "voice",
+									"type": "text"
+								},
+								{
+									"key": "media",
+									"type": "file",
+									"src": "/path/to/voice.mp3"
+								},
+								{
+									"key": "duration",
+									"value": "30",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/api/chat-orders/1/messages",
+							"host": ["{{base_url}}"],
+							"path": ["api", "chat-orders", "1", "messages"]
+						}
+					}
+				},
+				{
+					"name": "Send Image Message",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "type",
+									"value": "image",
+									"type": "text"
+								},
+								{
+									"key": "media",
+									"type": "file",
+									"src": "/path/to/image.jpg"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/api/chat-orders/1/messages",
+							"host": ["{{base_url}}"],
+							"path": ["api", "chat-orders", "1", "messages"]
+						}
+					}
+				},
+				{
+					"name": "Mark Message as Read",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/chat-messages/1/read",
+							"host": ["{{base_url}}"],
+							"path": ["api", "chat-messages", "1", "read"]
+						}
+					}
+				},
+				{
+					"name": "Mark All Messages as Read",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/chat-orders/1/messages/read-all",
+							"host": ["{{base_url}}"],
+							"path": ["api", "chat-orders", "1", "messages", "read-all"]
+						}
+					}
+				},
+				{
+					"name": "Delete Message",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/chat-messages/1",
+							"host": ["{{base_url}}"],
+							"path": ["api", "chat-messages", "1"]
+						}
+					}
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000",
+			"type": "string"
+		},
+		{
+			"key": "token",
+			"value": "your_auth_token_here",
+			"type": "string"
+		}
+	]
+} 

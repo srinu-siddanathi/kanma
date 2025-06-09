@@ -1,5 +1,4 @@
 @php
-use Gloudemans\Shoppingcart\Facades\Cart;
 use Illuminate\Support\Facades\Session;
 use App\Models\Address;
 
@@ -922,6 +921,11 @@ if (registerForm) {
                 otpVerificationGroup.style.display = 'block';
                 sendOtpBtn.innerHTML = 'Resend OTP';
                 sendOtpBtn.disabled = false;
+
+                // Auto-fill OTP for testing (only if present in response)
+                if (data.otp) {
+                    document.getElementById('reg_otp').value = data.otp;
+                }
             } else {
                 throw new Error(data.message || 'Failed to send OTP');
             }

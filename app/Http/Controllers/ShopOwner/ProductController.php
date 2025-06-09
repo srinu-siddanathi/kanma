@@ -35,7 +35,6 @@ class ProductController extends Controller
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'category_id' => 'required|exists:categories,id',
-            'subcategory_id' => 'required|exists:subcategories,id',
             'price' => 'required|numeric|min:0',
             'image' => 'nullable|image|max:2048',
         ]);
@@ -44,7 +43,9 @@ class ProductController extends Controller
         $validated['slug'] = Str::slug($validated['name']);
 
         if ($request->hasFile('image')) {
-            $validated['image_path'] = $request->file('image')->store('products', 'public');
+            $filename = time() . '_' . $request->file('image')->getClientOriginalName();
+            $request->file('image')->move(public_path('uploads/products'), $filename);
+            $validated['image_path'] = 'uploads/products/' . $filename;
         }
 
         Product::create($validated);
@@ -74,16 +75,20 @@ class ProductController extends Controller
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'category_id' => 'required|exists:categories,id',
-            'subcategory_id' => 'required|exists:subcategories,id',
             'price' => 'required|numeric|min:0',
             'image' => 'nullable|image|max:2048',
         ]);
 
         if ($request->hasFile('image')) {
             if ($product->image_path) {
-                Storage::delete($product->image_path);
+                $oldImagePath = public_path($product->image_path);
+                if (file_exists($oldImagePath)) {
+                    unlink($oldImagePath);
+                }
             }
-            $validated['image_path'] = $request->file('image')->store('products', 'public');
+            $filename = time() . '_' . $request->file('image')->getClientOriginalName();
+            $request->file('image')->move(public_path('uploads/products'), $filename);
+            $validated['image_path'] = 'uploads/products/' . $filename;
         }
 
         $product->update($validated);
@@ -100,7 +105,10 @@ class ProductController extends Controller
         }
 
         if ($product->image_path) {
-            Storage::delete($product->image_path);
+            $imagePath = public_path($product->image_path);
+            if (file_exists($imagePath)) {
+                unlink($imagePath);
+            }
         }
 
         $product->delete();

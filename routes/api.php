@@ -18,6 +18,9 @@ use App\Http\Controllers\Api\AddressController;
 use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\RazorpayController;
 use App\Http\Controllers\Api\LocationController;
+use App\Http\Controllers\Api\MembershipController;
+use App\Http\Controllers\Api\ChatOrderController;
+use App\Http\Controllers\Api\ChatMessageController;
 
 /*
 |--------------------------------------------------------------------------
@@ -40,8 +43,19 @@ Route::get('/categories/{category}/subcategories', [CategoryController::class, '
 Route::get('/branches', [BranchController::class, 'index']);
 Route::post('/branches/check-serviceability', [BranchController::class, 'checkServiceability']);
 Route::get('/branches/{branch}', [BranchController::class, 'show']);
+
+// Shop Routes
+Route::get('/shops', [ShopController::class, 'index']);
 Route::get('/shops/nearby', [ShopController::class, 'nearby']);
+Route::get('/shops/{shop}', [ShopController::class, 'show']);
+Route::get('/shops/{shop}/categories', [ShopController::class, 'categories']);
+Route::get('/shops/{shop}/categories/{category}/products', [ShopController::class, 'products']);
+Route::get('/shops/{shop}/search', [ShopController::class, 'search']);
+
 Route::get('/home', [HomeController::class, 'index']);
+
+// Public Membership Routes
+Route::get('/membership/plans', [App\Http\Controllers\Api\MembershipController::class, 'getPlans']);
 
 // Protected routes
 Route::middleware('auth:sanctum')->group(function () {
@@ -137,6 +151,30 @@ Route::middleware('auth:sanctum')->group(function () {
     // Location Modal API Routes
     Route::get('/location/addresses', [App\Http\Controllers\Api\AddressController::class, 'index'])->name('api.location.addresses');
     Route::post('/location/check-serviceability', [App\Http\Controllers\Api\AddressController::class, 'checkServiceability'])->name('api.location.check-serviceability');
+
+    // Membership routes
+    Route::prefix('membership')->group(function () {
+        Route::get('/current', [App\Http\Controllers\Api\MembershipController::class, 'getCurrentSubscription']);
+        Route::post('/subscribe', [App\Http\Controllers\Api\MembershipController::class, 'subscribe']);
+        Route::post('/verify-payment', [App\Http\Controllers\Api\MembershipController::class, 'verifyPayment']);
+        Route::get('/history', [App\Http\Controllers\Api\MembershipController::class, 'getSubscriptionHistory']);
+    });
+
+    // Chat Orders
+    Route::get('/chat-orders', [ChatOrderController::class, 'index']);
+    Route::post('/chat-orders', [ChatOrderController::class, 'store']);
+    Route::get('/chat-orders/{chatOrder}', [ChatOrderController::class, 'show']);
+    Route::put('/chat-orders/{chatOrder}', [ChatOrderController::class, 'update']);
+    Route::delete('/chat-orders/{chatOrder}', [ChatOrderController::class, 'destroy']);
+    Route::post('/chat-orders/{chatOrder}/schedule', [ChatOrderController::class, 'schedule']);
+    Route::get('/chat-orders/slots/available', [ChatOrderController::class, 'getAvailableSlots']);
+
+    // Chat Messages
+    Route::get('/chat-orders/{chatOrder}/messages', [ChatMessageController::class, 'index']);
+    Route::post('/chat-orders/{chatOrder}/messages', [ChatMessageController::class, 'store']);
+    Route::put('/chat-messages/{message}/read', [ChatMessageController::class, 'markAsRead']);
+    Route::put('/chat-orders/{chatOrder}/messages/read-all', [ChatMessageController::class, 'markAllAsRead']);
+    Route::delete('/chat-messages/{message}', [ChatMessageController::class, 'destroy']);
 });
 
 // Juspay Callback Route (no auth required as it's called by Juspay)

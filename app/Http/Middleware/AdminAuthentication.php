@@ -9,10 +9,10 @@ class AdminAuthentication
 {
     public function handle(Request $request, Closure $next)
     {
-        if (!$request->user() || $request->user()->role !== 'admin') {
+        if (!$request->user() || !in_array($request->user()->role, ['admin', 'dataentry'])) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Unauthorized. Admin access required.'
+                'message' => 'Unauthorized. Admin or Data Entry access required.'
             ], 403);
         }
 

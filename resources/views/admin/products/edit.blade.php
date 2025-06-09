@@ -137,16 +137,29 @@
                         </div>
 
                         <!-- Discount Field (shown when is_deal is checked) -->
-                        <div id="discount-field" class="{{ old('is_deal', $product->is_deal) ? '' : 'hidden' }}">
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Discount (%)</label>
-                            <input type="number" name="discount" 
-                                   value="{{ old('discount', $product->discount) }}" 
-                                   placeholder="Enter discount percentage"
-                                   class="block w-full px-4 py-3 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 placeholder-gray-400 text-gray-900"
-                                   min="0" max="100" step="0.01">
-                            @error('discount')
-                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
+                        <div id="deal-fields" class="{{ old('is_deal', $product->is_deal) ? '' : 'hidden' }}">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Discount (%)</label>
+                                    <input type="number" name="discount" 
+                                           value="{{ old('discount', $product->discount) }}" 
+                                           placeholder="Enter discount percentage"
+                                           class="block w-full px-4 py-3 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 placeholder-gray-400 text-gray-900"
+                                           min="0" max="100" step="0.01">
+                                    @error('discount')
+                                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                    @enderror
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Deal End Date</label>
+                                    <input type="datetime-local" name="deal_end_date" 
+                                           value="{{ old('deal_end_date', $product->deal_end_date ? $product->deal_end_date->format('Y-m-d\TH:i') : '') }}" 
+                                           class="block w-full px-4 py-3 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 placeholder-gray-400 text-gray-900">
+                                    @error('deal_end_date')
+                                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                    @enderror
+                                </div>
+                            </div>
                         </div>
 
                         <!-- Product Variants -->
@@ -200,7 +213,8 @@
         }
 
         if (validFiles.length > 0) {
-            selectedFiles = validFiles;
+            // Append new files to existing selectedFiles array
+            selectedFiles = [...selectedFiles, ...validFiles];
             renderImagePreview();
         }
     });
@@ -292,14 +306,16 @@
         }
     }
 
-    // Handle deal checkbox and discount field
+    // Handle deal checkbox and deal fields
     const dealCheckbox = document.querySelector('input[name="is_deal"]');
-    const discountField = document.getElementById('discount-field');
+    const dealFields = document.getElementById('deal-fields');
 
     dealCheckbox.addEventListener('change', function() {
-        discountField.classList.toggle('hidden', !this.checked);
-        const discountInput = discountField.querySelector('input[name="discount"]');
+        dealFields.classList.toggle('hidden', !this.checked);
+        const discountInput = dealFields.querySelector('input[name="discount"]');
+        const endDateInput = dealFields.querySelector('input[name="deal_end_date"]');
         discountInput.required = this.checked;
+        endDateInput.required = this.checked;
     });
 
     // Handle variant addition
@@ -310,76 +326,70 @@
     addVariantBtn.addEventListener('click', function() {
         const variantHtml = `
             <div class="variant-row bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200">
-                <div class="p-6">
-                    <div class="flex justify-between items-start mb-6">
-                        <h4 class="text-lg font-medium text-gray-900">New Variant</h4>
-                        <button type="button" onclick="removeVariant(this)" 
-                                class="inline-flex items-center text-sm text-red-600 hover:text-red-900 transition-colors duration-200">
-                            <svg class="h-5 w-5 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                            </svg>
-                            Remove
-                        </button>
+                <div class="flex justify-between items-start mb-6">
+                    <h4 class="text-lg font-medium text-gray-900">New Variant</h4>
+                    <button type="button" onclick="removeVariant(this)" 
+                            class="inline-flex items-center text-sm text-red-600 hover:text-red-900 transition-colors duration-200 remove-variant-btn">
+                        <svg class="h-5 w-5 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                        Remove
+                    </button>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Quantity</label>
+                        <div class="mt-1 relative rounded-md shadow-sm">
+                            <input type="number" 
+                                   name="variants[${variantCount}][quantity]" 
+                                   placeholder="Enter quantity"
+                                   class="block w-full px-4 py-3 rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm placeholder-gray-400" 
+                                   step="0.01" 
+                                   min="0"
+                                   required>
+                        </div>
                     </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Quantity</label>
-                            <div class="mt-1 relative rounded-md shadow-sm">
-                                <input type="number" 
-                                       name="variants[${variantCount}][quantity]" 
-                                       placeholder="Enter quantity"
-                                       class="block w-full px-4 py-3 rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm placeholder-gray-400" 
-                                       step="0.01" 
-                                       min="0"
-                                       required>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Unit</label>
+                        <select name="variants[${variantCount}][unit]" 
+                                class="block w-full px-4 py-3 rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-gray-900"
+                                required>
+                            <option value="">Select unit</option>
+                            <option value="g">Grams (g)</option>
+                            <option value="kg">Kilograms (kg)</option>
+                            <option value="ml">Milliliters (ml)</option>
+                            <option value="l">Liters (l)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Price</label>
+                        <div class="mt-1 relative rounded-md shadow-sm">
+                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                <span class="text-gray-500 sm:text-sm">₹</span>
+                            </div>
+                            <input type="number" 
+                                   name="variants[${variantCount}][price]" 
+                                   placeholder="0.00"
+                                   class="block w-full pl-8 pr-12 py-3 rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm placeholder-gray-400" 
+                                   step="0.01"
+                                   min="0" 
+                                   required>
+                            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                <span class="text-gray-500 sm:text-sm">INR</span>
                             </div>
                         </div>
-                        
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Unit</label>
-                            <select name="variants[${variantCount}][unit]" 
-                                    class="block w-full px-4 py-3 rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-gray-900"
-                                    required>
-                                <option value="">Select unit</option>
-                                <option value="g">Grams (g)</option>
-                                <option value="kg">Kilograms (kg)</option>
-                                <option value="ml">Milliliters (ml)</option>
-                                <option value="l">Liters (l)</option>
-                            </select>
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Price</label>
-                            <div class="mt-1 relative rounded-md shadow-sm">
-                                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                    <span class="text-gray-500 sm:text-sm">₹</span>
-                                </div>
-                                <input type="number" 
-                                       name="variants[${variantCount}][price]" 
-                                       placeholder="0.00"
-                                       class="block w-full pl-8 pr-12 py-3 rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm placeholder-gray-400" 
-                                       step="0.01"
-                                       min="0" 
-                                       required>
-                                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                                    <span class="text-gray-500 sm:text-sm">INR</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Stock</label>
-                            <div class="mt-1 relative rounded-md shadow-sm">
-                                <input type="number" 
-                                       name="variants[${variantCount}][stock]" 
-                                       placeholder="Available quantity"
-                                       class="block w-full px-4 py-3 rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm placeholder-gray-400" 
-                                       min="0"
-                                       required>
-                                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                                    <span class="text-gray-500 sm:text-sm">units</span>
-                                </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Stock</label>
+                        <div class="mt-1 relative rounded-md shadow-sm">
+                            <input type="number" 
+                                   name="variants[${variantCount}][stock]" 
+                                   placeholder="Available quantity"
+                                   class="block w-full px-4 py-3 rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm placeholder-gray-400" 
+                                   min="0"
+                                   required>
+                            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                <span class="text-gray-500 sm:text-sm">units</span>
                             </div>
                         </div>
                     </div>
@@ -388,14 +398,41 @@
         `;
         variantsContainer.insertAdjacentHTML('beforeend', variantHtml);
         variantCount++;
+        updateRemoveButtons();
     });
 
     function removeVariant(button) {
         const variantRow = button.closest('.variant-row');
         if (variantRow) {
             variantRow.remove();
+            updateRemoveButtons();
         }
     }
+
+    function updateRemoveButtons() {
+        const removeButtons = document.querySelectorAll('.remove-variant-btn');
+        if (removeButtons.length === 1) {
+            removeButtons[0].style.display = 'none';
+        } else {
+            removeButtons.forEach(btn => btn.style.display = '');
+        }
+    }
+
+    // On page load, ensure at least one variant row and update remove buttons
+    document.addEventListener('DOMContentLoaded', function() {
+        updateRemoveButtons();
+    });
+
+    // Prevent form submission if no variant rows
+    document.querySelector('form').addEventListener('submit', function(e) {
+        const variantRows = document.querySelectorAll('.variant-row');
+        if (variantRows.length === 0) {
+            e.preventDefault();
+            alert('Please add at least one product variant.');
+            return false;
+        }
+        return true;
+    });
 
     // Drag and Drop handlers
     function handleDragOver(event) {
@@ -439,11 +476,11 @@
             if (validFiles.length > 0) {
                 // Update the file input
                 const dataTransfer = new DataTransfer();
-                validFiles.forEach(file => dataTransfer.items.add(file));
+                [...selectedFiles, ...validFiles].forEach(file => dataTransfer.items.add(file));
                 imageInput.files = dataTransfer.files;
                 
                 // Update the preview
-                selectedFiles = validFiles;
+                selectedFiles = [...selectedFiles, ...validFiles];
                 renderImagePreview();
             }
         }

@@ -42,6 +42,16 @@ class Shop extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function owner()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function branch()
+    {
+        return $this->belongsTo(Branch::class);
+    }
+
     public function products()
     {
         return $this->hasMany(Product::class);

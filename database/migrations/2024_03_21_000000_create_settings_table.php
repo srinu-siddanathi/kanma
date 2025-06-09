@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up()
     {
-        Schema::create('settings', function (Blueprint $table) {
+        Schema::create('store_settings', function (Blueprint $table) {
             $table->id();
             $table->decimal('store_latitude', 10, 8)->nullable();
             $table->decimal('store_longitude', 11, 8)->nullable();
@@ -23,6 +23,6 @@ return new class extends Migration
 
     public function down()
     {
-        Schema::dropIfExists('settings');
+        Schema::dropIfExists('store_settings');
     }
 }; 

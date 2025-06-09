@@ -34,7 +34,8 @@ class Product extends Model
         'is_available',
         'is_deal',
         'is_featured',
-        'discount'
+        'discount',
+        'deal_end_date'
     ];
 
     protected $casts = [
@@ -46,7 +47,8 @@ class Product extends Model
         'is_available' => 'boolean',
         'is_deal' => 'boolean',
         'is_featured' => 'boolean',
-        'discount' => 'decimal:2'
+        'discount' => 'decimal:2',
+        'deal_end_date' => 'datetime'
     ];
 
     protected $appends = ['image_url'];
@@ -85,7 +87,7 @@ class Product extends Model
     public function getImageUrlAttribute(): ?string
     {
         if ($this->images->isNotEmpty()) {
-            return Storage::url($this->images->first()->image_path);
+            return asset($this->images->first()->image_path);
         }
         return asset('images/no-image.png');
     }

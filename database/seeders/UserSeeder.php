@@ -23,7 +23,7 @@ class UserSeeder extends Seeder
                 'email' => "customer{$i}@example.com",
                 'password' => Hash::make('password'),
                 'role' => 'customer',
-                'phone_number' => '98765' . str_pad($i, 5, '0', STR_PAD_LEFT),
+                'phone' => '98765' . str_pad($i, 5, '0', STR_PAD_LEFT),
                 'is_active' => true,
                 'wallet_balance' => 0,
             ]);
@@ -37,7 +37,7 @@ class UserSeeder extends Seeder
                 'email' => "manager" . ($index + 1) . "@kanma.in",
                 'password' => Hash::make('password'),
                 'role' => 'branch_manager',
-                'phone_number' => '97865' . str_pad($index + 1, 5, '0', STR_PAD_LEFT),
+                'phone' => '97865' . str_pad($index + 1, 5, '0', STR_PAD_LEFT),
                 'is_active' => true,
                 'branch_id' => $branch->id,
             ]);

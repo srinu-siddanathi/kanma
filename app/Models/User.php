@@ -23,21 +23,21 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'name',
-        'username',
         'email',
         'password',
         'phone',
-        'dob',
-        'gender',
-        'referral_code',
-        'referred_by',
-        'profile_completed',
         'role',
         'branch_id',
-        'wallet_balance',
         'is_active',
+        'wallet_balance',
+        'profile_completed',
+        'username',
+        'referral_code',
+        'referred_by',
+        'dob',
+        'gender',
         'is_working_today',
-        'last_status_update',
+        'last_status_update'
     ];
 
     /**
@@ -69,6 +69,11 @@ class User extends Authenticatable
     public function isAdmin(): bool
     {
         return $this->role === 'admin';
+    }
+
+    public function isDataEntry(): bool
+    {
+        return $this->role === 'dataentry';
     }
 
     public function isBranchManager(): bool

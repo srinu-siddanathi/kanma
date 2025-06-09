@@ -16,7 +16,7 @@ class AdminSeeder extends Seeder
                 'name' => 'Admin',
                 'email' => 'admin@kanma.in',
                 'password' => Hash::make('admin123'), // Change this in production
-                'phone_number' => '1234567890',
+                'phone' => '1234567890',
                 'role' => 'admin',
             ]);
             

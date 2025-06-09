@@ -117,6 +117,9 @@
                             @if($product->is_deal)
                                 <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
                                     Deal
+                                    @if($product->deal_end_date)
+                                        <span class="ml-1 text-red-600">(Ends: {{ $product->deal_end_date->format('M d, Y H:i') }})</span>
+                                    @endif
                                 </span>
                             @endif
                             @if($product->is_featured)

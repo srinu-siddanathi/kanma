@@ -223,7 +223,8 @@ class ProductController extends Controller
             'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'is_deal' => 'boolean',
             'is_featured' => 'boolean',
-            'discount' => 'nullable|numeric|min:0|max:100|required_if:is_deal,1'
+            'discount' => 'nullable|numeric|min:0|max:100|required_if:is_deal,1',
+            'deal_end_date' => 'nullable|date|required_if:is_deal,1'
         ]);
 
         \Log::info('Validated data:', [
@@ -243,6 +244,7 @@ class ProductController extends Controller
                 'is_deal' => $request->boolean('is_deal'),
                 'is_featured' => $request->boolean('is_featured'),
                 'discount' => $request->input('discount'),
+                'deal_end_date' => $request->input('deal_end_date'),
                 'price' => (float) $firstVariant['price'],
                 'base_unit' => (float) $firstVariant['quantity'] . $firstVariant['unit']
             ]);

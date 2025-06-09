@@ -18,6 +18,9 @@ return new class extends Migration
             if (!Schema::hasColumn('products', 'discount')) {
                 $table->decimal('discount', 8, 2)->nullable();
             }
+            if (!Schema::hasColumn('products', 'deal_end_date')) {
+                $table->timestamp('deal_end_date')->nullable();
+            }
         });
     }
 
@@ -27,7 +30,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('products', function (Blueprint $table) {
-            $table->dropColumn(['is_deal', 'discount']);
+            $table->dropColumn(['is_deal', 'discount', 'deal_end_date']);
         });
     }
 };

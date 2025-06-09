@@ -16,37 +16,36 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $credentials = $request->validate([
-            'email' => 'required|email',
-            'password' => 'required',
+            'email' => ['required', 'email'],
+            'password' => ['required'],
         ]);
 
         if (Auth::attempt($credentials)) {
             $user = Auth::user();
             $request->session()->regenerate();
-            
+
             if ($user->isAdmin()) {
                 return redirect()->intended(route('admin.dashboard'));
+            } elseif ($user->isDataEntry()) {
+                return redirect()->intended(route('admin.categories.index'));
             } elseif ($user->isBranchManager()) {
                 return redirect()->intended(route('branch.dashboard'));
             } elseif ($user->isShopOwner()) {
                 if (!$user->is_active) {
                     Auth::logout();
                     return back()->withErrors([
-                        'email' => 'Your account is pending approval. Please wait for admin activation.',
+                        'email' => 'Your account is not active. Please contact support.',
                     ]);
                 }
                 return redirect()->intended(route('shop-owner.dashboard'));
             }
-            
-            Auth::logout();
-            return back()->withErrors([
-                'email' => 'You do not have admin, branch manager, or shop owner access.',
-            ]);
+
+            return redirect()->intended(route('home'));
         }
 
         return back()->withErrors([
             'email' => 'The provided credentials do not match our records.',
-        ]);
+        ])->onlyInput('email');
     }
 
     public function logout(Request $request)

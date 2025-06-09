@@ -30,9 +30,14 @@ class ProfileController extends Controller
         if ($request->hasFile('image')) {
             // Delete old image if exists
             if ($shop->image_path) {
-                Storage::delete($shop->image_path);
+                $oldImagePath = public_path($shop->image_path);
+                if (file_exists($oldImagePath)) {
+                    unlink($oldImagePath);
+                }
             }
-            $validated['image_path'] = $request->file('image')->store('shops', 'public');
+            $filename = time() . '_' . $request->file('image')->getClientOriginalName();
+            $request->file('image')->move(public_path('uploads/shops'), $filename);
+            $validated['image_path'] = 'uploads/shops/' . $filename;
         }
 
         $shop->update($validated);
