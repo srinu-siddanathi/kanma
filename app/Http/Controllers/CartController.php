@@ -156,4 +156,72 @@ class CartController extends Controller
             'message' => 'Item not found in cart'
         ], 404);
     }
+
+    public function index()
+    {
+        $cart = Session::get('cart', []);
+        $total = 0;
+        $items = [];
+        $deliveryFee = 50; // Default delivery fee
+
+        foreach ($cart as $variantId => $item) {
+            $price = $item['discount_percentage'] > 0 ? $item['discounted_price'] : $item['price'];
+            $subtotal = $price * $item['quantity'];
+            $total += $subtotal;
+            
+            $items[] = [
+                'variant_id' => $variantId,
+                'product_id' => $item['product_id'],
+                'product_name' => $item['product_name'],
+                'quantity' => $item['quantity'],
+                'unit' => $item['unit'],
+                'price' => $price,
+                'image_path' => $item['image_path'],
+                'total' => $subtotal
+            ];
+        }
+
+        // Calculate delivery fee based on subscription plan
+        if (auth()->check()) {
+            $user = auth()->user();
+            $activeSubscription = $user->currentSubscription();
+            
+            if ($activeSubscription && $activeSubscription->plan) {
+                $plan = $activeSubscription->plan;
+                
+                // Check if user has free orders remaining
+                $freeOrdersUsed = $user->orders()
+                    ->where('created_at', '>=', $activeSubscription->starts_at)
+                    ->where('created_at', '<=', $activeSubscription->ends_at)
+                    ->count();
+                
+                if ($freeOrdersUsed < $plan->free_orders) {
+                    $deliveryFee = 0; // Free delivery if free orders are available
+                } else {
+                    // Calculate delivery fee based on distance and free delivery radius
+                    $deliveryFee = 50; // Default delivery fee
+                    
+                    // If user has free delivery radius, check if delivery is within that radius
+                    if ($plan->free_delivery_radius > 0) {
+                        // TODO: Implement distance calculation based on user's delivery address
+                        // For now, we'll assume delivery is within radius
+                        $deliveryFee = 0;
+                    }
+                }
+            }
+        }
+
+        return view('cart', compact('items', 'total', 'deliveryFee'));
+    }
+
+    public function clearCart(Request $request)
+    {
+        Session::forget('cart');
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Cart cleared successfully',
+            'cart_count' => 0
+        ]);
+    }
 } 

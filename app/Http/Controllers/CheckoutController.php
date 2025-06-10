@@ -26,7 +26,7 @@ class CheckoutController extends Controller
         $cart = Session::get('cart', []);
         $total = 0;
         $items = [];
-        $deliveryFee = 0;
+        $deliveryFee = 50; // Default delivery fee
 
         foreach ($cart as $variantId => $item) {
             $price = $item['discount_percentage'] > 0 ? $item['discounted_price'] : $item['price'];
@@ -45,34 +45,33 @@ class CheckoutController extends Controller
         }
 
         // Calculate delivery fee based on subscription plan
-        $user = auth()->user();
-        $activeSubscription = $user->currentSubscription();
-        
-        if ($activeSubscription && $activeSubscription->plan) {
-            $plan = $activeSubscription->plan;
+        if (auth()->check()) {
+            $user = auth()->user();
+            $activeSubscription = $user->currentSubscription();
             
-            // Check if user has free orders remaining
-            $freeOrdersUsed = $user->orders()
-                ->where('created_at', '>=', $activeSubscription->starts_at)
-                ->where('created_at', '<=', $activeSubscription->ends_at)
-                ->count();
-            
-            if ($freeOrdersUsed < $plan->free_orders) {
-                $deliveryFee = 0; // Free delivery if free orders are available
-            } else {
-                // Calculate delivery fee based on distance and free delivery radius
-                $deliveryFee = 50; // Default delivery fee
+            if ($activeSubscription && $activeSubscription->plan) {
+                $plan = $activeSubscription->plan;
                 
-                // If user has free delivery radius, check if delivery is within that radius
-                if ($plan->free_delivery_radius > 0) {
-                    // TODO: Implement distance calculation based on user's delivery address
-                    // For now, we'll assume delivery is within radius
-                    $deliveryFee = 0;
+                // Check if user has free orders remaining
+                $freeOrdersUsed = $user->orders()
+                    ->where('created_at', '>=', $activeSubscription->starts_at)
+                    ->where('created_at', '<=', $activeSubscription->ends_at)
+                    ->count();
+                
+                if ($freeOrdersUsed < $plan->free_orders) {
+                    $deliveryFee = 0; // Free delivery if free orders are available
+                } else {
+                    // Calculate delivery fee based on distance and free delivery radius
+                    $deliveryFee = 50; // Default delivery fee
+                    
+                    // If user has free delivery radius, check if delivery is within that radius
+                    if ($plan->free_delivery_radius > 0) {
+                        // TODO: Implement distance calculation based on user's delivery address
+                        // For now, we'll assume delivery is within radius
+                        $deliveryFee = 0;
+                    }
                 }
             }
-        } else {
-            // No active subscription, apply default delivery fee
-            $deliveryFee = 50;
         }
 
         // Create Razorpay Order

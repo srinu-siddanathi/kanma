@@ -18,23 +18,25 @@
     </div>
 </section>
 
-@if(!auth()->user()->currentSubscription())
-<section class="py-3">
-    <div class="container-fluid">
-        <div class="row justify-content-center">
-            <div class="col-lg-8">
-                <div class="alert alert-info d-flex align-items-center" role="alert">
-                    <i class="bi bi-info-circle-fill me-2"></i>
-                    <div>
-                        Save on delivery fees with our membership plans! Get free delivery and more benefits.
-                        <a href="{{ route('subscription.plans') }}" class="alert-link ms-2">View Membership Plans</a>
+@auth
+    @if(!auth()->user()->currentSubscription())
+    <section class="py-3">
+        <div class="container-fluid">
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <div class="alert alert-info d-flex align-items-center" role="alert">
+                        <i class="bi bi-info-circle-fill me-2"></i>
+                        <div>
+                            Save on delivery fees with our membership plans! Get free delivery and more benefits.
+                            <a href="{{ route('subscription.plans') }}" class="alert-link ms-2">View Membership Plans</a>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-</section>
-@endif
+    </section>
+    @endif
+@endauth
 
 <section class="py-5">
     <div class="container-fluid">
@@ -87,55 +89,64 @@
                         <div class="payment-options mb-4">
                             <h5 class="mb-3">Delivery Address</h5>
                             
-                            @if(auth()->user()->addresses->isNotEmpty())
-                                <div class="mb-3">
-                                    <div class="row g-3">
-                                        @foreach(auth()->user()->addresses as $address)
-                                            <div class="col-md-6">
-                                                <div class="card h-100 {{ $address->is_default ? 'border-primary' : '' }}">
-                                                    <div class="card-body">
-                                                        <div class="form-check">
-                                                            <input class="form-check-input" type="radio" name="delivery_address" id="address_{{ $address->id }}" value="{{ $address->id }}" {{ $address->is_default ? 'checked' : '' }}>
-                                                            <label class="form-check-label" for="address_{{ $address->id }}">
-                                                                <div class="d-flex justify-content-between align-items-start">
-                                                                    <div>
-                                                                        <strong>{{ $address->name }}</strong>
-                                                                        @if($address->is_default)
-                                                                            <span class="badge bg-primary ms-2">Default</span>
-                                                                        @endif
-                                                                        <div class="text-muted small mt-1">
-                                                                            {{ $address->address_line1 }}<br>
-                                                                            @if($address->address_line2)
-                                                                                {{ $address->address_line2 }}<br>
+                            @auth
+                                @if(auth()->user()->addresses->isNotEmpty())
+                                    <div class="mb-3">
+                                        <div class="row g-3">
+                                            @foreach(auth()->user()->addresses as $address)
+                                                <div class="col-md-6">
+                                                    <div class="card h-100 {{ $address->is_default ? 'border-primary' : '' }}">
+                                                        <div class="card-body">
+                                                            <div class="form-check">
+                                                                <input class="form-check-input" type="radio" name="delivery_address" id="address_{{ $address->id }}" value="{{ $address->id }}" {{ $address->is_default ? 'checked' : '' }}>
+                                                                <label class="form-check-label" for="address_{{ $address->id }}">
+                                                                    <div class="d-flex justify-content-between align-items-start">
+                                                                        <div>
+                                                                            <strong>{{ $address->name }}</strong>
+                                                                            @if($address->is_default)
+                                                                                <span class="badge bg-primary ms-2">Default</span>
                                                                             @endif
-                                                                            {{ $address->city }}, {{ $address->state }} - {{ $address->postal_code }}<br>
-                                                                            {{ $address->country }}
-                                                                            @if($address->landmark)
-                                                                                <br>Landmark: {{ $address->landmark }}
-                                                                            @endif
+                                                                            <div class="text-muted small mt-1">
+                                                                                {{ $address->address_line1 }}<br>
+                                                                                @if($address->address_line2)
+                                                                                    {{ $address->address_line2 }}<br>
+                                                                                @endif
+                                                                                {{ $address->city }}, {{ $address->state }} - {{ $address->postal_code }}<br>
+                                                                                {{ $address->country }}
+                                                                                @if($address->landmark)
+                                                                                    <br>Landmark: {{ $address->landmark }}
+                                                                                @endif
+                                                                            </div>
                                                                         </div>
+                                                                        <span class="badge bg-light text-dark">{{ ucfirst($address->address_type) }}</span>
                                                                     </div>
-                                                                    <span class="badge bg-light text-dark">{{ ucfirst($address->address_type) }}</span>
-                                                                </div>
-                                                            </label>
+                                                                </label>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                        @endforeach
+                                            @endforeach
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="mb-3">
-                                    <a href="{{ route('addresses.manage') }}" class="btn btn-outline-primary btn-sm">
-                                        <i class="bi bi-plus-circle"></i> Add New Address
-                                    </a>
-                                </div>
+                                    <div class="mb-3">
+                                        <a href="{{ route('addresses.manage') }}" class="btn btn-outline-primary btn-sm">
+                                            <i class="bi bi-plus-circle"></i> Add New Address
+                                        </a>
+                                    </div>
+                                @else
+                                    <div class="alert alert-info">
+                                        <p class="mb-0">No addresses found. Please add a delivery address.</p>
+                                        <a href="{{ route('addresses.manage') }}" class="btn btn-primary btn-sm mt-2">Add Address</a>
+                                    </div>
+                                @endif
                             @else
                                 <div class="alert alert-info">
-                                    <p class="mb-0">No addresses found. Please add a delivery address.</p>
-                                    <a href="{{ route('addresses.manage') }}" class="btn btn-primary btn-sm mt-2">Add Address</a>
+                                    <p class="mb-0">Please login to add and manage delivery addresses.</p>
+                                    <button type="button" class="btn btn-primary btn-sm mt-2" data-bs-toggle="modal" data-bs-target="#loginModal">
+                                        Login
+                                    </button>
                                 </div>
-                            @endif
+                            @endauth
 
                             <h5 class="mb-3">Payment Method</h5>
                             <div class="form-check mb-3">
@@ -313,9 +324,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     });
                 },
                 prefill: {
-                    name: "{{ auth()->user()->first_name ?? '' }} {{ auth()->user()->last_name ?? '' }}",
-                    email: "{{ auth()->user()->email ?? '' }}",
-                    contact: "{{ auth()->user()->phone ?? '' }}"
+                    name: "{{ auth()->check() ? auth()->user()->first_name . ' ' . auth()->user()->last_name : '' }}",
+                    email: "{{ auth()->check() ? auth()->user()->email : '' }}",
+                    contact: "{{ auth()->check() ? auth()->user()->phone : '' }}"
                 },
                 theme: {
                     color: "#3399cc"

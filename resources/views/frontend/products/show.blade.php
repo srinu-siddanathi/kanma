@@ -39,22 +39,22 @@
                 <!-- Image Gallery -->
                 <div class="col-md-5">
                     <div class="d-flex flex-column align-items-center">
-                        <!-- Thumbnails (if you have multiple images) -->
-                        <div class="mb-3 d-flex flex-md-column gap-2">
+                        <!-- Main Image -->
+                        @if($product->images->isNotEmpty())
+                            <img id="mainImage" src="{{ asset($product->images->first()->image_path) }}" alt="{{ $product->name }}" class="img-fluid rounded mb-3" style="max-height: 350px; object-fit: contain;">
+                        @else
+                            <img id="mainImage" src="{{ asset('images/no-image.png') }}" alt="{{ $product->name }}" class="img-fluid rounded mb-3" style="max-height: 350px; object-fit: contain;">
+                        @endif
+                        <!-- Thumbnails (horizontal row) -->
+                        <div class="d-flex flex-row gap-2 justify-content-center mb-3" id="thumbnails">
                             @if($product->images->isNotEmpty())
-                                @foreach($product->images as $img)
-                                    <img src="{{ asset($img->image_path) }}" alt="thumb" class="img-thumbnail" style="width: 60px; height: 60px; object-fit: cover;">
+                                @foreach($product->images as $key => $img)
+                                    <img src="{{ asset($img->image_path) }}" alt="thumb" class="img-thumbnail thumbnail-img {{ $key == 0 ? 'border-warning' : '' }}" style="width: 60px; height: 60px; object-fit: cover; cursor:pointer; border-width:2px;" onclick="selectThumbnail(this)">
                                 @endforeach
                             @else
                                 <img src="{{ asset('images/no-image.png') }}" alt="thumb" class="img-thumbnail" style="width: 60px; height: 60px; object-fit: cover;">
                             @endif
                         </div>
-                        <!-- Main Image -->
-                        @if($product->images->isNotEmpty())
-                            <img src="{{ asset($product->images->first()->image_path) }}" alt="{{ $product->name }}" class="img-fluid rounded" style="max-height: 350px; object-fit: contain;">
-                        @else
-                            <img src="{{ asset('images/no-image.png') }}" alt="{{ $product->name }}" class="img-fluid rounded" style="max-height: 350px; object-fit: contain;">
-                        @endif
                     </div>
                 </div>
                 <!-- Product Info -->
@@ -68,20 +68,17 @@
                         @endif
                     </div>
                     <h2 class="fw-bold mb-2">{{ $product->name }}</h2>
-                    <div class="mb-2">
+                    <!-- <div class="mb-2">
                         <span class="badge bg-success"><i class="bi bi-star-fill"></i> 4.7</span>
                         <span class="text-muted ms-2">(53.4k)</span>
-                        <span class="ms-3 text-secondary">Net Qty: 100g</span>
-                    </div>
+                        <span class="ms-3 text-primary">Net Qty: 100g</span>
+                    </div> -->
                     <div class="mb-2">
                         <span class="fs-3 fw-bold text-success">₹{{ number_format($product->price, 2) }}</span>
                         @if($product->original_price)
                             <span class="text-muted text-decoration-line-through ms-2">₹{{ number_format($product->original_price, 2) }}</span>
                             <span class="text-success ms-2">{{ round(100 - ($product->price / $product->original_price * 100)) }}% Off</span>
                         @endif
-                    </div>
-                    <div class="mb-3">
-                        <span class="badge bg-light text-success border border-success">Get in 7 minutes</span>
                     </div>
 
                     <!-- Variant Selection -->
@@ -493,6 +490,15 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
+
+// Make selectThumbnail globally available
+function selectThumbnail(img) {
+    document.getElementById('mainImage').src = img.src;
+    // Remove highlight from all thumbnails
+    document.querySelectorAll('#thumbnails img').forEach(el => el.classList.remove('border-warning'));
+    // Highlight selected thumbnail
+    img.classList.add('border-warning');
+}
 </script>
 @endpush
 @endsection 

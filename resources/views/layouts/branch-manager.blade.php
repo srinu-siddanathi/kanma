@@ -53,6 +53,15 @@
                     Add Products
                 </a>
 
+                <a href="{{ route('branch.chat-orders.index') }}"
+                    class="{{ request()->routeIs('branch.chat-orders.*') ? 'bg-gray-700' : '' }} flex items-center mt-5 py-2.5 px-4 rounded transition duration-200 hover:bg-gray-700">
+                    <svg class="h-5 w-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                    </svg>
+                    Chat Orders
+                </a>
+
                 <a href="{{ route('branch.delivery-boys.index') }}"
                     class="{{ request()->routeIs('branch.delivery-boys.*') ? 'bg-gray-700' : '' }} flex items-center mt-5 py-2.5 px-4 rounded transition duration-200 hover:bg-gray-700">
                     <svg class="h-5 w-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">

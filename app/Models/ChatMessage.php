@@ -7,6 +7,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ChatMessage extends Model
 {
+    const TYPE_TEXT = 'text';
+    const TYPE_VOICE = 'voice';
+    const TYPE_IMAGE = 'image';
+    const TYPE_SCHEDULE = 'schedule';
+
     protected $fillable = [
         'chat_order_id',
         'sender_id',

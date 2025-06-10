@@ -87,8 +87,8 @@ class UserController extends Controller
             'password' => ['nullable', Password::defaults()],
             'role' => 'required|in:admin,dataentry,branch_manager,shop_owner',
             'phone' => 'required|string|max:20',
-            'branch_id' => 'required_if:role,branch_manager|exists:branches,id',
-            'is_active' => 'boolean',
+            'branch_id' => 'nullable|exists:branches,id',
+            'is_active' => 'nullable|boolean',
         ]);
 
         $updateData = [
@@ -96,9 +96,15 @@ class UserController extends Controller
             'email' => $validated['email'],
             'role' => $validated['role'],
             'phone' => $validated['phone'],
-            'branch_id' => $validated['branch_id'] ?? null,
-            'is_active' => $validated['is_active'] ?? true,
+            'is_active' => $request->boolean('is_active', false),
         ];
+
+        // Only set branch_id if role is branch_manager
+        if ($validated['role'] === 'branch_manager') {
+            $updateData['branch_id'] = $validated['branch_id'];
+        } else {
+            $updateData['branch_id'] = null;
+        }
 
         if (!empty($validated['password'])) {
             $updateData['password'] = Hash::make($validated['password']);

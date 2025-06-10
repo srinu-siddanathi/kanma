@@ -13,6 +13,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use App\Models\Banner;
 
 class HomeController extends Controller
 {
@@ -190,20 +191,56 @@ class HomeController extends Controller
             // Use categories for main categories instead of hardcoding
             $mainCategories = $categories->take(2); // Take first 2 categories
 
+            $mainBanners = Banner::where('section', Banner::SECTION_MOBILE_APP_MAIN)
+                ->where('is_active', true)
+                ->orderBy('display_order')
+                ->get()
+                ->map(function ($banner) {
+                    return [
+                        'id' => $banner->id,
+                        'title' => $banner->title,
+                        'subtitle' => $banner->subtitle,
+                        'description' => $banner->description,
+                        'image_url' => asset($banner->image_url),
+                        'button_text' => $banner->button_text,
+                        'button_url' => $banner->button_url,
+                    ];
+                });
+
+            $bottomBanners = Banner::where('section', Banner::SECTION_MOBILE_APP_BOTTOM)
+                ->where('is_active', true)
+                ->orderBy('display_order')
+                ->get()
+                ->map(function ($banner) {
+                    return [
+                        'id' => $banner->id,
+                        'title' => $banner->title,
+                        'subtitle' => $banner->subtitle,
+                        'description' => $banner->description,
+                        'image_url' => asset($banner->image_url),
+                        'button_text' => $banner->button_text,
+                        'button_url' => $banner->button_url,
+                    ];
+                });
+
+            $featuredProducts = Product::where('is_active', true)
+                ->where('is_featured', true)
+                ->with(['category', 'images'])
+                ->take(10)
+                ->get();
+
             return response()->json([
                 'status' => 'success',
                 'data' => [
-                    'banner' => [
-                        'title' => 'Coming Soon',
-                        'subtitle' => 'Crafted as Maid at your hand',
-                        'image_url' => 'url_to_banner_image'
-                    ],
                     'deal_countdown' => $timeLeft,
                     'go_to_items' => $goToItems,
                     'nearest_shops' => $nearestShops,
                     'nearest_address' => $nearestAddress,
                     'categories' => $categories,
-                    'main_categories' => $mainCategories
+                    'main_categories' => $mainCategories,
+                    'banner' => $mainBanners,
+                    'bottom_banners' => $bottomBanners,
+                    'featured_products' => $featuredProducts
                 ]
             ]);
 

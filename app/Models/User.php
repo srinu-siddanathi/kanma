@@ -133,4 +133,13 @@ class User extends Authenticatable
     {
         return $this->role === 'shop_owner';
     }
+
+    public function hasRole($role)
+    {
+        if ($this->role === 'admin') {
+            return true;
+        }
+        
+        return $this->role === $role;
+    }
 }

@@ -38,6 +38,8 @@ use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\NewsletterController;
 use App\Http\Controllers\Admin\SubscriptionController as AdminSubscriptionController;
 use App\Http\Controllers\SubscriptionController;
+use App\Http\Controllers\BranchManager\ChatOrderController;
+use App\Http\Controllers\Admin\BannerController;
 
 // Public routes
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -48,7 +50,16 @@ Route::get('/shop', [ShopController::class, 'index'])->name('shop');
 Route::get('/product/{id}', [FrontendProductController::class, 'show'])->name('product.show');
 Route::get('/shop/{id}', [App\Http\Controllers\ShopController::class, 'show'])->name('shop.show');
 
+// Cart routes
+Route::get('/cart', [CartController::class, 'index'])->name('cart');
+Route::post('/cart/add', [CartController::class, 'addToCart'])->name('cart.add');
+Route::post('/cart/update', [CartController::class, 'updateCart'])->name('cart.update');
+Route::post('/cart/remove', [CartController::class, 'removeFromCart'])->name('cart.remove');
+Route::post('/cart/clear', [CartController::class, 'clearCart'])->name('cart.clear');
+Route::get('/cart/items', [CartController::class, 'getCartItems'])->name('cart.items');
+
 // Subscription routes
+Route::get('/subscription/plans', [SubscriptionController::class, 'plans'])->name('subscription.plans');
 Route::middleware(['auth'])->group(function () {
     Route::get('/subscription/checkout/{plan}', [SubscriptionController::class, 'checkout'])->name('subscription.checkout');
     Route::post('/subscription/process/{plan}', [SubscriptionController::class, 'process'])->name('subscription.process');
@@ -171,12 +182,26 @@ Route::prefix('admin')->group(function () {
 
         // User Management Routes
         Route::resource('users', UserController::class);
+
+        // Banner Management
+        Route::get('/banners', [BannerController::class, 'index'])->name('banners.index');
+        Route::get('/banners/create', [BannerController::class, 'create'])->name('banners.create');
+        Route::post('/banners', [BannerController::class, 'store'])->name('banners.store');
+        Route::get('/banners/{banner}/edit', [BannerController::class, 'edit'])->name('banners.edit');
+        Route::put('/banners/{banner}', [BannerController::class, 'update'])->name('banners.update');
+        Route::delete('/banners/{banner}', [BannerController::class, 'destroy'])->name('banners.destroy');
     });
 
     // Protected Branch Manager Routes
     Route::middleware(['auth', 'branch.manager'])->prefix('branch')->name('branch.')->group(function () {
         Route::get('/dashboard', [BranchManagerDashboardController::class, 'show'])->name('dashboard');
         Route::get('/orders', [BranchManagerOrderController::class, 'list'])->name('orders');
+        
+        // Chat Orders
+        Route::get('/chat-orders', [ChatOrderController::class, 'index'])->name('chat-orders.index');
+        Route::get('/chat-orders/{chatOrder}', [ChatOrderController::class, 'show'])->name('chat-orders.show');
+        Route::post('/chat-orders/{chatOrder}/messages', [ChatOrderController::class, 'storeMessage'])->name('chat-orders.messages.store');
+        Route::put('/chat-orders/{chatOrder}/status', [ChatOrderController::class, 'updateStatus'])->name('chat-orders.update-status');
         
         // Product routes
         Route::get('/products', [ProductController::class, 'index'])->name('products.index');
@@ -271,16 +296,6 @@ Route::get('/privacy', function () {
     return view('static.privacy');
 })->name('static.privacy');
 
-// Cart routes
-Route::post('/cart/add', [CartController::class, 'addToCart'])->name('cart.add');
-Route::post('/cart/remove', [CartController::class, 'removeFromCart'])->name('cart.remove');
-Route::post('/cart/update', [CartController::class, 'updateCart'])->name('cart.update');
-Route::get('/cart/items', [CartController::class, 'getCartItems'])->name('cart.items');
-
-Route::get('/cart', function () {
-    return view('cart');
-})->name('cart');
-
 // Checkout routes
 Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout');
 Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
@@ -299,6 +314,7 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     
     // Address Management Routes
+    Route::get('/addresses/manage', [App\Http\Controllers\AddressController::class, 'manage'])->name('addresses.manage');
     Route::get('/addresses', [App\Http\Controllers\AddressController::class, 'index'])->name('addresses.index');
     Route::get('/addresses/create', [App\Http\Controllers\AddressController::class, 'create'])->name('addresses.create');
     Route::post('/addresses', [App\Http\Controllers\AddressController::class, 'store'])->name('addresses.store');

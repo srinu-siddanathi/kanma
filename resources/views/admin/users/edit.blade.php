@@ -3,10 +3,22 @@
 @section('title', 'Edit User')
 
 @section('content')
+<meta name="csrf-token" content="{{ csrf_token() }}">
+
 <div class="bg-white rounded-lg shadow-lg p-6">
     <div class="mb-6">
         <h2 class="text-2xl font-bold text-gray-800">Edit User</h2>
     </div>
+
+    @if($errors->any())
+        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+            <ul>
+                @foreach($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
 
     <form action="{{ route('admin.users.update', $user) }}" method="POST" class="space-y-6">
         @csrf
@@ -126,6 +138,13 @@
         }
 
         roleSelect.addEventListener('change', toggleBranchField);
+
+        const form = document.querySelector('form');
+        form.addEventListener('submit', function(e) {
+            console.log('Form submitted');
+            const formData = new FormData(this);
+            console.log('Form data:', Object.fromEntries(formData));
+        });
     });
 </script>
 @endpush

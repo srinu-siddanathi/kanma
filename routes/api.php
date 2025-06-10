@@ -21,6 +21,7 @@ use App\Http\Controllers\Api\LocationController;
 use App\Http\Controllers\Api\MembershipController;
 use App\Http\Controllers\Api\ChatOrderController;
 use App\Http\Controllers\Api\ChatMessageController;
+use App\Http\Controllers\Api\BannerController;
 
 /*
 |--------------------------------------------------------------------------
@@ -185,4 +186,6 @@ Route::get('/categories/{category}/subcategories', function (Category $category)
 });
 
 // Location routes
-Route::post('/check-serviceability', [LocationController::class, 'checkServiceability']); 
+Route::post('/check-serviceability', [LocationController::class, 'checkServiceability']);
+
+Route::get('/mobile-banners', [BannerController::class, 'getMobileBanners']); 

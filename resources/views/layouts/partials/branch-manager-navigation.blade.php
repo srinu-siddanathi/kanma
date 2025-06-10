@@ -8,6 +8,10 @@
         {{ __('Products') }}
     </x-nav-link>
 
+    <x-nav-link :href="route('branch.chat-orders.index')" :active="request()->routeIs('branch.chat-orders.*')">
+        {{ __('Chat Orders') }}
+    </x-nav-link>
+
     <!-- New navigation items -->
     <x-nav-link :href="route('branch.delivery-boys.index')" :active="request()->routeIs('branch.delivery-boys.*')">
         {{ __('Delivery Boys') }}
@@ -29,6 +33,10 @@
 
     <x-responsive-nav-link :href="route('branch.products.index')" :active="request()->routeIs('branch.products.*')">
         {{ __('Products') }}
+    </x-responsive-nav-link>
+
+    <x-responsive-nav-link :href="route('branch.chat-orders.index')" :active="request()->routeIs('branch.chat-orders.*')">
+        {{ __('Chat Orders') }}
     </x-responsive-nav-link>
 
     <!-- New mobile navigation items -->
