@@ -47,7 +47,7 @@
                         class="block w-full px-4 py-3 rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-gray-900"
                         required>
                     <option value="">Select unit</option>
-                    @foreach(['g' => 'Grams (g)', 'kg' => 'Kilograms (kg)', 'ml' => 'Milliliters (ml)', 'l' => 'Liters (l)'] as $value => $label)
+                    @foreach(['g' => 'Grams (g)', 'kg' => 'Kilograms (kg)', 'ml' => 'Milliliters (ml)', 'l' => 'Liters (l)', 'pieces' => 'Pieces'] as $value => $label)
                         <option value="{{ $value }}" 
                             {{ old("variants.$index.unit", $variant->unit ?? '') == $value ? 'selected' : '' }}>
                             {{ $label }}

@@ -47,6 +47,16 @@
             </div>
 
             <div class="mb-4">
+                <label for="bike_number" class="block text-sm font-medium text-gray-700">Bike Number</label>
+                <input type="text" name="bike_number" id="bike_number"
+                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                       value="{{ old('bike_number') }}">
+                @error('bike_number')
+                    <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
+                @enderror
+            </div>
+
+            <div class="mb-4">
                 <label for="branch_id" class="block text-sm font-medium text-gray-700">Branch</label>
                 <select name="branch_id" id="branch_id" 
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"

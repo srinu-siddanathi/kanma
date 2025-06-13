@@ -26,6 +26,7 @@ class DeliveryBoyController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'phone' => 'required|string|max:20|unique:users',
+            'bike_number' => 'nullable|string|max:255',
             'password' => 'required|string|min:8',
         ]);
 
@@ -33,6 +34,7 @@ class DeliveryBoyController extends Controller
             'name' => $validated['name'],
             'email' => $validated['email'],
             'phone' => $validated['phone'],
+            'bike_number' => $validated['bike_number'] ?? null,
             'password' => Hash::make($validated['password']),
             'role' => 'delivery_boy',
             'branch_id' => auth()->user()->branch_id,
@@ -61,6 +63,7 @@ class DeliveryBoyController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email,' . $deliveryBoy->id,
             'phone' => 'required|string|max:20|unique:users,phone,' . $deliveryBoy->id,
+            'bike_number' => 'nullable|string|max:255',
             'password' => 'nullable|string|min:8',
         ]);
 
@@ -68,6 +71,7 @@ class DeliveryBoyController extends Controller
             'name' => $validated['name'],
             'email' => $validated['email'],
             'phone' => $validated['phone'],
+            'bike_number' => $validated['bike_number'] ?? null,
         ];
 
         if (!empty($validated['password'])) {

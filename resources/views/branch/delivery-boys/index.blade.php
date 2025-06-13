@@ -22,6 +22,7 @@
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bike Number</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Working Status</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Updated</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
@@ -33,6 +34,7 @@
                         <td class="px-6 py-4">{{ $deliveryBoy->name }}</td>
                         <td class="px-6 py-4">{{ $deliveryBoy->email }}</td>
                         <td class="px-6 py-4">{{ $deliveryBoy->phone }}</td>
+                        <td class="px-6 py-4">{{ $deliveryBoy->bike_number }}</td>
                         <td class="px-6 py-4">
                             <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full 
                                 {{ $deliveryBoy->is_working_today ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">

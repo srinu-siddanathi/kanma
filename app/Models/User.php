@@ -26,6 +26,7 @@ class User extends Authenticatable
         'email',
         'password',
         'phone',
+        'bike_number',
         'role',
         'branch_id',
         'is_active',

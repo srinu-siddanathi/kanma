@@ -359,6 +359,7 @@
                             <option value="kg">Kilograms (kg)</option>
                             <option value="ml">Milliliters (ml)</option>
                             <option value="l">Liters (l)</option>
+                            <option value="pieces">Pieces</option>
                         </select>
                     </div>
                     <div>
