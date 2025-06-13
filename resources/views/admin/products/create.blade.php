@@ -91,28 +91,26 @@
                                     </div>
                                 </div>
 
-                                <!-- Discount Field (shown when is_deal is checked) -->
-                                <div id="deal-fields" class="hidden">
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        <div>
-                                            <label class="block text-sm font-medium text-gray-700 mb-1">Discount (%)</label>
-                                            <input type="number" name="discount" value="{{ old('discount') }}" 
-                                                   placeholder="Enter discount percentage"
-                                                   class="block w-full px-4 py-3 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 placeholder-gray-400 text-gray-900"
-                                                   min="0" max="100" step="0.01">
-                                            @error('discount')
-                                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                            @enderror
-                                        </div>
-                                        <div>
-                                            <label class="block text-sm font-medium text-gray-700 mb-1">Deal End Date</label>
-                                            <input type="datetime-local" name="deal_end_date" value="{{ old('deal_end_date') }}" 
-                                                   class="block w-full px-4 py-3 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 placeholder-gray-400 text-gray-900">
-                                            @error('deal_end_date')
-                                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                            @enderror
-                                        </div>
-                                    </div>
+                                <!-- Discount Field -->
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Discount (%)</label>
+                                    <input type="number" name="discount" value="{{ old('discount') }}" 
+                                           placeholder="Enter discount percentage"
+                                           class="block w-full px-4 py-3 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 placeholder-gray-400 text-gray-900"
+                                           min="0" max="100" step="0.01">
+                                    @error('discount')
+                                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                    @enderror
+                                </div>
+
+                                <!-- Deal End Date Field (shown when is_deal is checked) -->
+                                <div id="deal-end-date" class="hidden">
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Deal End Date</label>
+                                    <input type="datetime-local" name="deal_end_date" value="{{ old('deal_end_date') }}" 
+                                           class="block w-full px-4 py-3 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 placeholder-gray-400 text-gray-900">
+                                    @error('deal_end_date')
+                                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                    @enderror
                                 </div>
 
                                 <!-- Product Variants -->
@@ -269,18 +267,6 @@
         return true;
     });
 
-    // Handle deal checkbox and deal fields
-    const dealCheckbox = document.querySelector('input[name="is_deal"]');
-    const dealFields = document.getElementById('deal-fields');
-
-    dealCheckbox.addEventListener('change', function() {
-        dealFields.classList.toggle('hidden', !this.checked);
-        const discountInput = dealFields.querySelector('input[name="discount"]');
-        const endDateInput = dealFields.querySelector('input[name="deal_end_date"]');
-        discountInput.required = this.checked;
-        endDateInput.required = this.checked;
-    });
-
     // Handle variant addition
     let variantCount = 1;
     const addVariantBtn = document.getElementById('add-variant');
@@ -356,6 +342,16 @@
     function removeVariant(button) {
         button.closest('.variant-item').remove();
     }
+
+    // Handle deal checkbox and deal end date field
+    const dealCheckbox = document.querySelector('input[name="is_deal"]');
+    const dealEndDate = document.getElementById('deal-end-date');
+
+    dealCheckbox.addEventListener('change', function() {
+        dealEndDate.classList.toggle('hidden', !this.checked);
+        const endDateInput = dealEndDate.querySelector('input[name="deal_end_date"]');
+        endDateInput.required = this.checked;
+    });
 </script>
 @endpush
 @endsection 

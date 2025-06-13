@@ -205,9 +205,25 @@
                         <!-- Add any header content here -->
                         <div class="flex items-center ml-6">
                             <!-- Notifications Dropdown -->
-                            <div class="ml-3 relative" x-data="{ open: false }">
+                            <div class="ml-3 relative" x-data="{
+                                open: false,
+                                notifications: [],
+                                unread: 0,
+                                fetchNotifications() {
+                                    fetch('/admin/notifications')
+                                        .then(res => res.json())
+                                        .then(data => {
+                                            this.notifications = data;
+                                            this.unread = data.filter(n => !n.read_at).length;
+                                        });
+                                },
+                                startPolling() {
+                                    this.fetchNotifications();
+                                    setInterval(() => this.fetchNotifications(), 10000);
+                                }
+                            }" x-init="startPolling()">
                                 <div>
-                                    <button type="button" 
+                                    <button type="button"
                                             @click="open = !open"
                                             class="relative bg-white p-1 rounded-full text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                                             id="notifications-menu-button"
@@ -215,18 +231,15 @@
                                             aria-haspopup="true">
                                         <span class="sr-only">View notifications</span>
                                         <!-- Notification Badge -->
-                                        <span class="absolute -top-1 -right-1 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 bg-red-600 rounded-full">
-                                            3
-                                        </span>
+                                        <span class="absolute -top-1 -right-1 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 bg-red-600 rounded-full" x-text="unread"></span>
                                         <!-- Bell Icon -->
                                         <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                                         </svg>
                                     </button>
                                 </div>
-
                                 <!-- Notifications Dropdown Menu -->
-                                <div x-show="open" 
+                                <div x-show="open"
                                      @click.away="open = false"
                                      x-transition:enter="transition ease-out duration-100"
                                      x-transition:enter-start="transform opacity-0 scale-95"
@@ -234,26 +247,24 @@
                                      x-transition:leave="transition ease-in duration-75"
                                      x-transition:leave-start="transform opacity-100 scale-100"
                                      x-transition:leave-end="transform opacity-0 scale-95"
-                                     class="origin-top-right absolute right-0 mt-2 w-80 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 divide-y divide-gray-100 focus:outline-none" 
-                                     role="menu" 
-                                     aria-orientation="vertical" 
-                                     aria-labelledby="notifications-menu-button" 
+                                     class="origin-top-right absolute right-0 mt-2 w-80 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 divide-y divide-gray-100 focus:outline-none"
+                                     role="menu"
+                                     aria-orientation="vertical"
+                                     aria-labelledby="notifications-menu-button"
                                      tabindex="-1">
                                     <div class="py-1" role="none">
-                                        <a href="#" class="flex px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">
-                                            <span class="flex-shrink-0 w-2 h-2 mt-2 mr-3 bg-blue-500 rounded-full"></span>
-                                            <div>
-                                                <p class="font-medium">New shop registration</p>
-                                                <p class="text-xs text-gray-500">2 minutes ago</p>
-                                            </div>
-                                        </a>
-                                        <a href="#" class="flex px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">
-                                            <span class="flex-shrink-0 w-2 h-2 mt-2 mr-3 bg-green-500 rounded-full"></span>
-                                            <div>
-                                                <p class="font-medium">New order received</p>
-                                                <p class="text-xs text-gray-500">1 hour ago</p>
-                                            </div>
-                                        </a>
+                                        <template x-if="notifications.length === 0">
+                                            <div class="px-4 py-4 text-gray-500 text-center">No notifications</div>
+                                        </template>
+                                        <template x-for="notification in notifications" :key="notification.id">
+                                            <a :href="notification.data.link || '#'" class="flex px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">
+                                                <span class="flex-shrink-0 w-2 h-2 mt-2 mr-3 bg-blue-500 rounded-full"></span>
+                                                <div>
+                                                    <p class="font-medium" x-text="notification.data.message"></p>
+                                                    <p class="text-xs text-gray-500" x-text="new Date(notification.created_at).toLocaleString()"></p>
+                                                </div>
+                                            </a>
+                                        </template>
                                     </div>
                                 </div>
                             </div>

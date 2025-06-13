@@ -190,6 +190,11 @@ Route::prefix('admin')->group(function () {
         Route::get('/banners/{banner}/edit', [BannerController::class, 'edit'])->name('banners.edit');
         Route::put('/banners/{banner}', [BannerController::class, 'update'])->name('banners.update');
         Route::delete('/banners/{banner}', [BannerController::class, 'destroy'])->name('banners.destroy');
+
+        Route::get('/notifications', function() {
+            $notifications = auth()->user()->notifications()->latest()->take(10)->get();
+            return response()->json($notifications);
+        })->name('admin.notifications');
     });
 
     // Protected Branch Manager Routes

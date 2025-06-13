@@ -220,6 +220,15 @@ class CheckoutController extends Controller
                 Log::info('Order item created', ['order_item' => $orderItem->toArray()]);
             }
 
+            // Notify all admins about the new order
+            $adminUsers = \App\Models\User::where('role', 'admin')->get();
+            foreach ($adminUsers as $admin) {
+                $admin->notify(new \App\Notifications\AdminNotification(
+                    'New order placed: #' . $order->id . ' by ' . $user->name,
+                    route('admin.orders.show', $order->id)
+                ));
+            }
+
             // Clear cart
             session()->forget('cart');
             Log::info('Cart cleared', ['user_id' => auth()->id()]);
