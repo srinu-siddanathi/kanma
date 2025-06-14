@@ -22,6 +22,7 @@ use App\Http\Controllers\Api\MembershipController;
 use App\Http\Controllers\Api\ChatOrderController;
 use App\Http\Controllers\Api\ChatMessageController;
 use App\Http\Controllers\Api\BannerController;
+use App\Http\Controllers\Api\WalletController;
 
 /*
 |--------------------------------------------------------------------------
@@ -65,6 +66,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // User routes
     Route::get('user/profile', [UserController::class, 'profile']);
     Route::put('user/profile', [UserController::class, 'update']);
+    Route::post('user/profile-image', [UserController::class, 'updateProfileImage']);
     
     // Address Management
     Route::get('/addresses', [AddressController::class, 'index']);
@@ -176,6 +178,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/chat-messages/{message}/read', [ChatMessageController::class, 'markAsRead']);
     Route::put('/chat-orders/{chatOrder}/messages/read-all', [ChatMessageController::class, 'markAllAsRead']);
     Route::delete('/chat-messages/{message}', [ChatMessageController::class, 'destroy']);
+
+    // Wallet routes
+    Route::get('/wallet/balance', [WalletController::class, 'getBalance']);
+    Route::get('/wallet/transactions', [WalletController::class, 'getTransactions']);
+    Route::post('/wallet/deposit/initiate', [WalletController::class, 'initiateDeposit']);
+    Route::post('/wallet/deposit/verify', [WalletController::class, 'verifyDeposit']);
 });
 
 // Juspay Callback Route (no auth required as it's called by Juspay)

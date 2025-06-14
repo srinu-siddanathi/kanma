@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class UserController extends Controller
 {
@@ -39,6 +41,58 @@ class UserController extends Controller
 
         return response()->json([
             'message' => 'Profile updated successfully',
+            'data' => $user->fresh()->load('branch')
+        ]);
+    }
+
+    private function storeProfileImage($file)
+    {
+        // Create directory if it doesn't exist
+        $uploadPath = public_path('uploads/profile-images');
+        if (!file_exists($uploadPath)) {
+            mkdir($uploadPath, 0777, true);
+        }
+
+        // Generate unique filename
+        $extension = $file->getClientOriginalExtension();
+        $filename = Str::random(40) . '.' . $extension;
+        
+        // Move file to public directory
+        $file->move($uploadPath, $filename);
+        
+        // Return relative path for database storage
+        return 'uploads/profile-images/' . $filename;
+    }
+
+    private function deleteProfileImage($path)
+    {
+        $fullPath = public_path($path);
+        if (file_exists($fullPath)) {
+            unlink($fullPath);
+        }
+    }
+
+    public function updateProfileImage(Request $request)
+    {
+        $request->validate([
+            'profile_image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048' // 2MB max
+        ]);
+
+        $user = auth()->user();
+
+        // Delete old profile image if exists
+        if ($user->profile_image) {
+            $this->deleteProfileImage($user->profile_image);
+        }
+
+        // Store new image
+        $imagePath = $this->storeProfileImage($request->file('profile_image'));
+
+        // Update user profile
+        $user->update(['profile_image' => $imagePath]);
+
+        return response()->json([
+            'message' => 'Profile image updated successfully',
             'data' => $user->fresh()->load('branch')
         ]);
     }

@@ -10,6 +10,7 @@ use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\DB;
 
 class User extends Authenticatable
 {
@@ -38,7 +39,8 @@ class User extends Authenticatable
         'dob',
         'gender',
         'is_working_today',
-        'last_status_update'
+        'last_status_update',
+        'profile_image'
     ];
 
     /**
@@ -142,5 +144,54 @@ class User extends Authenticatable
         }
         
         return $this->role === $role;
+    }
+
+    public function walletTransactions()
+    {
+        return $this->hasMany(WalletTransaction::class);
+    }
+
+    public function addToWallet($amount, $description, $referenceType = null, $referenceId = null, $metadata = [])
+    {
+        return DB::transaction(function () use ($amount, $description, $referenceType, $referenceId, $metadata) {
+            $transaction = WalletTransaction::create([
+                'user_id' => $this->id,
+                'amount' => $amount,
+                'type' => 'credit',
+                'description' => $description,
+                'reference_type' => $referenceType,
+                'reference_id' => $referenceId,
+                'status' => 'completed',
+                'metadata' => $metadata
+            ]);
+
+            $this->increment('wallet_balance', $amount);
+
+            return $transaction;
+        });
+    }
+
+    public function deductFromWallet($amount, $description, $referenceType = null, $referenceId = null, $metadata = [])
+    {
+        if ($this->wallet_balance < $amount) {
+            throw new \Exception('Insufficient wallet balance');
+        }
+
+        return DB::transaction(function () use ($amount, $description, $referenceType, $referenceId, $metadata) {
+            $transaction = WalletTransaction::create([
+                'user_id' => $this->id,
+                'amount' => $amount,
+                'type' => 'debit',
+                'description' => $description,
+                'reference_type' => $referenceType,
+                'reference_id' => $referenceId,
+                'status' => 'completed',
+                'metadata' => $metadata
+            ]);
+
+            $this->decrement('wallet_balance', $amount);
+
+            return $transaction;
+        });
     }
 }
