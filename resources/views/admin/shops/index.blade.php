@@ -38,9 +38,15 @@
                     <td class="px-6 py-4 whitespace-nowrap">
                         <div class="flex items-center">
                             @if($shop->image_path)
-                                <img src="{{ Storage::url($shop->image_path) }}" 
+                                <img src="{{ asset($shop->image_path) }}" 
                                      alt="{{ $shop->name }}" 
                                      class="h-10 w-10 object-cover rounded-full mr-3">
+                            @else
+                                <div class="h-10 w-10 rounded-full mr-3 bg-gray-200 flex items-center justify-center">
+                                    <span class="text-sm font-semibold text-gray-600">
+                                        {{ strtoupper(substr($shop->name, 0, 2)) }}
+                                    </span>
+                                </div>
                             @endif
                             <div class="text-sm font-medium text-gray-900">{{ $shop->name }}</div>
                         </div>

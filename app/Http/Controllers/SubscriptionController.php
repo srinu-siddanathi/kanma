@@ -182,9 +182,9 @@ class SubscriptionController extends Controller
             ]);
 
             // Add wallet addon if applicable
-            if ($plan->wallet_addon > 0) {
-                $user->increment('wallet_balance', $plan->wallet_addon);
-            }
+            // if ($plan->wallet_addon > 0) {
+            //     $user->increment('wallet_balance', $plan->wallet_addon);
+            // }
 
             return response()->json([
                 'success' => true,

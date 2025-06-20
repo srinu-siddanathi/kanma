@@ -40,6 +40,7 @@ use App\Http\Controllers\Admin\SubscriptionController as AdminSubscriptionContro
 use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\BranchManager\ChatOrderController;
 use App\Http\Controllers\Admin\BannerController;
+use Illuminate\Http\Request;
 
 // Public routes
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -82,6 +83,11 @@ Route::get('/contact', function () {
 
 // Admin & Branch Manager Auth Routes
 Route::prefix('admin')->group(function () {
+    // Redirect /admin to /admin/login
+    Route::get('/', function () {
+        return redirect()->route('admin.login');
+    });
+
     // Auth routes (no middleware)
     Route::get('/login', [AuthController::class, 'showLoginForm'])->name('admin.login');
     Route::post('/login', [AuthController::class, 'login'])->name('admin.login.submit');
@@ -274,6 +280,7 @@ Route::prefix('admin')->group(function () {
         Route::get('/products', [ShopOwnerProductController::class, 'index'])->name('products.index');
         Route::get('/products/create', [ShopOwnerProductController::class, 'create'])->name('products.create');
         Route::post('/products', [ShopOwnerProductController::class, 'store'])->name('products.store');
+        Route::post('/products/search-images', [ShopOwnerProductController::class, 'searchImages'])->name('products.search-images');
         
         // Add explicit route model binding with shop scope
         Route::get('/products/{product}', [ShopOwnerProductController::class, 'edit'])
@@ -354,3 +361,6 @@ Route::get('/shops', [App\Http\Controllers\ShopController::class, 'allShops'])->
 Route::post('/send-otp', [App\Http\Controllers\Auth\RegisterController::class, 'sendOtp'])->name('send.otp');
 Route::post('/verify-otp', [App\Http\Controllers\Auth\RegisterController::class, 'verifyOtp'])->name('verify.otp');
 Route::post('/register', [App\Http\Controllers\Auth\RegisterController::class, 'register'])->name('register');
+
+// Shop Owner Registration
+Route::post('/shop-owner/register', [App\Http\Controllers\ShopOwnerRegistrationController::class, 'register'])->name('shop-owner.register');

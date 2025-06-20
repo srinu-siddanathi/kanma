@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use App\Models\ProductVariant;
+use App\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
 
@@ -163,6 +164,7 @@ class CartController extends Controller
         $total = 0;
         $items = [];
         $deliveryFee = 50; // Default delivery fee
+        $smallCartFee = 0; // Small cart fee
 
         foreach ($cart as $variantId => $item) {
             $price = $item['discount_percentage'] > 0 ? $item['discounted_price'] : $item['price'];
@@ -179,6 +181,23 @@ class CartController extends Controller
                 'image_path' => $item['image_path'],
                 'total' => $subtotal
             ];
+        }
+
+        // Calculate small cart fee if order is below minimum amount
+        $minimumOrderAmount = Setting::get('minimum_order_amount', 100);
+        $smallCartFeeAmount = Setting::get('small_cart_fee', 10);
+        
+        // Check if user has active membership subscription
+        $hasActiveMembership = false;
+        if (auth()->check()) {
+            $user = auth()->user();
+            $activeSubscription = $user->currentSubscription();
+            $hasActiveMembership = $activeSubscription && $activeSubscription->status === 'active';
+        }
+        
+        // Only apply small cart fee if user doesn't have active membership
+        if (!$hasActiveMembership && $total < $minimumOrderAmount) {
+            $smallCartFee = $smallCartFeeAmount;
         }
 
         // Calculate delivery fee based on subscription plan
@@ -211,7 +230,7 @@ class CartController extends Controller
             }
         }
 
-        return view('cart', compact('items', 'total', 'deliveryFee'));
+        return view('cart', compact('items', 'total', 'deliveryFee', 'smallCartFee'));
     }
 
     public function clearCart(Request $request)

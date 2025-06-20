@@ -90,6 +90,22 @@
                 <div class="card shadow-sm">
                     <div class="card-body">
                         <h3 class="card-title mb-4">Cart Summary</h3>
+                        
+                        @auth
+                            @php
+                                $user = auth()->user();
+                                $activeSubscription = $user->currentSubscription();
+                                $hasActiveMembership = $activeSubscription && $activeSubscription->status === 'active';
+                            @endphp
+                            @if($hasActiveMembership)
+                                <div class="alert alert-success mb-3">
+                                    <i class="bi bi-check-circle-fill me-2"></i>
+                                    <strong>Membership Active!</strong><br>
+                                    <small>No small cart fees or minimum order restrictions.</small>
+                                </div>
+                            @endif
+                        @endauth
+                        
                         <div class="d-flex justify-content-between mb-3">
                             <span>Subtotal</span>
                             <span>₹{{ number_format($total, 2) }}</span>
@@ -98,10 +114,16 @@
                             <span>Shipping</span>
                             <span>₹{{ number_format($deliveryFee, 2) }}</span>
                         </div>
+                        @if($smallCartFee > 0)
+                        <div class="d-flex justify-content-between mb-3">
+                            <span>Small Cart Fee</span>
+                            <span class="text-warning">₹{{ number_format($smallCartFee, 2) }}</span>
+                        </div>
+                        @endif
                         <hr>
                         <div class="d-flex justify-content-between mb-4">
                             <strong>Total</strong>
-                            <strong class="text-primary">₹{{ number_format($total + $deliveryFee, 2) }}</strong>
+                            <strong class="text-primary">₹{{ number_format($total + $deliveryFee + $smallCartFee, 2) }}</strong>
                         </div>
                         <a href="{{ route('checkout') }}" class="btn btn-primary w-100">Proceed to Checkout</a>
                     </div>

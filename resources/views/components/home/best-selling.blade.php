@@ -37,9 +37,11 @@
                                     @if($hasDiscount)
                                     <div class="badge bg-success position-absolute m-3">-{{ $variant->discount_percentage }}%</div>
                                     @endif
-                                    <img src="{{ $product->image_url }}" class="card-img-top" alt="{{ $product->name }}"
-                                         style="height: 200px; object-fit: cover;"
-                                         onerror="this.onerror=null;this.src='{{ asset('images/no-image.png') }}';">
+                                    <a href="{{ route('product.show', $product->id) }}">
+                                        <img src="{{ $product->image_url }}" class="card-img-top" alt="{{ $product->name }}"
+                                             style="height: 200px; object-fit: cover;"
+                                             onerror="this.onerror=null;this.src='{{ asset('images/no-image.png') }}';">
+                                    </a>
                                 </div>
                                 <div class="card-body d-flex flex-column">
                                     <h5 class="card-title mb-2">

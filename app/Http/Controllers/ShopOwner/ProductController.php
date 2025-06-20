@@ -5,6 +5,7 @@ namespace App\Http\Controllers\ShopOwner;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\Category;
+use App\Models\ProductImage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -16,7 +17,7 @@ class ProductController extends Controller
     public function index()
     {
         $products = auth()->user()->shop->products()
-            ->with(['category', 'subcategory'])
+            ->with(['category', 'subcategory', 'images'])
             ->latest()
             ->paginate(10);
 
@@ -37,18 +38,35 @@ class ProductController extends Controller
             'category_id' => 'required|exists:categories,id',
             'price' => 'required|numeric|min:0',
             'image' => 'nullable|image|max:2048',
+            'selected_images' => 'nullable|array',
+            'selected_images.*' => 'nullable|string',
         ]);
 
         $validated['shop_id'] = auth()->user()->shop->id;
-        $validated['slug'] = Str::slug($validated['name']);
+        $validated['slug'] = $this->generateUniqueSlug($validated['name']);
 
+        // Handle new image upload
         if ($request->hasFile('image')) {
             $filename = time() . '_' . $request->file('image')->getClientOriginalName();
             $request->file('image')->move(public_path('uploads/products'), $filename);
             $validated['image_path'] = 'uploads/products/' . $filename;
         }
 
-        Product::create($validated);
+        $product = Product::create($validated);
+
+        // Handle selected existing images
+        if ($request->has('selected_images') && is_array($request->input('selected_images')) && !empty($request->input('selected_images'))) {
+            foreach ($request->input('selected_images') as $imagePath) {
+                if (!empty($imagePath)) {
+                    ProductImage::create([
+                        'product_id' => $product->id,
+                        'image_path' => $imagePath,
+                        'is_primary' => false,
+                        'sort_order' => ProductImage::where('product_id', $product->id)->count()
+                    ]);
+                }
+            }
+        }
 
         return redirect()
             ->route('shop-owner.products.index')
@@ -77,7 +95,14 @@ class ProductController extends Controller
             'category_id' => 'required|exists:categories,id',
             'price' => 'required|numeric|min:0',
             'image' => 'nullable|image|max:2048',
+            'selected_images' => 'nullable|array',
+            'selected_images.*' => 'nullable|string',
         ]);
+
+        // Generate new slug if name has changed
+        if ($product->name !== $validated['name']) {
+            $validated['slug'] = $this->generateUniqueSlug($validated['name']);
+        }
 
         if ($request->hasFile('image')) {
             if ($product->image_path) {
@@ -92,6 +117,24 @@ class ProductController extends Controller
         }
 
         $product->update($validated);
+
+        // Handle selected existing images
+        if ($request->has('selected_images') && is_array($request->input('selected_images')) && !empty($request->input('selected_images'))) {
+            // Remove existing product images
+            $product->images()->delete();
+            
+            // Create new product images from selected images
+            foreach ($request->input('selected_images') as $imagePath) {
+                if (!empty($imagePath)) {
+                    ProductImage::create([
+                        'product_id' => $product->id,
+                        'image_path' => $imagePath,
+                        'is_primary' => false,
+                        'sort_order' => ProductImage::where('product_id', $product->id)->count()
+                    ]);
+                }
+            }
+        }
 
         return redirect()
             ->route('shop-owner.products.index')
@@ -116,5 +159,116 @@ class ProductController extends Controller
         return redirect()
             ->route('shop-owner.products.index')
             ->with('success', 'Product deleted successfully');
+    }
+
+    public function searchImages(Request $request)
+    {
+        $request->validate([
+            'query' => 'required|string|min:2'
+        ]);
+
+        $query = $request->input('query');
+        $shopId = auth()->user()->shop->id;
+
+        // Split the query into individual words for more flexible searching
+        $searchTerms = array_filter(explode(' ', strtolower($query)));
+        
+        // Search for products with similar names and get their images
+        $products = Product::where('shop_id', $shopId)
+            ->where(function($q) use ($searchTerms, $query) {
+                // Search for exact phrase match
+                $q->where('name', 'like', '%' . $query . '%');
+                
+                // Search for individual word matches
+                foreach ($searchTerms as $term) {
+                    if (strlen($term) >= 2) { // Only search for terms with 2+ characters
+                        $q->orWhere('name', 'like', '%' . $term . '%');
+                    }
+                }
+            })
+            ->with('images')
+            ->get();
+
+        $images = collect();
+        
+        foreach ($products as $product) {
+            // Add main product image if exists
+            if ($product->image_path) {
+                $images->push([
+                    'id' => 'main_' . $product->id,
+                    'path' => $product->image_path,
+                    'url' => asset($product->image_path),
+                    'product_name' => $product->name,
+                    'type' => 'main'
+                ]);
+            }
+            
+            // Add product images
+            foreach ($product->images as $image) {
+                $images->push([
+                    'id' => 'image_' . $image->id,
+                    'path' => $image->image_path,
+                    'url' => asset($image->image_path),
+                    'product_name' => $product->name,
+                    'type' => 'additional'
+                ]);
+            }
+        }
+
+        // Also search in the uploads directory for images with similar names
+        $uploadPath = public_path('uploads/products');
+        if (is_dir($uploadPath)) {
+            $files = scandir($uploadPath);
+            foreach ($files as $file) {
+                if ($file !== '.' && $file !== '..' && is_file($uploadPath . '/' . $file)) {
+                    $fileName = pathinfo($file, PATHINFO_FILENAME);
+                    $fileNameLower = strtolower($fileName);
+                    
+                    // Check if any search term matches the filename
+                    $matches = false;
+                    foreach ($searchTerms as $term) {
+                        if (strlen($term) >= 2 && stripos($fileNameLower, $term) !== false) {
+                            $matches = true;
+                            break;
+                        }
+                    }
+                    
+                    // Also check for exact phrase match
+                    if (!$matches && stripos($fileNameLower, strtolower($query)) !== false) {
+                        $matches = true;
+                    }
+                    
+                    if ($matches) {
+                        $imagePath = 'uploads/products/' . $file;
+                        $images->push([
+                            'id' => 'file_' . $file,
+                            'path' => $imagePath,
+                            'url' => asset($imagePath),
+                            'product_name' => 'Uploaded Image',
+                            'type' => 'uploaded'
+                        ]);
+                    }
+                }
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'images' => $images->unique('path')->values()
+        ]);
+    }
+
+    private function generateUniqueSlug($name)
+    {
+        $slug = Str::slug($name);
+        $count = 1;
+        $originalSlug = $slug;
+
+        while (Product::where('slug', $slug)->exists()) {
+            $slug = $originalSlug . '-' . $count;
+            $count++;
+        }
+
+        return $slug;
     }
 } 

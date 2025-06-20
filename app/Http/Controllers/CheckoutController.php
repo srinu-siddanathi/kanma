@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
 use Razorpay\Api\Api;
@@ -27,6 +28,7 @@ class CheckoutController extends Controller
         $total = 0;
         $items = [];
         $deliveryFee = 50; // Default delivery fee
+        $smallCartFee = 0; // Small cart fee
 
         foreach ($cart as $variantId => $item) {
             $price = $item['discount_percentage'] > 0 ? $item['discounted_price'] : $item['price'];
@@ -42,6 +44,23 @@ class CheckoutController extends Controller
                 'image_path' => $item['image_path'],
                 'total' => $price * $item['quantity']
             ];
+        }
+
+        // Calculate small cart fee if order is below minimum amount
+        $minimumOrderAmount = Setting::get('minimum_order_amount', 100);
+        $smallCartFeeAmount = Setting::get('small_cart_fee', 10);
+        
+        // Check if user has active membership subscription
+        $hasActiveMembership = false;
+        if (auth()->check()) {
+            $user = auth()->user();
+            $activeSubscription = $user->currentSubscription();
+            $hasActiveMembership = $activeSubscription && $activeSubscription->status === 'active';
+        }
+        
+        // Only apply small cart fee if user doesn't have active membership
+        if (!$hasActiveMembership && $total < $minimumOrderAmount) {
+            $smallCartFee = $smallCartFeeAmount;
         }
 
         // Calculate delivery fee based on subscription plan
@@ -78,13 +97,13 @@ class CheckoutController extends Controller
         $razorpayOrder = null;
         if ($total > 0) {
             $razorpayOrder = $this->razorpay->order->create([
-                'amount' => ($total + $deliveryFee) * 100, // Amount in paise
+                'amount' => ($total + $deliveryFee + $smallCartFee) * 100, // Amount in paise
                 'currency' => 'INR',
                 'payment_capture' => 1
             ]);
         }
 
-        return view('checkout', compact('items', 'total', 'deliveryFee', 'razorpayOrder'));
+        return view('checkout', compact('items', 'total', 'deliveryFee', 'smallCartFee', 'razorpayOrder'));
     }
 
     public function store(Request $request)
@@ -116,6 +135,7 @@ class CheckoutController extends Controller
 
             // Calculate delivery fee
             $deliveryFee = 50; // Default delivery fee
+            $smallCartFee = 0; // Small cart fee
             $user = auth()->user();
             $activeSubscription = $user->currentSubscription();
             
@@ -173,10 +193,28 @@ class CheckoutController extends Controller
                 ];
             }
 
+            // Calculate small cart fee if order is below minimum amount
+            $minimumOrderAmount = Setting::get('minimum_order_amount', 100);
+            $smallCartFeeAmount = Setting::get('small_cart_fee', 10);
+            
+            // Check if user has active membership subscription
+            $hasActiveMembership = false;
+            if (auth()->check()) {
+                $user = auth()->user();
+                $activeSubscription = $user->currentSubscription();
+                $hasActiveMembership = $activeSubscription && $activeSubscription->status === 'active';
+            }
+            
+            // Only apply small cart fee if user doesn't have active membership
+            if (!$hasActiveMembership && $total < $minimumOrderAmount) {
+                $smallCartFee = $smallCartFeeAmount;
+            }
+
             Log::info('Order calculation', [
                 'total' => $total,
                 'delivery_fee' => $deliveryFee,
-                'final_total' => $total + $deliveryFee,
+                'small_cart_fee' => $smallCartFee,
+                'final_total' => $total + $deliveryFee + $smallCartFee,
                 'order_items' => $orderItems
             ]);
 
@@ -186,7 +224,7 @@ class CheckoutController extends Controller
             $orderData = [
                 'user_id' => auth()->id(),
                 'branch_id' => Branch::where('is_active', true)->first()->id,
-                'total_amount' => $total + $deliveryFee,
+                'total_amount' => $total + $deliveryFee + $smallCartFee,
                 'status' => 'pending',
                 'payment_method' => $request->payment_method,
                 'payment_status' => $request->payment_method === 'cod' ? 'pending' : 'completed',
@@ -195,7 +233,7 @@ class CheckoutController extends Controller
                     $address->city . ', ' . 
                     $address->state . ' - ' . 
                     $address->postal_code,
-                'delivery_fee' => $deliveryFee,
+                'delivery_fee' => $deliveryFee + $smallCartFee,
                 'delivery_latitude' => $address->latitude,
                 'delivery_longitude' => $address->longitude,
                 'razorpay_payment_id' => $request->razorpay_payment_id,

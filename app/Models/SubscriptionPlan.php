@@ -13,16 +13,15 @@ class SubscriptionPlan extends Model
         'name',
         'description',
         'price',
-        'duration_days',
-        'features',
-        'is_popular',
+        'validity_days',
+        'wallet_addon',
+        'free_orders',
+        'free_delivery_radius',
         'is_active'
     ];
 
     protected $casts = [
         'price' => 'decimal:2',
-        'features' => 'array',
-        'is_popular' => 'boolean',
         'is_active' => 'boolean'
     ];
 

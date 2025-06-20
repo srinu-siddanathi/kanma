@@ -19,6 +19,7 @@
 @include('components.home.membership-plans')
 
 @include('components.home.newsletter')
+@include('components.home.shop-owner-registration')
 @include('components.home.best-selling', ['products' => $data->best_selling])
 @include('components.home.just-arrived', ['products' => $data->just_arrived])
 {{-- @include('components.home.blog', ['posts' => $data->blog_posts]) --}}

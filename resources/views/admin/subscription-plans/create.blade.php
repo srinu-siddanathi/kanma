@@ -51,8 +51,8 @@
                     </div>
 
                     <div>
-                        <label for="duration_in_days" class="block text-sm font-medium text-gray-700">Duration (Days)</label>
-                        <input type="number" name="duration_in_days" id="duration_in_days" value="{{ old('duration_in_days') }}" required min="1"
+                        <label for="validity_days" class="block text-sm font-medium text-gray-700">Duration (Days)</label>
+                        <input type="number" name="validity_days" id="validity_days" value="{{ old('validity_days') }}" min="1"
                             class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
                     </div>
 
@@ -66,12 +66,12 @@
 
                     <div class="katha-only">
                         <label for="wallet_addon" class="block text-sm font-medium text-gray-700">Wallet Addon (₹)</label>
-                        <input type="number" name="wallet_addon" id="wallet_addon" value="{{ old('wallet_addon', 0) }}" min="0" step="0.01"
+                        <input type="text" name="wallet_addon" id="wallet_addon" value="{{ old('wallet_addon', '') }}"
                             class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
                     </div>
 
                     <div class="katha-only">
-                        <label for="free_orders" class="block text-sm font-medium text-gray-700">Free Orders</label>
+                        <label for="free_orders" class="block text-sm font-medium text-gray-700">Free Special Orders</label>
                         <input type="number" name="free_orders" id="free_orders" value="{{ old('free_orders', 0) }}" min="0"
                             class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
                     </div>

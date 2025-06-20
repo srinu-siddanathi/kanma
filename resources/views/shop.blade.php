@@ -65,41 +65,72 @@
 
             <!-- Products Grid -->
             <div class="col-lg-9">
-                <!-- Featured Banners Section -->
-                <div class="mb-4">
-                    <div class="row g-3">
-                        <div class="col-md-4">
-                            <div class="promo-banner-card p-4 d-flex flex-column justify-content-between h-100 rounded-4" style="background: linear-gradient(90deg, #b3e0ff 0%, #e0e7ff 100%); min-height: 180px;">
-                                <div>
-                                    <h4 class="fw-bold mb-2" style="font-size: 1.3rem;">New launches of the season!</h4>
-                                    <div class="mb-3 text-muted" style="font-size: 1rem;">UP TO 30% OFF</div>
-                                    <a href="#" class="btn btn-dark px-4 py-2 rounded-pill fw-semibold">Order now</a>
+                <!-- Featured Products Section -->
+                @if($featuredProducts && $featuredProducts->count() > 0)
+                <div class="mb-5">
+                    <h3 class="h5 mb-4">Featured Products</h3>
+                    <div class="featured-products-carousel position-relative">
+                        <div class="swiper featured-products-swiper">
+                            <div class="swiper-wrapper">
+                                @foreach($featuredProducts as $index => $product)
+                                <div class="swiper-slide">
+                                    <div class="product-card h-100" 
+                                         style="background: linear-gradient(135deg, 
+                                            {{ $index % 3 == 0 ? '#e6f3ff, #f0f5ff' : 
+                                               ($index % 3 == 1 ? '#e8f8f5, #f0f9ff' : '#fff8e6, #fffbf0') }}
+                                         );">
+                                        <div class="product-content p-4">
+                                            <div class="product-image mb-4">
+                                                <img src="{{ $product->image_url }}" 
+                                                     alt="{{ $product->name }}" 
+                                                     class="img-fluid rounded"
+                                                     style="width: 100%; height: 200px; object-fit: cover;"
+                                                     onerror="this.onerror=null;this.src='{{ asset('images/no-image.png') }}';">
+                                            </div>
+                                            <h4 class="product-title mb-3">{{ $product->name }}</h4>
+                                            @php
+                                                $variant = $product->variants->first();
+                                                $price = $variant?->price ?? 0;
+                                                $hasDiscount = $variant && $variant->discount_percentage > 0;
+                                                $discountPrice = $hasDiscount 
+                                                    ? $price - ($price * $variant->discount_percentage / 100) 
+                                                    : $price;
+                                            @endphp
+                                            <div class="product-price mb-4">
+                                                <span class="price">₹{{ number_format($discountPrice, 2) }}</span>
+                                                @if($hasDiscount)
+                                                <span class="original-price ms-2">₹{{ number_format($price, 2) }}</span>
+                                                @endif
+                                            </div>
+                                            <div class="d-flex align-items-center">
+                                                <a href="{{ route('product.show', $product->id) }}" 
+                                                   class="btn btn-dark rounded-pill px-4 flex-grow-1">
+                                                    View Product
+                                                </a>
+                                                <button class="btn btn-outline-dark rounded-circle ms-3 add-to-cart-btn"
+                                                        data-product-id="{{ $product->id }}"
+                                                        data-variant-id="{{ $variant?->id }}">
+                                                    <i class="bi bi-cart-plus"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                                <img src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=cover&w=200&q=80" alt="Banner 1" class="mt-3 align-self-end rounded-3" style="width: 100px; height: 80px; object-fit: cover;">
+                                @endforeach
                             </div>
                         </div>
-                        <div class="col-md-4">
-                            <div class="promo-banner-card p-4 d-flex flex-column justify-content-between h-100 rounded-4" style="background: linear-gradient(90deg, #e0e7ff 0%, #f0fdfa 100%); min-height: 180px;">
-                                <div>
-                                    <h4 class="fw-bold mb-2" style="font-size: 1.3rem;">Build your own<br>Home garden</h4>
-                                    <div class="mb-3 text-muted" style="font-size: 1rem;">zepto bloom</div>
-                                    <a href="#" class="btn btn-dark px-4 py-2 rounded-pill fw-semibold">Order now</a>
-                                </div>
-                                <img src="https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=cover&w=200&q=80" alt="Banner 2" class="mt-3 align-self-end rounded-3" style="width: 100px; height: 80px; object-fit: cover;">
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="promo-banner-card p-4 d-flex flex-column justify-content-between h-100 rounded-4" style="background: linear-gradient(90deg, #ffe9b3 0%, #fffbe0 100%); min-height: 180px;">
-                                <div>
-                                    <h4 class="fw-bold mb-2" style="font-size: 1.3rem;">SEASON OF THE KING</h4>
-                                    <div class="mb-3 text-muted" style="font-size: 1rem;">Naturally ripened, from handpicked farms</div>
-                                    <a href="#" class="btn btn-success px-4 py-2 rounded-pill fw-semibold">Explore now</a>
-                                </div>
-                                <img src="https://images.unsplash.com/photo-1502741338009-cac2772e18bc?auto=format&fit=cover&w=200&q=80" alt="Banner 3" class="mt-3 align-self-end rounded-3" style="width: 100px; height: 80px; object-fit: cover;">
-                            </div>
-                        </div>
+                        
+                        
                     </div>
                 </div>
+                @else
+                <div class="mb-4">
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-2"></i>
+                        No featured products available at the moment.
+                    </div>
+                </div>
+                @endif
 
                 <!-- Products -->
                 <div class="row" id="productsContainer">
@@ -119,9 +150,11 @@
                                 @if($hasDiscount)
                                 <div class="badge bg-success position-absolute m-3">-{{ $variant->discount_percentage }}%</div>
                                 @endif
-                                <img src="{{ $product->image_url }}" class="card-img-top" alt="{{ $product->name }}"
-                                     style="height: 200px; object-fit: cover;"
-                                     onerror="this.onerror=null;this.src='{{ asset('images/no-image.png') }}';">
+                                <a href="{{ route('product.show', $product->id) }}">
+                                    <img src="{{ $product->image_url }}" class="card-img-top" alt="{{ $product->name }}"
+                                         style="height: 200px; object-fit: cover;"
+                                         onerror="this.onerror=null;this.src='{{ asset('images/no-image.png') }}';">
+                                </a>
                             </div>
                             <div class="card-body d-flex flex-column">
                                 <h5 class="card-title mb-2">
@@ -356,81 +389,293 @@
 }
 
 .promo-banner-card {
-    box-shadow: 0 2px 16px 0 rgba(0,0,0,0.07);
-    transition: box-shadow 0.2s;
-}
-.promo-banner-card:hover {
-    box-shadow: 0 4px 24px 0 rgba(0,0,0,0.12);
+    background: #fff;
+    border-radius: 1rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    height: 100%;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    overflow: hidden;
 }
 
-.product-qty {
+.promo-banner-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+}
+
+.promo-banner-card h4 {
+    color: #2d3436;
+    margin-bottom: 0.75rem;
+    line-height: 1.3;
+}
+
+.promo-banner-card .text-warning {
+    color: #ffc107 !important;
+}
+
+.btn-outline-warning {
+    color: #ffc107;
+    border-color: #ffc107;
+}
+
+.btn-outline-warning:hover {
+    color: #000;
+    background-color: #ffc107;
+    border-color: #ffc107;
+}
+
+.btn-dark {
+    background-color: #2d3436;
+    border: none;
+}
+
+.btn-dark:hover {
+    background-color: #1e2527;
+}
+
+/* Featured Products Styles */
+.featured-products-carousel {
+    position: relative;
+    padding: 0 50px;
+}
+
+.featured-products-swiper {
+    overflow: hidden;
+}
+
+.swiper-slide {
+    height: auto;
+}
+
+.product-card {
+    border-radius: 20px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    height: 100%;
+    margin: 0 10px;
+}
+
+.product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+
+.product-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #2d3436;
+    line-height: 1.4;
+    height: 2.8em;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.product-price {
+    display: flex;
+    align-items: center;
+}
+
+.price {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #2d3436;
+}
+
+.original-price {
+    font-size: 1rem;
+    color: #a0a0a0;
+    text-decoration: line-through;
+}
+
+.btn-dark {
+    background: #2d3436;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-dark:hover {
+    background: #1e2527;
+    transform: translateY(-2px);
+}
+
+.add-to-cart-btn {
+    width: 40px;
+    height: 40px;
+    padding: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 4px;
-    margin-bottom: 0;
+    transition: all 0.3s ease;
 }
-.product-qty .btn {
-    min-width: 32px;
-    height: 32px;
-    padding: 0;
-    font-size: 1.2rem;
-    border-radius: 0.5rem;
+
+.add-to-cart-btn:hover {
+    background: #2d3436;
+    color: white;
+    transform: translateY(-2px);
 }
-.product-qty .quantity {
+
+/* Swiper Navigation Styles */
+.featured-swiper-next,
+.featured-swiper-prev {
     width: 40px;
-    text-align: center;
-    border-radius: 0.5rem;
-    margin: 0 2px;
-    height: 32px;
-    padding: 0;
+    height: 40px;
+    background: #ffc107;
+    border-radius: 50%;
+    color: #000;
+    font-size: 18px;
+    transition: all 0.3s ease;
 }
-.card-body {
-    padding-bottom: 1rem !important;
+
+.featured-swiper-next:hover,
+.featured-swiper-prev:hover {
+    background: #ffca2c;
+    transform: scale(1.1);
+}
+
+.featured-swiper-next::after,
+.featured-swiper-prev::after {
+    font-size: 16px;
+    font-weight: bold;
+}
+
+/* Swiper Pagination Styles */
+.featured-swiper-pagination {
+    position: relative;
+    margin-top: 20px;
+}
+
+.featured-swiper-pagination .swiper-pagination-bullet {
+    width: 10px;
+    height: 10px;
+    background: #dee2e6;
+    opacity: 1;
+    transition: all 0.3s ease;
+}
+
+.featured-swiper-pagination .swiper-pagination-bullet-active {
+    background: #ffc107;
+    transform: scale(1.2);
+}
+
+@media (max-width: 768px) {
+    .featured-products-carousel {
+        padding: 0 30px;
+    }
+    
+    .product-title {
+        font-size: 1.1rem;
+    }
+    
+    .price {
+        font-size: 1.25rem;
+    }
+    
+    .btn-dark {
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+    }
+    
+    .featured-swiper-next,
+    .featured-swiper-prev {
+        width: 35px;
+        height: 35px;
+    }
 }
 </style>
 @endpush
 
 @push('scripts')
 <script>
-// Add to cart
-document.querySelectorAll('.add-to-cart').forEach(button => {
-    button.addEventListener('click', function() {
-        const productId = this.dataset.productId;
-        const variantId = this.dataset.variantId;
-        
-        if (!productId || !variantId) {
-            alert('Product or variant not available');
-            return;
-        }
-
-        fetch('{{ route("cart.add") }}', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize Featured Products Swiper
+    const featuredSwiper = new Swiper('.featured-products-swiper', {
+        slidesPerView: 1,
+        spaceBetween: 20,
+        loop: true,
+        autoplay: {
+            delay: 3000,
+            disableOnInteraction: false,
+        },
+        pagination: {
+            el: '.featured-swiper-pagination',
+            clickable: true,
+        },
+        navigation: {
+            nextEl: '.featured-swiper-next',
+            prevEl: '.featured-swiper-prev',
+        },
+        breakpoints: {
+            768: {
+                slidesPerView: 2,
+                spaceBetween: 20,
             },
-            body: JSON.stringify({
-                product_id: productId,
-                variant_id: variantId,
-                quantity: 1
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                // Show success message
-                alert('Product added to cart successfully!');
-            } else {
-                // Show error message
-                alert(data.message || 'Failed to add product to cart');
+            992: {
+                slidesPerView: 3,
+                spaceBetween: 30,
             }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('An error occurred while adding the product to cart');
-        });
+        },
+        on: {
+            init: function() {
+                console.log('Featured products swiper initialized');
+            }
+        }
     });
+    
+    // Add to cart functionality
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.add-to-cart-btn')) {
+            const btn = e.target.closest('.add-to-cart-btn');
+            const productId = btn.dataset.productId;
+            const variantId = btn.dataset.variantId;
+            
+            if (!productId || !variantId) {
+                alert('Product or variant not available');
+                return;
+            }
+            
+            fetch('{{ route("cart.add") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    product_id: productId,
+                    variant_id: variantId,
+                    quantity: 1
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Show success message
+                    alert('Product added to cart successfully!');
+                } else {
+                    // Show error message
+                    alert(data.message || 'Failed to add product to cart');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while adding the product to cart');
+            });
+        }
+    });
+    
+    // Pause autoplay on hover
+    const swiperContainer = document.querySelector('.featured-products-swiper');
+    if (swiperContainer) {
+        swiperContainer.addEventListener('mouseenter', function() {
+            featuredSwiper.autoplay.stop();
+        });
+        
+        swiperContainer.addEventListener('mouseleave', function() {
+            featuredSwiper.autoplay.start();
+        });
+    }
 });
 </script>
 @endpush

@@ -28,7 +28,7 @@
                     @foreach($availableProducts as $product)
                     <tr>
                         <td class="px-6 py-4">{{ $product->name }}</td>
-                        <td class="px-6 py-4">{{ $product->category->name }}</td>
+                        <td class="px-6 py-4">{{ $product->category ? $product->category->name : 'No Category' }}</td>
                         <td class="px-6 py-4">{{ $product->price }}</td>
                         <td class="px-6 py-4">
                             <form action="{{ route('branch.products.add') }}" method="POST" class="flex items-center">

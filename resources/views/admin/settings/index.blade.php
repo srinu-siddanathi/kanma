@@ -36,6 +36,10 @@
                                     ₹/km
                                 @elseif($setting->key === 'service_radius_km')
                                     km
+                                @elseif($setting->key === 'small_cart_fee')
+                                    ₹
+                                @elseif($setting->key === 'minimum_order_amount')
+                                    ₹
                                 @endif
                             </span>
                         </div>

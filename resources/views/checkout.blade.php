@@ -64,6 +64,21 @@
 
                         <!-- Order Totals -->
                         <div class="order-totals mb-4">
+                            @auth
+                                @php
+                                    $user = auth()->user();
+                                    $activeSubscription = $user->currentSubscription();
+                                    $hasActiveMembership = $activeSubscription && $activeSubscription->status === 'active';
+                                @endphp
+                                @if($hasActiveMembership)
+                                    <div class="alert alert-success mb-3">
+                                        <i class="bi bi-check-circle-fill me-2"></i>
+                                        <strong>Membership Active!</strong><br>
+                                        <small>No small cart fees or minimum order restrictions.</small>
+                                    </div>
+                                @endif
+                            @endauth
+                            
                             <div class="d-flex justify-content-between mb-2">
                                 <span>Subtotal</span>
                                 <span>₹{{ number_format($total, 2) }}</span>
@@ -78,10 +93,16 @@
                                     @endif
                                 </span>
                             </div>
+                            @if($smallCartFee > 0)
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Small Cart Fee</span>
+                                <span class="text-warning">₹{{ number_format($smallCartFee, 2) }}</span>
+                            </div>
+                            @endif
                             <hr>
                             <div class="d-flex justify-content-between mb-4">
                                 <strong>Total</strong>
-                                <strong class="text-primary">₹{{ number_format($total + $deliveryFee, 2) }}</strong>
+                                <strong class="text-primary">₹{{ number_format($total + $deliveryFee + $smallCartFee, 2) }}</strong>
                             </div>
                         </div>
 
@@ -226,7 +247,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Initialize Razorpay
             const options = {
                 key: "{{ config('services.razorpay.key') }}",
-                amount: "{{ ($total + $deliveryFee) * 100 }}", // Amount in paise
+                amount: "{{ ($total + $deliveryFee + $smallCartFee) * 100 }}", // Amount in paise
                 currency: "INR",
                 name: "{{ config('app.name') }}",
                 description: "Order Payment",

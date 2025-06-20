@@ -17,6 +17,7 @@ class HomeController extends Controller
         try {
             // Get banners
             $banners = Banner::where('is_active', true)
+                ->where('section', Banner::SECTION_WEB_HOME)
                 ->orderBy('display_order')
                 ->take(3)
                 ->get();

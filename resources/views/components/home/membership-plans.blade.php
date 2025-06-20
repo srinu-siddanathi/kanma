@@ -27,7 +27,7 @@
         <ul class="nav nav-pills nav-justified mb-4" id="planTabs" role="tablist">
             <li class="nav-item" role="presentation">
                 <button class="nav-link active" id="katha-tab" data-bs-toggle="pill" data-bs-target="#katha" type="button" role="tab" aria-controls="katha" aria-selected="true">
-                    <i class="bi bi-book me-2"></i>Katha Service
+                    <i class="bi bi-book me-2"></i>Kanma Services
                 </button>
             </li>
             <li class="nav-item" role="presentation">
@@ -66,13 +66,13 @@
                                             @if($plan->wallet_addon > 0)
                                                 <li class="mb-2">
                                                     <i class="bi bi-wallet2 text-success me-2"></i>
-                                                    Wallet Addon: ₹{{ number_format($plan->wallet_addon, 2) }}
+                                                    Wallet Addon: {{ $plan->wallet_addon }}
                                                 </li>
                                             @endif
                                             @if($plan->free_orders > 0)
                                                 <li class="mb-2">
                                                     <i class="bi bi-cart-check text-success me-2"></i>
-                                                    {{ $plan->free_orders }} Free Orders
+                                                    {{ $plan->free_orders }} Free Special Orders
                                                 </li>
                                             @endif
                                             @if($plan->free_delivery_radius > 0)
@@ -144,7 +144,7 @@
                                             @if($plan->wallet_addon > 0)
                                                 <li class="mb-2">
                                                     <i class="bi bi-wallet2 text-success me-2"></i>
-                                                    Wallet Addon: ₹{{ number_format($plan->wallet_addon, 2) }}
+                                                    Wallet Addon: {{ $plan->wallet_addon }}
                                                 </li>
                                             @endif
                                             @if($plan->free_orders > 0)

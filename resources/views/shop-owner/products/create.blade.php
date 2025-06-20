@@ -57,8 +57,37 @@
                             @enderror
                         </div>
 
+                        <!-- Image Search Section -->
                         <div>
-                            <label for="image" class="block text-sm font-medium text-gray-700">Product Image</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Search Existing Images</label>
+                            <div class="flex space-x-2 mb-3">
+                                <input type="text" id="imageSearchQuery" placeholder="Search for existing images (e.g., 'fresh eggs' will find 'eggs' too)..."
+                                    class="flex-1 border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                                <button type="button" id="searchImagesBtn" 
+                                    class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 text-sm">
+                                    Search
+                                </button>
+                            </div>
+                            
+                            <!-- Search Results -->
+                            <div id="imageSearchResults" class="hidden mb-4">
+                                <h4 class="text-sm font-medium text-gray-700 mb-2">Found Images:</h4>
+                                <div id="imageResultsGrid" class="grid grid-cols-4 gap-2 max-h-48 overflow-y-auto border border-gray-200 rounded-md p-2">
+                                    <!-- Images will be loaded here -->
+                                </div>
+                            </div>
+
+                            <!-- Selected Images -->
+                            <div id="selectedImagesContainer" class="hidden mb-4">
+                                <h4 class="text-sm font-medium text-gray-700 mb-2">Selected Images:</h4>
+                                <div id="selectedImagesGrid" class="grid grid-cols-4 gap-2 border border-gray-200 rounded-md p-2">
+                                    <!-- Selected images will be shown here -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label for="image" class="block text-sm font-medium text-gray-700">Upload New Image</label>
                             <input type="file" name="image" id="image" accept="image/*"
                                 class="mt-1 block w-full border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                             <p class="mt-1 text-sm text-gray-500">Maximum file size: 2MB. Supported formats: JPG, PNG</p>
@@ -86,7 +115,155 @@
 
 @push('scripts')
 <script>
-    // No need for subcategory handling anymore
+document.addEventListener('DOMContentLoaded', function() {
+    const searchBtn = document.getElementById('searchImagesBtn');
+    const searchQuery = document.getElementById('imageSearchQuery');
+    const resultsContainer = document.getElementById('imageSearchResults');
+    const resultsGrid = document.getElementById('imageResultsGrid');
+    const selectedContainer = document.getElementById('selectedImagesContainer');
+    const selectedGrid = document.getElementById('selectedImagesGrid');
+    const selectedImages = [];
+
+    // Define functions first
+    function addHiddenInput(imagePath) {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'selected_images[]';
+        input.value = imagePath;
+        document.querySelector('form').appendChild(input);
+    }
+
+    function removeHiddenInput(imagePath) {
+        const inputs = document.querySelectorAll('input[name="selected_images[]"]');
+        inputs.forEach(input => {
+            if (input.value === imagePath) {
+                input.remove();
+            }
+        });
+    }
+
+    function updateSelectedImagesDisplay() {
+        if (selectedImages.length === 0) {
+            selectedContainer.classList.add('hidden');
+            return;
+        }
+
+        selectedGrid.innerHTML = selectedImages.map((image, index) => `
+            <div class="relative group">
+                <img src="${image.url}" alt="${image.productName}" 
+                     class="w-full h-20 object-cover rounded border-2 border-indigo-500">
+                <button type="button" onclick="removeSelectedImage(${index})" 
+                        class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600">
+                    ×
+                </button>
+                <div class="text-xs text-gray-600 mt-1 truncate">${image.productName}</div>
+            </div>
+        `).join('');
+        
+        selectedContainer.classList.remove('hidden');
+    }
+
+    // Search for images when button is clicked
+    searchBtn.addEventListener('click', function() {
+        const query = searchQuery.value.trim();
+        if (query.length < 2) {
+            alert('Please enter at least 2 characters to search');
+            return;
+        }
+        
+        searchImages(query);
+    });
+
+    // Search for images when Enter is pressed
+    searchQuery.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            searchBtn.click();
+        }
+    });
+
+    // Auto-search when product name changes
+    const productNameInput = document.getElementById('name');
+    productNameInput.addEventListener('input', function() {
+        const name = this.value.trim();
+        if (name.length >= 2) {
+            searchImages(name);
+        }
+    });
+
+    function searchImages(query) {
+        fetch('{{ route("shop-owner.products.search-images") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: JSON.stringify({ query: query })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                displaySearchResults(data.images);
+            } else {
+                alert('Error searching for images');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error searching for images');
+        });
+    }
+
+    function displaySearchResults(images) {
+        if (images.length === 0) {
+            resultsGrid.innerHTML = '<p class="text-gray-500 text-sm col-span-4">No images found</p>';
+        } else {
+            resultsGrid.innerHTML = images.map(image => `
+                <div class="relative group cursor-pointer" onclick="selectImage('${image.path}', '${image.url}', '${image.product_name}')">
+                    <img src="${image.url}" alt="${image.product_name}" 
+                         class="w-full h-20 object-cover rounded border-2 border-gray-200 hover:border-indigo-500">
+                    <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-200 rounded flex items-center justify-center">
+                        <span class="text-white text-xs opacity-0 group-hover:opacity-100">Click to select</span>
+                    </div>
+                    <div class="text-xs text-gray-600 mt-1 truncate">${image.product_name}</div>
+                </div>
+            `).join('');
+        }
+        resultsContainer.classList.remove('hidden');
+    }
+
+    window.selectImage = function(imagePath, imageUrl, productName) {
+        // Check if image is already selected
+        if (selectedImages.some(img => img.path === imagePath)) {
+            alert('This image is already selected');
+            return;
+        }
+
+        // Add to selected images
+        selectedImages.push({
+            path: imagePath,
+            url: imageUrl,
+            productName: productName
+        });
+
+        // Update selected images display
+        updateSelectedImagesDisplay();
+        
+        // Add hidden input for form submission
+        addHiddenInput(imagePath);
+    };
+
+    window.removeSelectedImage = function(index) {
+        const imagePath = selectedImages[index].path;
+        selectedImages.splice(index, 1);
+        
+        // Remove hidden input
+        removeHiddenInput(imagePath);
+        
+        // Update display
+        updateSelectedImagesDisplay();
+    };
+});
 </script>
 @endpush
 @endsection 

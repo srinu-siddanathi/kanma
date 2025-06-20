@@ -124,7 +124,7 @@ class ProductController extends Controller
 
             $product = Product::create([
                 'name' => $validated['name'],
-                'slug' => Str::slug($validated['name']),
+                'slug' => $this->generateUniqueSlug($validated['name']),
                 'description' => $validated['description'],
                 'category_id' => $validated['category_id'],
                 'shop_id' => auth()->user()->shop->id ?? null,
@@ -238,7 +238,7 @@ class ProductController extends Controller
 
             $product->update([
                 'name' => $validated['name'],
-                'slug' => Str::slug($validated['name']),
+                'slug' => $this->generateUniqueSlug($validated['name']),
                 'description' => $validated['description'],
                 'category_id' => $validated['category_id'],
                 'is_deal' => $request->boolean('is_deal'),
@@ -450,5 +450,19 @@ class ProductController extends Controller
                 'message' => 'Failed to delete image: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    private function generateUniqueSlug($name)
+    {
+        $slug = Str::slug($name);
+        $count = 1;
+        $originalSlug = $slug;
+
+        while (Product::where('slug', $slug)->exists()) {
+            $slug = $originalSlug . '-' . $count;
+            $count++;
+        }
+
+        return $slug;
     }
 } 

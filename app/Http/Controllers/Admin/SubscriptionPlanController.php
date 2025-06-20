@@ -43,7 +43,10 @@ class SubscriptionPlanController extends Controller
             'name' => 'required|string|max:255',
             'description' => 'required|string',
             'price' => 'required|numeric|min:0',
-            'duration_in_days' => 'required|integer|min:1',
+            'validity_days' => 'required|integer|min:1',
+            'wallet_addon' => 'nullable|string',
+            'free_orders' => 'nullable|integer|min:0',
+            'free_delivery_radius' => 'nullable|integer|min:0',
             'is_active' => 'boolean'
         ]);
 
@@ -62,7 +65,10 @@ class SubscriptionPlanController extends Controller
             'name' => 'required|string|max:255',
             'description' => 'required|string',
             'price' => 'required|numeric|min:0',
-            'duration_in_days' => 'required|integer|min:1',
+            'validity_days' => 'required|integer|min:1',
+            'wallet_addon' => 'nullable|string',
+            'free_orders' => 'nullable|integer|min:0',
+            'free_delivery_radius' => 'nullable|integer|min:0',
             'is_active' => 'boolean'
         ]);
 

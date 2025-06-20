@@ -88,16 +88,13 @@ class ShopController extends Controller
                     $query->latest();
             }
 
-            // Fetch featured products (change logic if you want a different criteria)
+            // Fetch all featured products for carousel
             $featuredProducts = Product::with(['variants' => function ($query) {
                     $query->where('is_active', true);
                 }])
                 ->where('is_active', true)
                 ->whereNull('shop_id')
-                ->where(function($q) {
-                    $q->where('is_featured', true);
-                })
-                ->take(3)
+                ->where('is_featured', true)
                 ->get();
 
             // Get paginated products
@@ -118,6 +115,8 @@ class ShopController extends Controller
             return view('shop', [
                 'products' => $products,
                 'categories' => collect(),
+                'featuredProducts' => collect(),
+                'totalProductCount' => 0,
                 'error' => 'An error occurred while loading the shop page.'
             ]);
         }
