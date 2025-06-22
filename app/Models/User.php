@@ -194,4 +194,9 @@ class User extends Authenticatable
             return $transaction;
         });
     }
+
+    public function monthlyLists()
+    {
+        return $this->hasMany(MonthlyList::class);
+    }
 }

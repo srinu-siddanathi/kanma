@@ -1,0 +1,219 @@
+{
+	"info": {
+		"_postman_id": "a8c4d2e1-4c1e-4b2a-8f6a-3e2d1b0c9d7e",
+		"name": "Kanma - Delivery Boy APIs",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Kanma - Delivery Boy APIs",
+			"item": [
+				{
+					"name": "Authentication",
+					"item": [
+						{
+							"name": "Login as Delivery Boy",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var jsonData = JSON.parse(responseBody);",
+											"postman.setEnvironmentVariable(\"delivery_boy_token\", jsonData.token);"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Accept",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"email\": \"delivery.boy@example.com\",\n    \"password\": \"password\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/api/login",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"login"
+									]
+								},
+								"description": "Login as a delivery boy to get the auth token. The token is automatically saved to an environment variable `delivery_boy_token`."
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Delivery Boy",
+					"item": [
+						{
+							"name": "Toggle Working Status",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"is_working_today\": true\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/api/delivery-boy/working-status",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"delivery-boy",
+										"working-status"
+									]
+								},
+								"description": "Toggle the working status of the delivery boy. Set `is_working_today` to `true` or `false`."
+							},
+							"response": []
+						},
+						{
+							"name": "Get Assigned Orders",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/api/delivery-boy/orders?status=pending",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"delivery-boy",
+										"orders"
+									],
+									"query": [
+										{
+											"key": "status",
+											"value": "pending",
+											"description": "Order status to filter by. Can be 'pending', 'processing', or 'completed'."
+										}
+									]
+								},
+								"description": "Get the orders assigned to the delivery boy, filtered by status."
+							},
+							"response": []
+						},
+						{
+							"name": "Get Order Details",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/api/delivery-boy/orders/{{order_id}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"delivery-boy",
+										"orders",
+										"{{order_id}}"
+									]
+								},
+								"description": "Get the details of a specific order assigned to the delivery boy."
+							},
+							"response": []
+						},
+						{
+							"name": "Update Order Status",
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"status\": \"delivered\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/api/delivery-boy/orders/{{order_id}}/status",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"delivery-boy",
+										"orders",
+										"{{order_id}}",
+										"status"
+									]
+								},
+								"description": "Update the status of an order. Allowed statuses: 'delivered', 'partially_delivered', 'cancelled'."
+							},
+							"response": []
+						}
+					],
+					"auth": {
+						"type": "bearer",
+						"bearer": [
+							{
+								"key": "token",
+								"value": "{{delivery_boy_token}}",
+								"type": "string"
+							}
+						]
+					},
+					"description": "APIs for delivery boys. Authentication is handled by the Bearer Token from the login request."
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://127.0.0.1:8000",
+			"type": "string"
+		},
+		{
+			"key": "order_id",
+			"value": "1",
+			"type": "string"
+		}
+	]
+} 

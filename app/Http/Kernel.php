@@ -62,11 +62,12 @@ class Kernel extends HttpKernel
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         'admin' => \App\Http\Middleware\AdminAuthentication::class,
-        'branch.manager' => \App\Http\Middleware\EnsureUserIsBranchManager::class,
+        'branch.manager' => \App\Http\Middleware\BranchManagerAuthentication::class,
         'shop_owner' => \App\Http\Middleware\EnsureUserIsShopOwner::class,
         'role' => \App\Http\Middleware\CheckRole::class,
         'permission' => \Spatie\Permission\Middlewares\PermissionMiddleware::class,
         'role_or_permission' => \Spatie\Permission\Middlewares\RoleOrPermissionMiddleware::class,
         'auth.sanctum' => \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
+        'delivery.boy' => \App\Http\Middleware\DeliveryBoyAuthentication::class,
     ];
 } 

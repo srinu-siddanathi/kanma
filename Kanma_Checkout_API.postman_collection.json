@@ -1,0 +1,440 @@
+{
+	"info": {
+		"_postman_id": "kanma-checkout-api",
+		"name": "Kanma Checkout API",
+		"description": "Collection for testing the new membership-based checkout API endpoints",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Calculate Checkout Fees",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{auth_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"cart_items\": [\n        {\n            \"product_id\": 1,\n            \"quantity\": 2,\n            \"variant_id\": null\n        },\n        {\n            \"product_id\": 3,\n            \"quantity\": 1,\n            \"variant_id\": 5\n        }\n    ],\n    \"delivery_latitude\": 12.9716,\n    \"delivery_longitude\": 77.5946,\n    \"branch_id\": 1\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/checkout/calculate-fees",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"checkout",
+						"calculate-fees"
+					]
+				},
+				"description": "Calculate delivery fee and small cart fee based on cart items and user membership status."
+			},
+			"response": []
+		},
+		{
+			"name": "Get Checkout Summary",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{auth_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/checkout/summary?delivery_latitude=12.9716&delivery_longitude=77.5946&branch_id=1",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"checkout",
+						"summary"
+					],
+					"query": [
+						{
+							"key": "delivery_latitude",
+							"value": "12.9716",
+							"description": "Delivery latitude coordinate"
+						},
+						{
+							"key": "delivery_longitude",
+							"value": "77.5946",
+							"description": "Delivery longitude coordinate"
+						},
+						{
+							"key": "branch_id",
+							"value": "1",
+							"description": "Branch ID for distance calculation"
+						}
+					]
+				},
+				"description": "Get checkout summary using items from user's cached cart."
+			},
+			"response": []
+		},
+		{
+			"name": "Create Order (COD)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{auth_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"branch_id\": 1,\n    \"delivery_address\": \"123 Main Street, Bangalore, Karnataka - 560001\",\n    \"delivery_latitude\": 12.9716,\n    \"delivery_longitude\": 77.5946,\n    \"items\": [\n        {\n            \"product_id\": 1,\n            \"quantity\": 2,\n            \"variant_id\": null\n        },\n        {\n            \"product_id\": 3,\n            \"quantity\": 1,\n            \"variant_id\": 5\n        }\n    ],\n    \"notes\": \"Please deliver in the morning\",\n    \"payment_method\": \"cod\",\n    \"wallet_amount_used\": 0\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/orders",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"orders"
+					]
+				},
+				"description": "Create order with Cash on Delivery payment method."
+			},
+			"response": []
+		},
+		{
+			"name": "Create Order (Wallet)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{auth_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"branch_id\": 1,\n    \"delivery_address\": \"123 Main Street, Bangalore, Karnataka - 560001\",\n    \"delivery_latitude\": 12.9716,\n    \"delivery_longitude\": 77.5946,\n    \"items\": [\n        {\n            \"product_id\": 1,\n            \"quantity\": 2,\n            \"variant_id\": null\n        }\n    ],\n    \"notes\": \"Wallet payment order\",\n    \"payment_method\": \"wallet\",\n    \"wallet_amount_used\": 100\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/orders",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"orders"
+					]
+				},
+				"description": "Create order using wallet payment method."
+			},
+			"response": []
+		},
+		{
+			"name": "Create Order (Razorpay)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{auth_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"branch_id\": 1,\n    \"delivery_address\": \"123 Main Street, Bangalore, Karnataka - 560001\",\n    \"delivery_latitude\": 12.9716,\n    \"delivery_longitude\": 77.5946,\n    \"items\": [\n        {\n            \"product_id\": 1,\n            \"quantity\": 2,\n            \"variant_id\": null\n        }\n    ],\n    \"notes\": \"Razorpay payment order\",\n    \"payment_method\": \"razorpay\",\n    \"wallet_amount_used\": 0\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/orders",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"orders"
+					]
+				},
+				"description": "Create order with Razorpay payment method."
+			},
+			"response": []
+		},
+		{
+			"name": "Get User Orders",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{auth_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/orders",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"orders"
+					]
+				},
+				"description": "Get all orders for the authenticated user."
+			},
+			"response": []
+		},
+		{
+			"name": "Get Order Details",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{auth_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/orders/{{order_id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"orders",
+						"{{order_id}}"
+					]
+				},
+				"description": "Get specific order details by order ID."
+			},
+			"response": []
+		},
+		{
+			"name": "Cancel Order",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{auth_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/orders/{{order_id}}/cancel",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"orders",
+						"{{order_id}}",
+						"cancel"
+					]
+				},
+				"description": "Cancels an existing order with proper refund handling. Only pending orders can be cancelled."
+			},
+			"response": []
+		},
+		{
+			"name": "Get User Orders",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{auth_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/orders?status=pending&page=1",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"orders"
+					],
+					"query": [
+						{
+							"key": "status",
+							"value": "pending",
+							"description": "Filter by order status (pending, processing, completed, cancelled)"
+						},
+						{
+							"key": "page",
+							"value": "1",
+							"description": "Page number for pagination"
+						}
+					]
+				},
+				"description": "Retrieves all orders for the authenticated user with optional filtering and pagination."
+			},
+			"response": []
+		},
+		{
+			"name": "Get Order Details",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{auth_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/orders/{{order_id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"orders",
+						"{{order_id}}"
+					]
+				},
+				"description": "Retrieves detailed information about a specific order including items and branch details."
+			},
+			"response": []
+		},
+		{
+			"name": "Get Refund Status",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{auth_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/razorpay/refund-status?order_id={{order_id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"razorpay",
+						"refund-status"
+					],
+					"query": [
+						{
+							"key": "order_id",
+							"value": "{{order_id}}",
+							"description": "The ID of the order to check refund status"
+						}
+					]
+				},
+				"description": "Retrieves the status of a refund for a specific order. Useful for checking if a Razorpay refund has been processed successfully."
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000",
+			"type": "string",
+			"description": "Base URL for the API"
+		},
+		{
+			"key": "auth_token",
+			"value": "your_auth_token_here",
+			"type": "string",
+			"description": "Bearer token for authentication"
+		},
+		{
+			"key": "order_id",
+			"value": "1",
+			"type": "string",
+			"description": "Order ID for testing order details endpoint"
+		}
+	]
+} 

@@ -245,4 +245,163 @@ class RazorpayController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Process refund for cancelled order
+     */
+    public function processRefund(Order $order, $refundAmount = null, $refundReason = 'Order cancelled by customer')
+    {
+        try {
+            // Find the payment record for this order
+            $payment = Payment::where('order_id', $order->id)
+                ->where('status', 'completed')
+                ->where('payment_method', 'razorpay')
+                ->latest()
+                ->first();
+
+            if (!$payment) {
+                Log::warning('No completed Razorpay payment found for order cancellation', [
+                    'order_id' => $order->id,
+                    'user_id' => $order->user_id
+                ]);
+                return [
+                    'success' => false,
+                    'message' => 'No completed payment found for refund'
+                ];
+            }
+
+            // If no refund amount specified, refund the full amount
+            $refundAmount = $refundAmount ?? $payment->amount;
+
+            // Check if refund amount is valid
+            if ($refundAmount > $payment->amount) {
+                Log::error('Refund amount exceeds payment amount', [
+                    'order_id' => $order->id,
+                    'payment_amount' => $payment->amount,
+                    'refund_amount' => $refundAmount
+                ]);
+                return [
+                    'success' => false,
+                    'message' => 'Refund amount cannot exceed payment amount'
+                ];
+            }
+
+            // Check if payment already has a refund
+            if ($payment->refund_id) {
+                Log::warning('Payment already has a refund', [
+                    'order_id' => $order->id,
+                    'refund_id' => $payment->refund_id
+                ]);
+                return [
+                    'success' => false,
+                    'message' => 'Payment already refunded'
+                ];
+            }
+
+            // Process refund through Razorpay
+            $refundData = [
+                'amount' => $refundAmount * 100, // Convert to paise
+                'speed' => 'normal', // or 'optimum' for faster refunds
+                'notes' => [
+                    'order_id' => $order->id,
+                    'user_id' => $order->user_id,
+                    'reason' => $refundReason
+                ]
+            ];
+
+            $refund = $this->razorpay->payment->fetch($payment->transaction_id)->refund($refundData);
+
+            // Update payment record with refund information
+            $payment->update([
+                'refund_id' => $refund->id,
+                'refund_amount' => $refundAmount,
+                'refund_status' => $refund->status,
+                'refund_reason' => $refundReason,
+                'payment_details' => array_merge($payment->payment_details ?? [], [
+                    'refund_details' => $refund->toArray()
+                ])
+            ]);
+
+            Log::info('Razorpay refund processed successfully', [
+                'order_id' => $order->id,
+                'payment_id' => $payment->transaction_id,
+                'refund_id' => $refund->id,
+                'refund_amount' => $refundAmount,
+                'refund_status' => $refund->status
+            ]);
+
+            return [
+                'success' => true,
+                'message' => 'Refund processed successfully',
+                'data' => [
+                    'refund_id' => $refund->id,
+                    'refund_amount' => $refundAmount,
+                    'refund_status' => $refund->status,
+                    'refund_reason' => $refundReason
+                ]
+            ];
+
+        } catch (\Exception $e) {
+            Log::error('Razorpay refund failed', [
+                'order_id' => $order->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return [
+                'success' => false,
+                'message' => 'Failed to process refund: ' . $e->getMessage(),
+                'error' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * Get refund status
+     */
+    public function getRefundStatus(Request $request)
+    {
+        $request->validate([
+            'order_id' => 'required|exists:orders,id'
+        ]);
+
+        try {
+            $order = Order::findOrFail($request->order_id);
+            $payment = Payment::where('order_id', $order->id)
+                ->where('payment_method', 'razorpay')
+                ->latest()
+                ->first();
+
+            if (!$payment || !$payment->refund_id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No refund found for this order'
+                ], 404);
+            }
+
+            // Fetch refund status from Razorpay
+            $refund = $this->razorpay->refund->fetch($payment->refund_id);
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'order_id' => $order->id,
+                    'refund_id' => $refund->id,
+                    'refund_amount' => $refund->amount / 100, // Convert from paise
+                    'refund_status' => $refund->status,
+                    'refund_reason' => $payment->refund_reason,
+                    'refund_processed_at' => $refund->created_at,
+                    'refund_details' => $refund->toArray()
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Refund status check failed: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to get refund status',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 } 

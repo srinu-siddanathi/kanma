@@ -12,31 +12,33 @@ use Illuminate\Support\Str;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
+    /**
+     * Handle an authentication attempt.
+     */
     public function login(Request $request)
     {
         $credentials = $request->validate([
-            'email' => 'required|email',
-            'password' => 'required',
+            'email' => ['required', 'email'],
+            'password' => ['required'],
         ]);
 
-        if (Auth::attempt($credentials)) {
-            $user = Auth::user();
-            $token = $user->createToken('auth-token')->plainTextToken;
-
+        if (!Auth::attempt($credentials)) {
             return response()->json([
-                'status' => 'success',
-                'token' => $token,
-                'user' => $user,
-            ]);
+                'message' => 'The provided credentials do not match our records.',
+            ], 401);
         }
 
+        $user = Auth::user();
+        $token = $user->createToken('auth-token')->plainTextToken;
+
         return response()->json([
-            'status' => 'error',
-            'message' => 'Invalid credentials',
-        ], 401);
+            'token' => $token,
+            'user' => $user,
+        ]);
     }
 
     public function logout(Request $request)

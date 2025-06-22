@@ -23,6 +23,8 @@ use App\Http\Controllers\Api\ChatOrderController;
 use App\Http\Controllers\Api\ChatMessageController;
 use App\Http\Controllers\Api\BannerController;
 use App\Http\Controllers\Api\WalletController;
+use App\Http\Controllers\Api\MonthlyListController;
+use App\Http\Controllers\Api\DeliveryBoyController;
 
 /*
 |--------------------------------------------------------------------------
@@ -79,6 +81,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/orders', [OrderController::class, 'userOrders']);
     Route::post('/orders', [OrderController::class, 'store']);
     Route::get('/orders/{order}', [OrderController::class, 'show']);
+    Route::post('/orders/{order}/cancel', [OrderController::class, 'cancel']);
     
     // Branch Products
     Route::get('/branch/{branch}/products', [BranchProductController::class, 'index']);
@@ -135,6 +138,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/profile/complete', [AuthController::class, 'completeProfile']);
 
     // Cart routes
+    Route::get("/cart", [CartController::class, "index"]);
+    Route::post("/cart/mutate", [CartController::class, "mutate"]);
+    Route::post("/cart/empty", [CartController::class, "empty"]);
+
+    // Checkout routes
+    Route::post("/checkout/calculate-fees", [App\Http\Controllers\Api\CheckoutController::class, "calculateFees"]);
+    Route::get("/checkout/summary", [App\Http\Controllers\Api\CheckoutController::class, "getCheckoutSummary"]);
     Route::get('/cart', [CartController::class, 'index']);
     Route::post('/cart/mutate', [CartController::class, 'mutate']);
     Route::post('/cart/empty', [CartController::class, 'empty']);
@@ -150,6 +160,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/razorpay/verify-payment', [RazorpayController::class, 'verifyPayment']);
     Route::post('/razorpay/payment-failure', [RazorpayController::class, 'handlePaymentFailure']);
     Route::get('/razorpay/payment-status', [RazorpayController::class, 'getPaymentStatus']);
+    Route::get('/razorpay/refund-status', [RazorpayController::class, 'getRefundStatus']);
 
     // Location Modal API Routes
     Route::get('/location/addresses', [App\Http\Controllers\Api\AddressController::class, 'index'])->name('api.location.addresses');
@@ -184,6 +195,31 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/wallet/transactions', [WalletController::class, 'getTransactions']);
     Route::post('/wallet/deposit/initiate', [WalletController::class, 'initiateDeposit']);
     Route::post('/wallet/deposit/verify', [WalletController::class, 'verifyDeposit']);
+
+    // Chat Orders
+    Route::apiResource('chat-orders', ChatOrderController::class);
+    Route::post('chat-orders/{id}/messages', [ChatOrderController::class, 'sendMessage']);
+    Route::post('chat-orders/{id}/approve', [ChatOrderController::class, 'approveOrder']);
+    Route::post('chat-orders/{id}/complete', [ChatOrderController::class, 'completeOrder']);
+
+    // Monthly Lists
+    Route::get('monthly-lists', [MonthlyListController::class, 'index'])->name('monthly-lists.index');
+    Route::post('monthly-lists', [MonthlyListController::class, 'store'])->name('monthly-lists.store');
+    Route::get('monthly-lists/{id}', [MonthlyListController::class, 'show'])->name('monthly-lists.show');
+    Route::post('monthly-lists/{id}', [MonthlyListController::class, 'update'])->name('monthly-lists.update');
+    Route::delete('monthly-lists/{id}', [MonthlyListController::class, 'destroy'])->name('monthly-lists.destroy');
+
+    Route::post('monthly-lists/{listId}/products', [MonthlyListController::class, 'addProduct']);
+    Route::delete('monthly-lists/{listId}/products/{productId}', [MonthlyListController::class, 'removeProduct']);
+    Route::post('monthly-lists/{listId}/products/{productId}', [MonthlyListController::class, 'updateProductQuantity']);
+
+    // Delivery Boy routes
+    Route::prefix('delivery-boy')->middleware(['auth:sanctum', \App\Http\Middleware\DeliveryBoyAuthentication::class])->group(function () {
+        Route::post('/working-status', [DeliveryBoyController::class, 'toggleWorkingStatus']);
+        Route::get('/orders', [DeliveryBoyController::class, 'getOrders']);
+        Route::get('/orders/{order}', [DeliveryBoyController::class, 'getOrderDetails']);
+        Route::put('/orders/{order}/status', [DeliveryBoyController::class, 'updateOrderStatus']);
+    });
 });
 
 // Juspay Callback Route (no auth required as it's called by Juspay)

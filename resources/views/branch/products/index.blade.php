@@ -5,9 +5,7 @@
     <div class="flex justify-between items-center mb-6">
         <h1 class="text-2xl font-bold">Branch Products</h1>
         <div class="space-x-4">
-            <a href="{{ route('branch.products.create') }}" class="bg-green-500 text-white px-4 py-2 rounded">
-                Create New Product
-            </a>
+            
             <a href="{{ route('branch.products.available') }}" class="bg-blue-500 text-white px-4 py-2 rounded">
                 Add Existing Products
             </a>
@@ -56,7 +54,7 @@
                     <td class="px-6 py-4">{{ $product->name }}</td>
                     <td class="px-6 py-4">
                         {{ $product->category->name }}
-                        <span class="text-gray-500 text-sm">({{ $product->subcategory->name }})</span>
+                        
                     </td>
                     <td class="px-6 py-4">
                         <form action="{{ route('branch.products.update-price', $product) }}" method="POST"
