@@ -23,7 +23,7 @@
             <p class="text-gray-500 text-lg">No delivery boys found.</p>
         </div>
     @else
-        <div class="bg-white rounded-lg shadow overflow-hidden">
+        <div class="bg-white rounded-lg shadow overflow-x-auto">
             <table class="min-w-full">
                 <thead class="bg-gray-50">
                     <tr>
@@ -40,21 +40,21 @@
                 <tbody class="bg-white divide-y divide-gray-200">
                     @foreach($deliveryBoys as $deliveryBoy)
                     <tr>
-                        <td class="px-6 py-4">{{ $deliveryBoy->name }}</td>
-                        <td class="px-6 py-4">{{ $deliveryBoy->email }}</td>
-                        <td class="px-6 py-4">{{ $deliveryBoy->phone }}</td>
-                        <td class="px-6 py-4">{{ $deliveryBoy->branch->name }}</td>
-                        <td class="px-6 py-4">{{ $deliveryBoy->bike_number }}</td>
-                        <td class="px-6 py-4">
+                        <td class="px-6 py-4 whitespace-nowrap">{{ $deliveryBoy->name }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">{{ $deliveryBoy->email }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">{{ $deliveryBoy->phone }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">{{ $deliveryBoy->branch->name }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">{{ $deliveryBoy->bike_number }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
                             <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full 
                                 {{ $deliveryBoy->is_working_today ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
                                 {{ $deliveryBoy->is_working_today ? 'Working Today' : 'Not Working' }}
                             </span>
                         </td>
-                        <td class="px-6 py-4 text-sm text-gray-500">
+                        <td class="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">
                             {{ $deliveryBoy->last_status_update ? $deliveryBoy->last_status_update->diffForHumans() : 'Never' }}
                         </td>
-                        <td class="px-6 py-4">
+                        <td class="px-6 py-4 whitespace-nowrap">
                             <a href="{{ route('admin.delivery-boys.edit', $deliveryBoy) }}" 
                                class="text-blue-500 hover:underline mr-3">Edit</a>
                             <button onclick="toggleWorkingStatus({{ $deliveryBoy->id }}, {{ $deliveryBoy->is_working_today ? 'false' : 'true' }})" 

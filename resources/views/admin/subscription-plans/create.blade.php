@@ -65,7 +65,7 @@
                     </div>
 
                     <div class="katha-only">
-                        <label for="wallet_addon" class="block text-sm font-medium text-gray-700">Wallet Addon (₹)</label>
+                        <label for="wallet_addon" class="block text-sm font-medium text-gray-700">Wallet Addon</label>
                         <input type="text" name="wallet_addon" id="wallet_addon" value="{{ old('wallet_addon', '') }}"
                             class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
                     </div>

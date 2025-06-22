@@ -123,7 +123,7 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="text-sm text-gray-900">{{ $product->category->name }}</div>
-                                    <div class="text-sm text-gray-500">{{ $product->subcategory->name }}</div>
+                                    
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                     ₹{{ number_format($product->price, 2) }}
