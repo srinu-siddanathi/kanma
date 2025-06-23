@@ -27,6 +27,7 @@ class Order extends Model
         'payment_method',
         'delivery_phone',
         'delivery_instructions',
+        'delivery_notes',
     ];
 
     protected $casts = [

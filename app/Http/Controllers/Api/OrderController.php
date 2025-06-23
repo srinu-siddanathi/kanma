@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 
 class OrderController extends Controller
 {
@@ -138,15 +139,17 @@ class OrderController extends Controller
             if ($validated['payment_method'] === 'wallet') {
                 $walletAmountUsed = $validated['wallet_amount_used'] ?? 0;
                 
-                if ($walletAmountUsed > $user->wallet_balance) {
-                    return response()->json([
-                        'status' => 'error',
-                        'message' => 'Insufficient wallet balance'
-                    ], 400);
+                if ($walletAmountUsed > 0) {
+                    try {
+                        $user->deductFromWallet($walletAmountUsed, 'Payment for order');
+                    } catch (\Exception $e) {
+                        DB::rollBack();
+                        return response()->json([
+                            'status' => 'error',
+                            'message' => $e->getMessage()
+                        ], 400);
+                    }
                 }
-                
-                // Deduct from wallet
-                $user->decrement('wallet_balance', $walletAmountUsed);
             }
 
             $totalAmount = $subtotal + $deliveryFee + $smallCartFee - $walletAmountUsed;
@@ -164,8 +167,24 @@ class OrderController extends Controller
                 'delivery_fee' => $deliveryFee + $smallCartFee,
                 'wallet_amount_used' => $walletAmountUsed,
                 'payment_method' => $validated['payment_method'],
-                'payment_status' => $validated['payment_method'] === 'cod' ? 'pending' : 'completed',
+                'payment_status' => 'completed',
             ]);
+
+            // Link wallet transaction to order
+            if ($validated['payment_method'] === 'wallet' && $walletAmountUsed > 0) {
+                $transaction = $user->walletTransactions()
+                                    ->where('amount', $walletAmountUsed)
+                                    ->where('type', 'debit')
+                                    ->latest()
+                                    ->first();
+                
+                if ($transaction) {
+                    $transaction->update([
+                        'reference_type' => 'App\\Models\\Order',
+                        'reference_id' => $order->id
+                    ]);
+                }
+            }
 
             // Create order items
             foreach ($orderItems as $item) {
@@ -176,6 +195,10 @@ class OrderController extends Controller
                     'subtotal' => $item['subtotal']
                 ]);
             }
+
+            // Clear the user's cart
+            $cartKey = 'cart_' . $user->id;
+            Cache::forget($cartKey);
 
             DB::commit();
 

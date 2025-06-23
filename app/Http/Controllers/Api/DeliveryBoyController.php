@@ -79,6 +79,7 @@ class DeliveryBoyController extends Controller
     {
         $request->validate([
             'status' => ['required', Rule::in(['delivered', 'partially_delivered', 'cancelled'])],
+            'delivery_notes' => 'nullable|string|max:255',
         ]);
 
         $deliveryBoy = Auth::user();
@@ -88,6 +89,9 @@ class DeliveryBoyController extends Controller
         }
 
         $order->status = $request->status;
+        if ($request->has('delivery_notes')) {
+            $order->delivery_notes = $request->delivery_notes;
+        }
         $order->save();
 
         // TODO: Add logic for partially delivered orders, e.g., which items.
