@@ -197,6 +197,11 @@ Route::prefix('admin')->group(function () {
         Route::put('/banners/{banner}', [BannerController::class, 'update'])->name('banners.update');
         Route::delete('/banners/{banner}', [BannerController::class, 'destroy'])->name('banners.destroy');
 
+        // Coupon Management
+        Route::get('coupons/generate-code', [App\Http\Controllers\Admin\CouponController::class, 'generateCode'])->name('coupons.generate-code');
+        Route::resource('coupons', App\Http\Controllers\Admin\CouponController::class);
+        Route::put('coupons/{coupon}/toggle-status', [App\Http\Controllers\Admin\CouponController::class, 'toggleStatus'])->name('coupons.toggle-status');
+
         Route::get('/notifications', function() {
             $notifications = auth()->user()->notifications()->latest()->take(10)->get();
             return response()->json($notifications);

@@ -1,0 +1,585 @@
+{
+	"info": {
+		"_postman_id": "coupon-user-apis",
+		"name": "Coupon APIs - Mobile App",
+		"description": "User-facing coupon APIs for mobile application - validation, application, and listing available coupons",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Validate Coupon",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{user_token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"code\": \"WELCOME10\",\n  \"order_amount\": 150.00\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/coupons/validate",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"coupons",
+						"validate"
+					]
+				},
+				"description": "Validate a coupon code for a specific order amount. Returns coupon details and calculated discount if valid."
+			},
+			"response": [
+				{
+					"name": "Success Response",
+					"originalRequest": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{user_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"code\": \"WELCOME10\",\n  \"order_amount\": 150.00\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/coupons/validate",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"coupons",
+								"validate"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n  \"status\": \"success\",\n  \"message\": \"Coupon applied successfully.\",\n  \"data\": {\n    \"coupon\": {\n      \"id\": 1,\n      \"code\": \"WELCOME10\",\n      \"name\": \"Welcome Discount\",\n      \"type\": \"percentage\",\n      \"value\": 10,\n      \"minimum_order_amount\": 100,\n      \"maximum_discount\": 50\n    },\n    \"discount_amount\": 15.00,\n    \"final_amount\": 135.00\n  }\n}"
+				},
+				{
+					"name": "Error Response",
+					"originalRequest": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{user_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"code\": \"INVALID\",\n  \"order_amount\": 50.00\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/coupons/validate",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"coupons",
+								"validate"
+							]
+						}
+					},
+					"status": "Bad Request",
+					"code": 400,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n  \"status\": \"error\",\n  \"message\": \"Invalid coupon code.\"\n}"
+				}
+			]
+		},
+		{
+			"name": "Apply Coupon to Order",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{user_token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"coupon_id\": 1,\n  \"order_id\": 123,\n  \"discount_amount\": 15.00\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/coupons/apply",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"coupons",
+						"apply"
+					]
+				},
+				"description": "Apply a validated coupon to an order. This should be called after successful validation."
+			},
+			"response": [
+				{
+					"name": "Success Response",
+					"originalRequest": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{user_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"coupon_id\": 1,\n  \"order_id\": 123,\n  \"discount_amount\": 15.00\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/coupons/apply",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"coupons",
+								"apply"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n  \"status\": \"success\",\n  \"message\": \"Coupon applied successfully. Pending payment confirmation.\"\n}"
+				},
+				{
+					"name": "Error Response",
+					"originalRequest": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{user_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"coupon_id\": 1,\n  \"order_id\": 123,\n  \"discount_amount\": 15.00\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/coupons/apply",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"coupons",
+								"apply"
+							]
+						}
+					},
+					"status": "Bad Request",
+					"code": 400,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n  \"status\": \"error\",\n  \"message\": \"Coupon already applied to this order.\"\n}"
+				}
+			]
+		},
+		{
+			"name": "Confirm Coupon Usage",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{user_token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"coupon_id\": 1,\n  \"order_id\": 123\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/coupons/confirm-usage",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"coupons",
+						"confirm-usage"
+					]
+				},
+				"description": "Confirm coupon usage after successful payment"
+			},
+			"response": [
+				{
+					"name": "Success Response",
+					"originalRequest": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{user_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"coupon_id\": 1,\n  \"order_id\": 123\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/coupons/confirm-usage",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"coupons",
+								"confirm-usage"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n  \"status\": \"success\",\n  \"message\": \"Coupon usage confirmed.\"\n}"
+				}
+			]
+		},
+		{
+			"name": "Fail Coupon Usage",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{user_token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"coupon_id\": 1,\n  \"order_id\": 123\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/coupons/fail-usage",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"coupons",
+						"fail-usage"
+					]
+				},
+				"description": "Mark coupon usage as failed after payment failure"
+			},
+			"response": [
+				{
+					"name": "Success Response",
+					"originalRequest": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{user_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"coupon_id\": 1,\n  \"order_id\": 123\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/coupons/fail-usage",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"coupons",
+								"fail-usage"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n  \"status\": \"success\",\n  \"message\": \"Coupon usage marked as failed.\"\n}"
+				}
+			]
+		},
+		{
+			"name": "Get Available Coupons",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{user_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/coupons/available?order_amount=150.00",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"coupons",
+						"available"
+					],
+					"query": [
+						{
+							"key": "order_amount",
+							"value": "150.00",
+							"description": "Order amount to filter applicable coupons"
+						}
+					]
+				},
+				"description": "Get all available coupons for the authenticated user based on order amount. Useful for showing available discounts in the checkout screen."
+			},
+			"response": [
+				{
+					"name": "Success Response",
+					"originalRequest": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{user_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/coupons/available?order_amount=150.00",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"coupons",
+								"available"
+							],
+							"query": [
+								{
+									"key": "order_amount",
+									"value": "150.00"
+								}
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n  \"status\": \"success\",\n  \"data\": [\n    {\n      \"id\": 1,\n      \"code\": \"WELCOME10\",\n      \"name\": \"Welcome Discount\",\n      \"description\": \"10% off for new customers\",\n      \"type\": \"percentage\",\n      \"value\": 10,\n      \"minimum_order_amount\": 100,\n      \"maximum_discount\": 50,\n      \"discount_amount\": 15.00,\n      \"valid_until\": \"2025-12-31 23:59:59\"\n    },\n    {\n      \"id\": 2,\n      \"code\": \"SAVE20\",\n      \"name\": \"Save 20 Rupees\",\n      \"description\": \"Flat ₹20 off on orders above ₹200\",\n      \"type\": \"fixed\",\n      \"value\": 20,\n      \"minimum_order_amount\": 200,\n      \"maximum_discount\": null,\n      \"discount_amount\": 20.00,\n      \"valid_until\": \"2025-06-30 23:59:59\"\n    }\n  ]\n}"
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000",
+			"type": "string"
+		},
+		{
+			"key": "user_token",
+			"value": "your_user_bearer_token_here",
+			"type": "string"
+		}
+	]
+} 

@@ -153,6 +153,15 @@
                         Products
                     </a>
 
+                    <a href="{{ route('admin.coupons.index') }}"
+                        class="{{ request()->routeIs('admin.coupons.*') ? 'bg-white/20' : '' }} flex items-center px-4 py-2.5 rounded transition duration-200 hover:bg-white/10">
+                        <svg class="h-5 w-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M17 9V7a5 5 0 00-10 0v2a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2zm-5 4h.01" />
+                        </svg>
+                        Coupons
+                    </a>
+
                     <a href="{{ route('admin.banners.index') }}"
                         class="{{ request()->routeIs('admin.banners.*') ? 'bg-white/20' : '' }} flex items-center px-4 py-2.5 rounded transition duration-200 hover:bg-white/10">
                         <svg class="h-5 w-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">

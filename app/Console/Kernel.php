@@ -27,6 +27,9 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
         // $schedule->command('inspire')->hourly();
+        
+        // Clean up pending coupon usages every hour
+        $schedule->command('coupons:cleanup-pending --hours=24')->hourly();
     }
 
     /**

@@ -25,6 +25,7 @@ use App\Http\Controllers\Api\BannerController;
 use App\Http\Controllers\Api\WalletController;
 use App\Http\Controllers\Api\MonthlyListController;
 use App\Http\Controllers\Api\DeliveryBoyController;
+use App\Http\Controllers\Api\CouponController;
 
 /*
 |--------------------------------------------------------------------------
@@ -195,6 +196,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/wallet/transactions', [WalletController::class, 'getTransactions']);
     Route::post('/wallet/deposit/initiate', [WalletController::class, 'initiateDeposit']);
     Route::post('/wallet/deposit/verify', [WalletController::class, 'verifyDeposit']);
+
+    // Coupon routes
+    Route::post('/coupons/validate', [App\Http\Controllers\Api\CouponController::class, 'validate']);
+    Route::post('/coupons/apply', [App\Http\Controllers\Api\CouponController::class, 'apply']);
+    Route::post('/coupons/confirm-usage', [App\Http\Controllers\Api\CouponController::class, 'confirmUsage']);
+    Route::post('/coupons/fail-usage', [App\Http\Controllers\Api\CouponController::class, 'failUsage']);
+    Route::get('/coupons/available', [App\Http\Controllers\Api\CouponController::class, 'available']);
 
     // Chat Orders
     Route::apiResource('chat-orders', ChatOrderController::class);
