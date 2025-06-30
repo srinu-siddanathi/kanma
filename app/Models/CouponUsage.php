@@ -13,12 +13,13 @@ class CouponUsage extends Model
     protected $fillable = [
         'coupon_id',
         'user_id',
-        'order_id',
+        'order_amount',
         'discount_amount',
         'status',
     ];
 
     protected $casts = [
+        'order_amount' => 'decimal:2',
         'discount_amount' => 'decimal:2',
     ];
 
@@ -99,10 +100,5 @@ class CouponUsage extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
-    }
-
-    public function order(): BelongsTo
-    {
-        return $this->belongsTo(Order::class);
     }
 } 

@@ -7,115 +7,193 @@ use App\Models\Coupon;
 use App\Models\CouponUsage;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 
 class CouponController extends Controller
 {
     /**
-     * Validate a coupon code
+     * Validate and apply coupon
+     * This creates a pending usage that will be confirmed or failed based on payment outcome
      */
-    public function validate(Request $request): JsonResponse
+    public function validateAndApply(Request $request): JsonResponse
     {
-        $request->validate([
-            'code' => 'required|string',
+        $validator = Validator::make($request->all(), [
+            'coupon_code' => 'required|string|max:50',
+            'user_id' => 'required|exists:users,id',
             'order_amount' => 'required|numeric|min:0',
         ]);
 
-        $code = strtoupper(trim($request->code));
-        $orderAmount = (float) $request->order_amount;
-        $user = auth()->user();
-
-        $coupon = Coupon::where('code', $code)->first();
-
-        if (!$coupon) {
+        if ($validator->fails()) {
             return response()->json([
-                'status' => 'error',
-                'message' => 'Invalid coupon code.'
-            ], 400);
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
         }
 
-        // Check if coupon is valid for this order
-        if (!$coupon->isValidForOrder($orderAmount, $user)) {
-            $message = $this->getInvalidReason($coupon, $orderAmount, $user);
-            
-            return response()->json([
-                'status' => 'error',
-                'message' => $message
-            ], 400);
-        }
+        try {
+            DB::beginTransaction();
 
-        // Calculate discount
-        $discountAmount = $coupon->calculateDiscount($orderAmount);
+            $coupon = Coupon::where('code', $request->coupon_code)
+                ->where('is_active', 1)
+                ->first();
 
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Coupon applied successfully.',
-            'data' => [
-                'coupon' => [
-                    'id' => $coupon->id,
-                    'code' => $coupon->code,
-                    'name' => $coupon->name,
-                    'type' => $coupon->type,
-                    'value' => $coupon->value,
-                    'minimum_order_amount' => $coupon->minimum_order_amount,
-                    'maximum_discount' => $coupon->maximum_discount,
-                ],
+            if (!$coupon) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Invalid coupon code'
+                ], 404);
+            }
+
+            // Check if coupon is expired
+            if ($coupon->valid_until && now()->isAfter($coupon->valid_until)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Coupon has expired'
+                ], 400);
+            }
+
+            // Check minimum order amount
+            if ($request->order_amount < $coupon->minimum_order_amount) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "Minimum order amount required: ₹{$coupon->minimum_order_amount}"
+                ], 400);
+            }
+
+            // Check usage limits
+            $userUsageCount = CouponUsage::where('coupon_id', $coupon->id)
+                ->where('user_id', $request->user_id)
+                ->where('status', 'confirmed')
+                ->count();
+
+            if ($userUsageCount >= $coupon->per_user_limit) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'You have already used this coupon maximum times'
+                ], 400);
+            }
+
+            // Check total usage limit
+            $totalUsageCount = CouponUsage::where('coupon_id', $coupon->id)
+                ->where('status', 'confirmed')
+                ->count();
+
+            if ($coupon->usage_limit !== null && $totalUsageCount >= $coupon->usage_limit) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Coupon usage limit reached'
+                ], 400);
+            }
+
+            // Calculate discount
+            $discountAmount = $this->calculateDiscount($coupon, $request->order_amount);
+
+            // Create pending usage
+            $couponUsage = CouponUsage::create([
+                'coupon_id' => $coupon->id,
+                'user_id' => $request->user_id,
+                'order_amount' => $request->order_amount,
                 'discount_amount' => $discountAmount,
-                'final_amount' => $orderAmount - $discountAmount,
-            ]
-        ]);
+                'status' => 'pending'
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Coupon applied successfully',
+                'data' => [
+                    'coupon_id' => $coupon->id,
+                    'coupon_code' => $coupon->code,
+                    'discount_amount' => $discountAmount,
+                    'discount_type' => $coupon->type,
+                    'discount_value' => $coupon->value,
+                    'final_amount' => $request->order_amount - $discountAmount,
+                    'usage_id' => $couponUsage->id
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to apply coupon',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
-     * Apply coupon to order
+     * Get available coupons for user
      */
-    public function apply(Request $request): JsonResponse
+    public function getAvailableCoupons(Request $request): JsonResponse
     {
-        $request->validate([
-            'coupon_id' => 'required|exists:coupons,id',
-            'order_id' => 'required|exists:orders,id',
-            'discount_amount' => 'required|numeric|min:0',
+        $validator = Validator::make($request->all(), [
+            'user_id' => 'required|exists:users,id',
         ]);
 
-        $coupon = Coupon::findOrFail($request->coupon_id);
-        $user = auth()->user();
-
-        // Check if user has already used this coupon for this order (any status)
-        $existingUsage = CouponUsage::where([
-            'coupon_id' => $coupon->id,
-            'user_id' => $user->id,
-            'order_id' => $request->order_id,
-        ])->first();
-
-        if ($existingUsage) {
-            if ($existingUsage->isConfirmed()) {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'Coupon already applied to this order.'
-                ], 400);
-            } elseif ($existingUsage->isPending()) {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'Coupon is already pending for this order.'
-                ], 400);
-            } elseif ($existingUsage->isFailed()) {
-                // Allow re-applying if previous usage failed
-                $existingUsage->delete();
-            }
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
         }
 
-        // Create pending usage record
-        CouponUsage::create([
-            'coupon_id' => $coupon->id,
-            'user_id' => $user->id,
-            'order_id' => $request->order_id,
-            'discount_amount' => $request->discount_amount,
-            'status' => CouponUsage::STATUS_PENDING,
-        ]);
+        try {
+            $coupons = Coupon::where('is_active', 1)
+                ->where(function ($query) {
+                    $query->whereNull('valid_until')
+                        ->orWhere('valid_until', '>', now());
+                })
+                ->get();
+            
+            $filteredCoupons = [];
+            
+            foreach ($coupons as $coupon) {
+                // Check if user can use this coupon
+                $userUsageCount = CouponUsage::where('coupon_id', $coupon->id)
+                    ->where('user_id', $request->user_id)
+                    ->where('status', 'confirmed')
+                    ->count();
 
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Coupon applied successfully. Pending payment confirmation.',
-        ]);
+                $totalUsageCount = CouponUsage::where('coupon_id', $coupon->id)
+                    ->where('status', 'confirmed')
+                    ->count();
+                
+                $isAvailable = $userUsageCount < $coupon->per_user_limit && 
+                              ($coupon->usage_limit === null || $totalUsageCount < $coupon->usage_limit);
+                
+                if ($isAvailable) {
+                    $filteredCoupons[] = [
+                        'id' => $coupon->id,
+                        'code' => $coupon->code,
+                        'title' => $coupon->name,
+                        'description' => $coupon->description,
+                        'discount_type' => $coupon->type,
+                        'discount_value' => $coupon->value,
+                        'min_order_amount' => $coupon->minimum_order_amount,
+                        'expires_at' => $coupon->valid_until,
+                        'usage_limit' => $coupon->usage_limit,
+                        'usage_limit_per_user' => $coupon->per_user_limit
+                    ];
+                }
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => $filteredCoupons
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to fetch coupons',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
@@ -123,118 +201,101 @@ class CouponController extends Controller
      */
     public function confirmUsage(Request $request): JsonResponse
     {
-        $request->validate([
-            'coupon_id' => 'required|exists:coupons,id',
-            'order_id' => 'required|exists:orders,id',
+        $validator = Validator::make($request->all(), [
+            'usage_id' => 'required|exists:coupon_usages,id',
         ]);
 
-        $coupon = Coupon::findOrFail($request->coupon_id);
-        $user = auth()->user();
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
 
-        $coupon->confirmUsage($request->order_id, $user->id);
+        try {
+            $usage = CouponUsage::findOrFail($request->usage_id);
 
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Coupon usage confirmed.',
-        ]);
+            if ($usage->status !== 'pending') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Invalid usage status'
+                ], 400);
+            }
+
+            $usage->update(['status' => 'confirmed']);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Coupon usage confirmed'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to confirm usage',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
-     * Mark coupon usage as failed after payment failure
+     * Fail coupon usage after payment failure
      */
     public function failUsage(Request $request): JsonResponse
     {
-        $request->validate([
-            'coupon_id' => 'required|exists:coupons,id',
-            'order_id' => 'required|exists:orders,id',
+        $validator = Validator::make($request->all(), [
+            'usage_id' => 'required|exists:coupon_usages,id',
         ]);
 
-        $coupon = Coupon::findOrFail($request->coupon_id);
-        $user = auth()->user();
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
 
-        $coupon->failUsage($request->order_id, $user->id);
+        try {
+            $usage = CouponUsage::findOrFail($request->usage_id);
 
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Coupon usage marked as failed.',
-        ]);
+            if ($usage->status !== 'pending') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Invalid usage status'
+                ], 400);
+            }
+
+            $usage->update(['status' => 'failed']);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Coupon usage marked as failed'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to mark usage as failed',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
-     * Get available coupons for user
+     * Calculate discount amount based on coupon type
      */
-    public function available(Request $request): JsonResponse
+    private function calculateDiscount(Coupon $coupon, float $orderAmount): float
     {
-        $request->validate([
-            'order_amount' => 'required|numeric|min:0',
-        ]);
-
-        $orderAmount = (float) $request->order_amount;
-        $user = auth()->user();
-
-        $coupons = Coupon::active()
-            ->valid()
-            ->where('minimum_order_amount', '<=', $orderAmount)
-            ->get()
-            ->filter(function ($coupon) use ($user) {
-                return $coupon->canBeUsedByUser($user);
-            })
-            ->map(function ($coupon) use ($orderAmount) {
-                return [
-                    'id' => $coupon->id,
-                    'code' => $coupon->code,
-                    'name' => $coupon->name,
-                    'description' => $coupon->description,
-                    'type' => $coupon->type,
-                    'value' => $coupon->value,
-                    'minimum_order_amount' => $coupon->minimum_order_amount,
-                    'maximum_discount' => $coupon->maximum_discount,
-                    'discount_amount' => $coupon->calculateDiscount($orderAmount),
-                    'valid_until' => $coupon->valid_until->format('Y-m-d H:i:s'),
-                ];
-            });
-
-        return response()->json([
-            'status' => 'success',
-            'data' => $coupons->values()
-        ]);
-    }
-
-    /**
-     * Get invalid reason for coupon
-     */
-    private function getInvalidReason(Coupon $coupon, float $orderAmount, $user): string
-    {
-        if (!$coupon->is_active) {
-            return 'This coupon is inactive.';
-        }
-
-        if ($coupon->isExpired()) {
-            return 'This coupon has expired.';
-        }
-
-        if ($coupon->isNotStarted()) {
-            return 'This coupon is not yet active.';
-        }
-
-        if ($coupon->isUsageLimitReached()) {
-            return 'This coupon has reached its usage limit.';
-        }
-
-        if ($orderAmount < $coupon->minimum_order_amount) {
-            return "Minimum order amount of ₹{$coupon->minimum_order_amount} required.";
-        }
-
-        if ($user) {
-            if ($coupon->getUsageCountForUser($user) >= $coupon->per_user_limit) {
-                return 'You have already used this coupon the maximum number of times.';
+        if ($coupon->type === 'percentage') {
+            $discount = ($orderAmount * $coupon->value) / 100;
+            // Apply maximum discount limit if set
+            if ($coupon->maximum_discount) {
+                $discount = min($discount, $coupon->maximum_discount);
             }
-
-            if ($coupon->is_first_time_only && $user->orders()->exists()) {
-                return 'This coupon is only for first-time customers.';
-            }
+            return round($discount, 2);
+        } else {
+            return min($coupon->value, $orderAmount);
         }
-
-        return 'This coupon cannot be applied to your order.';
     }
 } 

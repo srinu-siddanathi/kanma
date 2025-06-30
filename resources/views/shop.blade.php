@@ -151,8 +151,8 @@
                                 <div class="badge bg-success position-absolute m-3">-{{ $variant->discount_percentage }}%</div>
                                 @endif
                                 <a href="{{ route('product.show', $product->id) }}">
-                                    <img src="{{ $product->image_url }}" class="card-img-top" alt="{{ $product->name }}"
-                                         style="height: 200px; object-fit: cover;"
+                                    <img src="{{ $product->image_url }}" class="card-img-top product-image-fit" alt="{{ $product->name }}"
+                                         style="height: 200px; object-fit: contain; background: #fff;"
                                          onerror="this.onerror=null;this.src='{{ asset('images/no-image.png') }}';">
                                 </a>
                             </div>
@@ -231,7 +231,7 @@
                             </li>
                         @else
                             <li class="page-item">
-                                <a class="page-link" href="{{ $products->previousPageUrl() }}" rel="prev">
+                                <a class="page-link" href="{{ $products->appends(request()->query())->previousPageUrl() }}" rel="prev">
                                     <i class="bi bi-chevron-left"></i>
                                 </a>
                             </li>
@@ -245,7 +245,7 @@
                                 </li>
                             @else
                                 <li class="page-item">
-                                    <a class="page-link" href="{{ $url }}">{{ $page }}</a>
+                                    <a class="page-link" href="{{ $products->appends(request()->query())->url($page) }}">{{ $page }}</a>
                                 </li>
                             @endif
                         @endforeach
@@ -253,7 +253,7 @@
                         {{-- Next Page Link --}}
                         @if($products->hasMorePages())
                             <li class="page-item">
-                                <a class="page-link" href="{{ $products->nextPageUrl() }}" rel="next">
+                                <a class="page-link" href="{{ $products->appends(request()->query())->nextPageUrl() }}" rel="next">
                                     <i class="bi bi-chevron-right"></i>
                                 </a>
                             </li>

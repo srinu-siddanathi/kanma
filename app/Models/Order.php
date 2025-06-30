@@ -28,6 +28,7 @@ class Order extends Model
         'delivery_phone',
         'delivery_instructions',
         'delivery_notes',
+        'coupon_id',
     ];
 
     protected $casts = [
@@ -57,6 +58,14 @@ class Order extends Model
     public function items(): HasMany
     {
         return $this->hasMany(OrderItem::class);
+    }
+
+    /**
+     * Get the coupon applied to this order.
+     */
+    public function coupon(): BelongsTo
+    {
+        return $this->belongsTo(Coupon::class);
     }
 
     public function updateTotalAmount()

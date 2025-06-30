@@ -30,7 +30,20 @@ class OrderController extends Controller
             'notes' => 'nullable|string',
             'payment_method' => 'required|in:cod,razorpay,wallet',
             'wallet_amount_used' => 'nullable|numeric|min:0',
+            'coupon_id' => 'nullable|integer|min:0',
         ]);
+
+        // Handle coupon_id = 0 as null (no coupon)
+        if (isset($validated['coupon_id']) && $validated['coupon_id'] == 0) {
+            $validated['coupon_id'] = null;
+        }
+
+        // Validate coupon_id exists if it's not null
+        if ($validated['coupon_id'] !== null) {
+            $request->validate([
+                'coupon_id' => 'exists:coupons,id'
+            ]);
+        }
 
         try {
             DB::beginTransaction();
@@ -74,6 +87,57 @@ class OrderController extends Controller
                 ];
             }
 
+            // Calculate coupon discount if coupon_id is provided
+            $couponDiscount = 0;
+            $couponDetails = null;
+            
+            if (isset($validated['coupon_id'])) {
+                $coupon = \App\Models\Coupon::find($validated['coupon_id']);
+                if ($coupon && $coupon->status === 'active') {
+                    // Check if coupon is expired
+                    if (!$coupon->expires_at || now()->isBefore($coupon->expires_at)) {
+                        // Check minimum order amount
+                        if ($subtotal >= $coupon->min_order_amount) {
+                            // Check usage limits
+                            $userUsageCount = \App\Models\CouponUsage::where('coupon_id', $coupon->id)
+                                ->where('user_id', $user->id)
+                                ->where('status', 'confirmed')
+                                ->count();
+
+                            $totalUsageCount = \App\Models\CouponUsage::where('coupon_id', $coupon->id)
+                                ->where('status', 'confirmed')
+                                ->count();
+
+                            if ($userUsageCount < $coupon->usage_limit_per_user && 
+                                ($coupon->usage_limit === null || $totalUsageCount < $coupon->usage_limit)) {
+                                
+                                // Calculate coupon discount
+                                if ($coupon->discount_type === 'percentage') {
+                                    $couponDiscount = ($subtotal * $coupon->discount_value) / 100;
+                                    // Apply maximum discount limit if set
+                                    if ($coupon->max_discount_amount) {
+                                        $couponDiscount = min($couponDiscount, $coupon->max_discount_amount);
+                                    }
+                                } else {
+                                    $couponDiscount = min($coupon->discount_value, $subtotal);
+                                }
+                                
+                                $couponDiscount = round($couponDiscount, 2);
+                                
+                                $couponDetails = [
+                                    'id' => $coupon->id,
+                                    'code' => $coupon->code,
+                                    'title' => $coupon->title,
+                                    'discount_type' => $coupon->discount_type,
+                                    'discount_value' => $coupon->discount_value,
+                                    'discount_amount' => $couponDiscount
+                                ];
+                            }
+                        }
+                    }
+                }
+            }
+
             // Calculate delivery fee and small cart fee based on membership
             $deliveryFee = 50; // Default delivery fee
             $smallCartFee = 0; // Small cart fee
@@ -108,6 +172,7 @@ class OrderController extends Controller
                 
                 // Check if delivery is within free delivery radius
                 if ($plan->free_delivery_radius > 0) {
+                    // Get branch location for distance calculation
                     $branch = Branch::find($validated['branch_id']);
                     
                     if ($branch && $branch->latitude && $branch->longitude) {
@@ -134,25 +199,22 @@ class OrderController extends Controller
                 $smallCartFee = $smallCartFeeAmount;
             }
 
-            // Handle wallet payment
-            $walletAmountUsed = 0;
-            if ($validated['payment_method'] === 'wallet') {
-                $walletAmountUsed = $validated['wallet_amount_used'] ?? 0;
-                
-                if ($walletAmountUsed > 0) {
-                    try {
-                        $user->deductFromWallet($walletAmountUsed, 'Payment for order');
-                    } catch (\Exception $e) {
-                        DB::rollBack();
-                        return response()->json([
-                            'status' => 'error',
-                            'message' => $e->getMessage()
-                        ], 400);
-                    }
+            // Calculate wallet amount used
+            $walletAmountUsed = $validated['wallet_amount_used'] ?? 0;
+            
+            // Validate wallet balance if wallet amount is being used
+            if ($walletAmountUsed > 0) {
+                if ($walletAmountUsed > $user->wallet_balance) {
+                    return response()->json([
+                        'status' => 'error',
+                        'message' => 'Insufficient wallet balance. Available: ' . $user->wallet_balance . ', Required: ' . $walletAmountUsed
+                    ], 400);
                 }
             }
 
-            $totalAmount = $subtotal + $deliveryFee + $smallCartFee - $walletAmountUsed;
+            // Calculate final total after coupon discount
+            $totalAfterCoupon = $subtotal - $couponDiscount;
+            $totalAmount = $totalAfterCoupon + $deliveryFee + $smallCartFee - $walletAmountUsed;
 
             // Create order
             $order = Order::create([
@@ -167,22 +229,30 @@ class OrderController extends Controller
                 'delivery_fee' => $deliveryFee + $smallCartFee,
                 'wallet_amount_used' => $walletAmountUsed,
                 'payment_method' => $validated['payment_method'],
-                'payment_status' => 'completed',
+                'payment_status' => 'pending',
+                'coupon_id' => $validated['coupon_id'] ?? null,
             ]);
 
-            // Link wallet transaction to order
-            if ($validated['payment_method'] === 'wallet' && $walletAmountUsed > 0) {
-                $transaction = $user->walletTransactions()
-                                    ->where('amount', $walletAmountUsed)
-                                    ->where('type', 'debit')
-                                    ->latest()
-                                    ->first();
-                
-                if ($transaction) {
-                    $transaction->update([
-                        'reference_type' => 'App\\Models\\Order',
-                        'reference_id' => $order->id
-                    ]);
+            // Deduct wallet amount and create transaction if wallet is used
+            if ($walletAmountUsed > 0) {
+                try {
+                    $user->deductFromWallet(
+                        $walletAmountUsed,
+                        "Payment for order #{$order->id}",
+                        'App\\Models\\Order',
+                        $order->id,
+                        [
+                            'order_id' => $order->id,
+                            'payment_method' => $validated['payment_method']
+                        ]
+                    );
+                } catch (\Exception $e) {
+                    // If wallet deduction fails, rollback the transaction
+                    DB::rollBack();
+                    return response()->json([
+                        'status' => 'error',
+                        'message' => 'Failed to deduct wallet amount: ' . $e->getMessage()
+                    ], 400);
                 }
             }
 
@@ -206,9 +276,11 @@ class OrderController extends Controller
                 'status' => 'success',
                 'message' => 'Order created successfully',
                 'data' => [
-                    'order' => $order->load('items.product', 'branch'),
+                    'order' => $order->load('items.product', 'branch', 'coupon'),
                     'breakdown' => [
                         'subtotal' => round($subtotal, 2),
+                        'coupon_discount' => round($couponDiscount, 2),
+                        'total_after_coupon' => round($totalAfterCoupon, 2),
                         'delivery_fee' => round($deliveryFee, 2),
                         'small_cart_fee' => round($smallCartFee, 2),
                         'wallet_amount_used' => round($walletAmountUsed, 2),
@@ -217,7 +289,8 @@ class OrderController extends Controller
                     'membership_info' => [
                         'has_active_membership' => $hasActiveMembership,
                         'membership_details' => $membershipDetails
-                    ]
+                    ],
+                    'coupon_info' => $couponDetails
                 ]
             ]);
 
@@ -316,7 +389,16 @@ class OrderController extends Controller
             // Refund wallet amount if wallet was used
             if ($order->wallet_amount_used > 0) {
                 $user = auth()->user();
-                $user->increment('wallet_balance', $order->wallet_amount_used);
+                $user->addToWallet(
+                    $order->wallet_amount_used,
+                    "Refund for cancelled order #{$order->id}",
+                    'App\\Models\\Order',
+                    $order->id,
+                    [
+                        'order_id' => $order->id,
+                        'refund_type' => 'order_cancellation'
+                    ]
+                );
                 
                 Log::info('Wallet refund processed for cancelled order', [
                     'order_id' => $order->id,

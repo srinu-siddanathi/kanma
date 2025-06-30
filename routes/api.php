@@ -42,6 +42,7 @@ Route::post('/verify-registration', [AuthController::class, 'verifyRegistrationO
 
 // Public Product & Category Routes
 Route::get('/products', [ProductController::class, 'index']);
+Route::get('/products/deals', [ProductController::class, 'deals']);
 Route::get('/products/{product}', [ProductController::class, 'show']);
 Route::get('/categories', [CategoryController::class, 'index']);
 Route::get('/categories/{category}/subcategories', [CategoryController::class, 'subcategories']);
@@ -197,12 +198,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/wallet/deposit/initiate', [WalletController::class, 'initiateDeposit']);
     Route::post('/wallet/deposit/verify', [WalletController::class, 'verifyDeposit']);
 
-    // Coupon routes
-    Route::post('/coupons/validate', [App\Http\Controllers\Api\CouponController::class, 'validate']);
-    Route::post('/coupons/apply', [App\Http\Controllers\Api\CouponController::class, 'apply']);
-    Route::post('/coupons/confirm-usage', [App\Http\Controllers\Api\CouponController::class, 'confirmUsage']);
-    Route::post('/coupons/fail-usage', [App\Http\Controllers\Api\CouponController::class, 'failUsage']);
-    Route::get('/coupons/available', [App\Http\Controllers\Api\CouponController::class, 'available']);
+    // Coupon APIs
+    Route::prefix('coupons')->group(function () {
+        Route::post('/validate-and-apply', [CouponController::class, 'validateAndApply']);
+        Route::get('/available', [CouponController::class, 'getAvailableCoupons']);
+        Route::post('/confirm-usage', [CouponController::class, 'confirmUsage']);
+        Route::post('/fail-usage', [CouponController::class, 'failUsage']);
+    });
 
     // Chat Orders
     Route::apiResource('chat-orders', ChatOrderController::class);

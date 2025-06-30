@@ -95,7 +95,7 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "{{base_url}}/api/delivery-boy/orders?status=pending",
+									"raw": "{{base_url}}/api/delivery-boy/orders",
 									"host": [
 										"{{base_url}}"
 									],
@@ -103,16 +103,9 @@
 										"api",
 										"delivery-boy",
 										"orders"
-									],
-									"query": [
-										{
-											"key": "status",
-											"value": "pending",
-											"description": "Order status to filter by. Can be 'pending', 'processing', or 'completed'."
-										}
 									]
 								},
-								"description": "Get the orders assigned to the delivery boy, filtered by status."
+								"description": "Get all orders assigned to the delivery boy, grouped by status (pending, processing, completed). Returns orders with their counts for each status."
 							},
 							"response": []
 						},

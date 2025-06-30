@@ -173,7 +173,8 @@
                             <div class="col">
                                 <div class="card h-100">
                                     <a href="{{ route('product.show', $sim->id) }}">
-                                        <img src="{{ $sim->image_url ?? asset('images/no-image.png') }}" class="card-img-top" alt="{{ $sim->name }}">
+                                        <img src="{{ $sim->image_url ?? asset('images/no-image.png') }}" class="card-img-top product-image-fit" alt="{{ $sim->name }}"
+                                             style="height: 150px; object-fit: contain; background: #fff;">
                                     </a>
                                     <div class="card-body p-2">
                                         <a href="{{ route('product.show', $sim->id) }}" class="text-decoration-none text-dark">

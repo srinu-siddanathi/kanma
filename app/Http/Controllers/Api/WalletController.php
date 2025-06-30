@@ -97,23 +97,17 @@ class WalletController extends Controller
             $amount = $request->amount;
 
             DB::transaction(function () use ($user, $amount, $request) {
-                // Create wallet transaction
-                WalletTransaction::create([
-                    'user_id' => $user->id,
-                    'amount' => $amount,
-                    'type' => 'credit',
-                    'description' => 'Wallet deposit via Razorpay',
-                    'reference_type' => 'deposit',
-                    'payment_id' => $request->razorpay_payment_id,
-                    'status' => 'completed',
-                    'metadata' => [
+                // Add to wallet using the User model method
+                $user->addToWallet(
+                    $amount,
+                    'Wallet deposit via Razorpay',
+                    'deposit',
+                    null,
+                    [
                         'razorpay_order_id' => $request->razorpay_order_id,
                         'razorpay_payment_id' => $request->razorpay_payment_id
                     ]
-                ]);
-
-                // Update user's wallet balance
-                $user->increment('wallet_balance', $amount);
+                );
             });
 
             return response()->json([

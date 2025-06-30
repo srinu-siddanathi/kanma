@@ -34,26 +34,39 @@ class DeliveryBoyController extends Controller
      */
     public function getOrders(Request $request)
     {
-        $request->validate([
-            'status' => ['required', Rule::in(['pending', 'processing', 'completed'])],
-        ]);
-
         $deliveryBoy = Auth::user();
-        $status = $request->status;
 
         $query = Order::where('delivery_boy_id', $deliveryBoy->id);
 
-        if ($status === 'pending') {
-            $query->whereIn('status', ['pending', 'confirmed', 'assigned', 'processing']);
-        } elseif ($status === 'processing') {
-            $query->whereIn('status', ['shipped', 'out_for_delivery']);
-        } elseif ($status === 'completed') {
-            $query->whereIn('status', ['delivered', 'completed', 'cancelled']);
-        }
+        // Get all orders with relationships
+        $allOrders = $query->with('items.product', 'user', 'shop')->latest()->get();
 
-        $orders = $query->with('items.product', 'user', 'shop')->latest()->paginate(10);
+        // Group orders by status
+        $groupedOrders = [
+            'pending' => $allOrders->filter(function ($order) {
+                return in_array($order->status, ['pending', 'confirmed', 'assigned', 'processing']);
+            })->values(),
+            'processing' => $allOrders->filter(function ($order) {
+                return in_array($order->status, ['shipped', 'out_for_delivery']);
+            })->values(),
+            'completed' => $allOrders->filter(function ($order) {
+                return in_array($order->status, ['delivered', 'completed', 'cancelled']);
+            })->values(),
+        ];
 
-        return response()->json($orders);
+        // Add counts for each status
+        $response = [
+            'data' => $groupedOrders,
+            'counts' => [
+                'pending' => $groupedOrders['pending']->count(),
+                'processing' => $groupedOrders['processing']->count(),
+                'completed' => $groupedOrders['completed']->count(),
+                'total' => $allOrders->count(),
+            ],
+            'message' => 'Orders retrieved successfully'
+        ];
+
+        return response()->json($response);
     }
 
     /**
