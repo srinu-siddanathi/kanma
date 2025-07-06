@@ -297,6 +297,12 @@ h1,h2,h3,h4,h5,h6 {
   left: 0;
   z-index: 111;
   background: #fff;
+  transition: opacity 0.5s ease;
+}
+
+/* Ensure preloader is hidden when body doesn't have preloader-site class */
+body:not(.preloader-site) .preloader-wrapper {
+  display: none !important;
 }
 
 .preloader-wrapper .preloader {

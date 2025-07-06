@@ -104,16 +104,42 @@
 
                 <div class="card shadow-sm mt-4">
                     <div class="card-body">
-                        <h5 class="card-title mb-4">Delete Account</h5>
+                        <h5 class="card-title mb-4 text-danger">Delete Account</h5>
                         <p class="text-muted">Once your account is deleted, all of its resources and data will be permanently deleted.</p>
                         
-                        <form method="POST" action="{{ route('profile.destroy') }}" class="mt-3">
-                            @csrf
-                            @method('delete')
-                            <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete your account? This action cannot be undone.')">
-                                Delete Account
-                            </button>
-                        </form>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6 class="text-dark mb-3">Secure Delete (Recommended)</h6>
+                                <p class="text-muted small mb-3">Requires password confirmation for additional security.</p>
+                                <form method="POST" action="{{ route('profile.destroy') }}" class="mb-3">
+                                    @csrf
+                                    @method('delete')
+                                    <div class="mb-3">
+                                        <label for="delete_password" class="form-label">Current Password</label>
+                                        <input type="password" class="form-control @error('delete_password', 'userDeletion') is-invalid @enderror" 
+                                            id="delete_password" name="password" required>
+                                        @error('delete_password', 'userDeletion')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                    <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete your account? This action cannot be undone.')">
+                                        Delete Account (Secure)
+                                    </button>
+                                </form>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <h6 class="text-dark mb-3">Quick Delete</h6>
+                                <p class="text-muted small mb-3">For Play Store compliance - no password required.</p>
+                                <form method="POST" action="{{ route('profile.delete-account') }}" class="mb-3">
+                                    @csrf
+                                    @method('delete')
+                                    <button type="submit" class="btn btn-outline-danger" onclick="return confirm('Are you sure you want to delete your account? This action cannot be undone.')">
+                                        Delete Account (Quick)
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

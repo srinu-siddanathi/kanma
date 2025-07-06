@@ -57,10 +57,13 @@
                             <a href="#" class="nav-link">FAQ</a>
                         </li>
                         <li class="menu-item">
-                            <a href="#" class="nav-link">Privacy Policy</a>
+                            <a href="{{ route('static.privacy') }}" class="nav-link">Privacy Policy</a>
                         </li>
                         <li class="menu-item">
-                            <a href="#" class="nav-link">Terms & Conditions</a>
+                            <a href="{{ route('static.terms') }}" class="nav-link">Terms & Conditions</a>
+                        </li>
+                        <li class="menu-item">
+                            <a href="{{ route('static.refunds') }}" class="nav-link">Refunds & Cancellation</a>
                         </li>
                     </ul>
                 </div>

@@ -8,6 +8,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="format-detection" content="telephone=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="author" content="">
     <meta name="keywords" content="">
     <meta name="description" content="">
@@ -164,6 +165,15 @@
 
     @include('layouts.partials.footer')
 
+    <!-- Flash Messages -->
+    @if(session('status') === 'account-deleted')
+        <script>
+            $(document).ready(function() {
+                toastr.success('Your account has been successfully deleted. Thank you for using Kanma!');
+            });
+        </script>
+    @endif
+
     <!-- Scripts -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
@@ -174,13 +184,62 @@
     <script src="{{ asset('js/script.js') }}"></script>
 
     <script>
+    // Global function for manual override
+    function forceHidePreloader() {
+        console.log('Force hiding preloader');
+        $('.preloader-wrapper').hide();
+        $('body').removeClass('preloader-site');
+        console.log('Preloader force hidden');
+    }
+    
     $(document).ready(function() {
-        // Preloader
+        console.log('Document ready - initializing preloader');
+        
+        // Preloader with multiple fallback mechanisms
         $('body').addClass('preloader-site');
+        
+        // Hide preloader when page is fully loaded
         $(window).on('load', function() {
-            $('.preloader-wrapper').fadeOut();
-            $('body').removeClass('preloader-site');
+            console.log('Window load event fired');
+            hidePreloader();
         });
+        
+        // Fallback 1: Hide preloader after 3 seconds
+        setTimeout(function() {
+            console.log('Fallback 1: 3 second timeout');
+            hidePreloader();
+        }, 3000);
+        
+        // Fallback 2: Hide preloader when DOM is ready
+        setTimeout(function() {
+            console.log('Fallback 2: DOM ready timeout');
+            hidePreloader();
+        }, 1000);
+        
+        // Fallback 3: Hide preloader when images are loaded
+        $(window).on('load', function() {
+            console.log('Fallback 3: Window load event');
+            hidePreloader();
+        });
+        
+        // Fallback 4: Force hide after 5 seconds as last resort
+        setTimeout(function() {
+            console.log('Fallback 4: Force hide after 5 seconds');
+            forceHidePreloader();
+        }, 5000);
+        
+        function hidePreloader() {
+            console.log('Attempting to hide preloader');
+            if ($('.preloader-wrapper').is(':visible')) {
+                console.log('Preloader is visible, hiding it');
+                $('.preloader-wrapper').fadeOut(500, function() {
+                    $('body').removeClass('preloader-site');
+                    console.log('Preloader hidden successfully');
+                });
+            } else {
+                console.log('Preloader is already hidden');
+            }
+        }
 
         // Initialize Bootstrap offcanvas
         var cartOffcanvas = new bootstrap.Offcanvas(document.getElementById('offcanvasCart'));
@@ -194,6 +253,12 @@
         // Initialize cart
         if (typeof updateCart === 'function') {
             updateCart();
+        }
+        
+        // Error handling for missing elements
+        if (!$('.preloader-wrapper').length) {
+            console.warn('Preloader wrapper not found');
+            $('body').removeClass('preloader-site');
         }
     });
     </script>

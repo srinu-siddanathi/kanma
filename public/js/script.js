@@ -3,13 +3,18 @@
   "use strict";
 
   var initPreloader = function() {
-    $(document).ready(function($) {
-    var Body = $('body');
+    // Only initialize if preloader hasn't been handled by the layout
+    if (!$('body').hasClass('preloader-site')) {
+      $(document).ready(function($) {
+        var Body = $('body');
         Body.addClass('preloader-site');
-    });
+      });
+    }
     $(window).on('load', function() {
-        $('.preloader-wrapper').fadeOut();
-        $('body').removeClass('preloader-site');
+        if ($('.preloader-wrapper').is(':visible')) {
+            $('.preloader-wrapper').fadeOut();
+            $('body').removeClass('preloader-site');
+        }
     });
   }
 

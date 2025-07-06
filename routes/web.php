@@ -313,6 +313,10 @@ Route::get('/privacy', function () {
     return view('static.privacy');
 })->name('static.privacy');
 
+Route::get('/refunds', function () {
+    return view('static.refunds');
+})->name('static.refunds');
+
 // Checkout routes
 Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout');
 Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
@@ -329,6 +333,7 @@ Route::middleware(['auth'])->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::put('/password', [ProfileController::class, 'updatePassword'])->name('password.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::delete('/delete-account', [ProfileController::class, 'deleteAccount'])->name('profile.delete-account');
     
     // Address Management Routes
     Route::get('/addresses/manage', [App\Http\Controllers\AddressController::class, 'manage'])->name('addresses.manage');

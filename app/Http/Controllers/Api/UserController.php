@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
 {
@@ -42,6 +43,22 @@ class UserController extends Controller
         return response()->json([
             'message' => 'Profile updated successfully',
             'data' => $user->fresh()->load('branch')
+        ]);
+    }
+
+    public function deleteAccount(Request $request)
+    {
+        $user = auth()->user();
+        
+        // Delete user data
+        $user->delete();
+
+        // Revoke all tokens
+        $user->tokens()->delete();
+
+        return response()->json([
+            'message' => 'Account deleted successfully',
+            'status' => 'success'
         ]);
     }
 

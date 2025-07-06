@@ -62,4 +62,21 @@ class ProfileController extends Controller
 
         return Redirect::to('/');
     }
+
+    public function deleteAccount(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+        
+        // Logout the user
+        Auth::logout();
+
+        // Delete user data
+        $user->delete();
+
+        // Invalidate and regenerate session
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return Redirect::to('/')->with('status', 'account-deleted');
+    }
 } 

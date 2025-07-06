@@ -1,61 +1,104 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Privacy Policy - {{ config('app.name') }}</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-gray-50">
-    <div class="min-h-screen">
-        <!-- Header -->
-        <header class="bg-white shadow">
-            <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-                <div class="flex justify-between items-center">
-                    <h1 class="text-3xl font-bold text-gray-900">Privacy Policy</h1>
-                    <a href="{{ route('home') }}" class="text-indigo-600 hover:text-indigo-800">← Back to Home</a>
-                </div>
+@extends('layouts.main')
+
+@section('title', 'Privacy Policy - Kanma')
+
+@section('content')
+<section class="py-5 bg-light">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12 text-center">
+                <h1 class="display-4 text-dark">Privacy Policy</h1>
+                <p class="text-muted">Your Privacy Matters to Us</p>
             </div>
-        </header>
-
-        <!-- Main Content -->
-        <main class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-            <div class="bg-white rounded-lg shadow p-8">
-                <div class="prose max-w-none">
-                    <p class="mb-4">Last updated: {{ now()->format('F d, Y') }}</p>
-
-                    <h2 class="text-2xl font-bold mb-4">1. Information We Collect</h2>
-                    <p class="mb-4">We collect information that you provide directly to us, including:</p>
-                    <ul class="list-disc pl-5 mb-4">
-                        <li>Name and contact information</li>
-                        <li>Delivery address</li>
-                        <li>Payment information</li>
-                        <li>Order history</li>
-                    </ul>
-
-                    <h2 class="text-2xl font-bold mb-4">2. How We Use Your Information</h2>
-                    <p class="mb-4">We use the information we collect to:</p>
-                    <ul class="list-disc pl-5 mb-4">
-                        <li>Process your orders</li>
-                        <li>Send order updates</li>
-                        <li>Improve our services</li>
-                        <li>Communicate with you</li>
-                    </ul>
-
-                    <h2 class="text-2xl font-bold mb-4">3. Information Sharing</h2>
-                    <p class="mb-4">We do not sell or share your personal information with third parties except as necessary to provide our services.</p>
-
-                    <h2 class="text-2xl font-bold mb-4">4. Data Security</h2>
-                    <p class="mb-4">We implement appropriate security measures to protect your personal information.</p>
-
-                    <h2 class="text-2xl font-bold mb-4">5. Your Rights</h2>
-                    <p class="mb-4">You have the right to access, correct, or delete your personal information.</p>
-                </div>
-            </div>
-        </main>
+        </div>
     </div>
+</section>
 
-    <!-- Footer -->
-    @include('layouts.partials.footer')
-</body>
-</html> 
+<section class="py-5">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-5">
+                        <div class="mb-5">
+                            <h2 class="h3 text-dark mb-3">Privacy Policy for Kanma</h2>
+                            <div class="row text-muted mb-4">
+                                <div class="col-md-6">
+                                    <p class="mb-1"><strong>Effective Date:</strong> 06/07/2025</p>
+                                    <p class="mb-1"><strong>Business Name:</strong> Kanma (Sole Proprietorship)</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p class="mb-1"><strong>Country:</strong> India</p>
+                                    <p class="mb-1"><strong>Contact:</strong> support@kanma.in | +91 8333916492</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-5">
+                            <h3 class="h4 text-dark mb-3">1. Introduction</h3>
+                            <p class="text-muted">Kanma ("we," "our," or "us") respects your privacy and is committed to protecting your personal information. This Privacy Policy outlines how we collect, use, and protect your data when you use our mobile application and services.</p>
+                        </div>
+
+                        <div class="mb-5">
+                            <h3 class="h4 text-dark mb-3">2. What Data We Collect</h3>
+                            <p class="text-muted mb-3">We collect limited personal information to provide our services:</p>
+                            <ul class="text-muted">
+                                <li>Name</li>
+                                <li>Phone number</li>
+                                <li>Delivery address</li>
+                                <li>Transaction information via Razorpay (We do not store card or bank details)</li>
+                            </ul>
+                        </div>
+
+                        <div class="mb-5">
+                            <h3 class="h4 text-dark mb-3">3. How We Use Your Data</h3>
+                            <p class="text-muted mb-3">We use your data to:</p>
+                            <ul class="text-muted">
+                                <li>Deliver orders and services</li>
+                                <li>Provide customer support</li>
+                                <li>Process payments securely via Razorpay</li>
+                                <li>Offer personalized services and subscription benefits</li>
+                                <li>Improve the user experience</li>
+                            </ul>
+                        </div>
+
+                        <div class="mb-5">
+                            <h3 class="h4 text-dark mb-3">4. Data Sharing</h3>
+                            <p class="text-muted">We do not share your personal data with third parties. All payments are processed securely via Razorpay, and we do not access or store your banking information.</p>
+                        </div>
+
+                        <div class="mb-5">
+                            <h3 class="h4 text-dark mb-3">5. Data Retention</h3>
+                            <p class="text-muted">We retain user data for as long as necessary to provide services and comply with legal obligations.</p>
+                        </div>
+
+                        <div class="mb-5">
+                            <h3 class="h4 text-dark mb-3">6. User Rights</h3>
+                            <p class="text-muted mb-3">You can:</p>
+                            <ul class="text-muted">
+                                <li>Request access to your data</li>
+                                <li>Request deletion of your account</li>
+                                <li>Contact support@kanma.in for data-related queries</li>
+                            </ul>
+                        </div>
+
+                        <div class="mb-4">
+                            <h3 class="h4 text-dark mb-3">7. Children's Privacy</h3>
+                            <p class="text-muted">Our service does not target children under the age of 13. We do not knowingly collect data from minors.</p>
+                        </div>
+
+                        <div class="text-center mt-5">
+                            <a href="{{ route('home') }}" class="btn btn-primary">
+                                <svg width="16" height="16" class="me-2">
+                                    <use xlink:href="#arrow-right"></use>
+                                </svg>
+                                Back to Home
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+@endsection 
