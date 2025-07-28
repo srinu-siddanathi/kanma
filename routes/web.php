@@ -76,9 +76,15 @@ Route::get('/about', function () {
     return view('about');
 })->name('about');
 
+Route::get('/faq', function () {
+    return view('faq');
+})->name('faq');
+
 Route::get('/contact', function () {
     return view('contact');
 })->name('contact');
+
+Route::post('/contact', [App\Http\Controllers\ContactController::class, 'store'])->name('contact.store');
 
 
 // Admin & Branch Manager Auth Routes

@@ -54,7 +54,7 @@
                     <h5 class="widget-title">Help & Info</h5>
                     <ul class="menu-list list-unstyled">
                         <li class="menu-item">
-                            <a href="#" class="nav-link">FAQ</a>
+                            <a href="{{ route('faq') }}" class="nav-link">FAQ</a>
                         </li>
                         <li class="menu-item">
                             <a href="{{ route('static.privacy') }}" class="nav-link">Privacy Policy</a>
@@ -68,7 +68,7 @@
                     </ul>
                 </div>
             </div>
-            <div class="col-md-3 col-sm-6">
+            <!-- <div class="col-md-3 col-sm-6">
                 <div class="footer-menu">
                     <h5 class="widget-title">Subscribe Us</h5>
                     <p>Subscribe to our newsletter to get updates about our grand offers.</p>
@@ -77,7 +77,7 @@
                         <button class="btn btn-dark rounded-end rounded-0">Subscribe</button>
                     </form>
                 </div>
-            </div>
+            </div> -->
         </div>
     </div>
 </footer>

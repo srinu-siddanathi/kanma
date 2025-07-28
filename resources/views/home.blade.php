@@ -24,7 +24,6 @@
 @include('components.home.just-arrived', ['products' => $data->just_arrived])
 {{-- @include('components.home.blog', ['posts' => $data->blog_posts]) --}}
 @include('components.home.app-ad')
-@include('components.home.looking')
 @include('components.home.service')
 @endif
 

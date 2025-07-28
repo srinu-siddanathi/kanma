@@ -13,7 +13,7 @@
                         <div class="col-md-10">
                             <div class="card-body p-0">
                                 <h5>Free delivery</h5>
-                                <p class="card-text">Lorem ipsum dolor sit amet, consectetur adipi elit.</p>
+                                <p class="card-text">Enjoy doorstep delivery without extra charges — fast, reliable, and always on time.</p>
                             </div>
                         </div>
                     </div>
@@ -31,7 +31,7 @@
                         <div class="col-md-10">
                             <div class="card-body p-0">
                                 <h5>100% secure payment</h5>
-                                <p class="card-text">Lorem ipsum dolor sit amet, consectetur adipi elit.</p>
+                                <p class="card-text">All transactions are encrypted and handled through trusted gateways like Razorpay.</p>
                             </div>
                         </div>
                     </div>
@@ -49,7 +49,7 @@
                         <div class="col-md-10">
                             <div class="card-body p-0">
                                 <h5>Quality guarantee</h5>
-                                <p class="card-text">Lorem ipsum dolor sit amet, consectetur adipi elit.</p>
+                                <p class="card-text">We partner only with verified vendors to ensure you get nothing but the best.</p>
                             </div>
                         </div>
                     </div>
@@ -67,7 +67,7 @@
                         <div class="col-md-10">
                             <div class="card-body p-0">
                                 <h5>guaranteed savings</h5>
-                                <p class="card-text">Lorem ipsum dolor sit amet, consectetur adipi elit.</p>
+                                <p class="card-text">Get the best value every day with exclusive member offers and seasonal deals.</p>
                             </div>
                         </div>
                     </div>
@@ -85,7 +85,7 @@
                         <div class="col-md-10">
                             <div class="card-body p-0">
                                 <h5>Daily offers</h5>
-                                <p class="card-text">Lorem ipsum dolor sit amet, consectetur adipi elit.</p>
+                                <p class="card-text">Discover new discounts and flash deals daily — because you deserve more for less.</p>
                             </div>
                         </div>
                     </div>
