@@ -386,62 +386,101 @@ class OrderController extends Controller
             // Update order status to cancelled
             $order->update(['status' => 'cancelled']);
 
-            // Refund wallet amount if wallet was used
-            if ($order->wallet_amount_used > 0) {
-                $user = auth()->user();
-                $user->addToWallet(
-                    $order->wallet_amount_used,
-                    "Refund for cancelled order #{$order->id}",
-                    'App\\Models\\Order',
-                    $order->id,
-                    [
-                        'order_id' => $order->id,
-                        'refund_type' => 'order_cancellation'
-                    ]
-                );
-                
-                Log::info('Wallet refund processed for cancelled order', [
-                    'order_id' => $order->id,
-                    'user_id' => $user->id,
-                    'refund_amount' => $order->wallet_amount_used
-                ]);
-            }
-
-            // If payment was made online, initiate refund process
+            // Initialize refund information
             $refundInfo = [
-                'wallet_refunded' => $order->wallet_amount_used > 0,
-                'wallet_amount' => $order->wallet_amount_used,
-                'online_refund_required' => $order->payment_method === 'razorpay' && $order->payment_status === 'completed',
+                'wallet_refunded' => false,
+                'wallet_amount' => 0,
+                'online_refund_required' => false,
                 'online_refund_processed' => false,
-                'online_refund_details' => null
+                'online_refund_details' => null,
+                'refund_errors' => []
             ];
 
-            if ($order->payment_method === 'razorpay' && $order->payment_status === 'completed') {
-                $razorpayController = new RazorpayController();
-                $refundResult = $razorpayController->processRefund($order);
-                
-                if ($refundResult['success']) {
-                    $refundInfo['online_refund_processed'] = true;
-                    $refundInfo['online_refund_details'] = $refundResult['data'];
+            // Refund wallet amount if wallet was used
+            if ($order->wallet_amount_used > 0) {
+                try {
+                    $user = auth()->user();
+                    $user->addToWallet(
+                        $order->wallet_amount_used,
+                        "Refund for cancelled order #{$order->id}",
+                        'App\\Models\\Order',
+                        $order->id,
+                        [
+                            'order_id' => $order->id,
+                            'refund_type' => 'order_cancellation',
+                            'cancelled_at' => now()->toISOString()
+                        ]
+                    );
                     
-                    Log::info('Razorpay refund processed successfully for cancelled order', [
+                    $refundInfo['wallet_refunded'] = true;
+                    $refundInfo['wallet_amount'] = $order->wallet_amount_used;
+                    
+                    Log::info('Wallet refund processed for cancelled order', [
                         'order_id' => $order->id,
-                        'refund_id' => $refundResult['data']['refund_id'],
-                        'refund_amount' => $refundResult['data']['refund_amount']
+                        'user_id' => $user->id,
+                        'refund_amount' => $order->wallet_amount_used
                     ]);
-                } else {
-                    Log::error('Razorpay refund failed for cancelled order', [
+                } catch (\Exception $e) {
+                    Log::error('Wallet refund failed for cancelled order', [
                         'order_id' => $order->id,
-                        'error' => $refundResult['message']
+                        'error' => $e->getMessage()
                     ]);
+                    $refundInfo['refund_errors'][] = 'Wallet refund failed: ' . $e->getMessage();
                 }
             }
 
+            // Check if online refund is required
+            $refundInfo['online_refund_required'] = $order->payment_method === 'razorpay' && $order->payment_status === 'completed';
+
+            // If payment was made online, initiate refund process
+            if ($refundInfo['online_refund_required']) {
+                try {
+                    $razorpayController = new RazorpayController();
+                    $refundResult = $razorpayController->processRefund($order);
+                    
+                    if ($refundResult['success']) {
+                        $refundInfo['online_refund_processed'] = true;
+                        $refundInfo['online_refund_details'] = $refundResult['data'];
+                        
+                        Log::info('Razorpay refund processed successfully for cancelled order', [
+                            'order_id' => $order->id,
+                            'refund_id' => $refundResult['data']['refund_id'],
+                            'refund_amount' => $refundResult['data']['refund_amount']
+                        ]);
+                    } else {
+                        Log::error('Razorpay refund failed for cancelled order', [
+                            'order_id' => $order->id,
+                            'error' => $refundResult['message']
+                        ]);
+                        $refundInfo['refund_errors'][] = 'Online refund failed: ' . $refundResult['message'];
+                    }
+                } catch (\Exception $e) {
+                    Log::error('Razorpay refund exception for cancelled order', [
+                        'order_id' => $order->id,
+                        'error' => $e->getMessage(),
+                        'trace' => $e->getTraceAsString()
+                    ]);
+                    $refundInfo['refund_errors'][] = 'Online refund exception: ' . $e->getMessage();
+                }
+            }
+
+            // Update order with refund information for tracking
+            $order->update([
+                'refund_info' => $refundInfo,
+                'cancelled_at' => now()
+            ]);
+
             DB::commit();
+
+            // Prepare response message based on refund status
+            $message = 'Order cancelled successfully';
+            if (!empty($refundInfo['refund_errors'])) {
+                $message .= '. Some refunds may require manual processing.';
+            }
 
             return response()->json([
                 'status' => 'success',
-                'message' => 'Order cancelled successfully',
+                'message' => $message,
                 'data' => [
                     'order' => $order->fresh()->load('items.product', 'branch'),
                     'refund_info' => $refundInfo
@@ -452,7 +491,8 @@ class OrderController extends Controller
             DB::rollBack();
             Log::error('Error cancelling order', [
                 'order_id' => $order->id,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
             ]);
 
             return response()->json([

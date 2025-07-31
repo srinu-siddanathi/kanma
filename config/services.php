@@ -64,4 +64,9 @@ return [
         'test_mode' => env('MSG91_TEST_MODE', true),
     ],
 
+    'firebase' => [
+        'server_key' => env('FIREBASE_SERVER_KEY'),
+        'project_id' => env('FIREBASE_PROJECT_ID'),
+    ],
+
 ];

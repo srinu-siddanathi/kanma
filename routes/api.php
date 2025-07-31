@@ -40,6 +40,10 @@ Route::post('/login/otp/send', [AuthController::class, 'sendOtp']);
 Route::post('/login/otp/verify', [AuthController::class, 'verifyOtp']);
 Route::post('/verify-registration', [AuthController::class, 'verifyRegistrationOtp']);
 
+// Forgot Password Routes
+Route::post('/forgot-password/send-otp', [AuthController::class, 'forgotPassword']);
+Route::post('/forgot-password/reset', [AuthController::class, 'resetPassword']);
+
 // Public Product & Category Routes
 Route::get('/products', [ProductController::class, 'index']);
 Route::get('/products/deals', [ProductController::class, 'deals']);
@@ -164,6 +168,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/razorpay/payment-failure', [RazorpayController::class, 'handlePaymentFailure']);
     Route::get('/razorpay/payment-status', [RazorpayController::class, 'getPaymentStatus']);
     Route::get('/razorpay/refund-status', [RazorpayController::class, 'getRefundStatus']);
+    Route::get('/razorpay/order-refund-status', [RazorpayController::class, 'getOrderRefundStatus']);
 
     // Location Modal API Routes
     Route::get('/location/addresses', [App\Http\Controllers\Api\AddressController::class, 'index'])->name('api.location.addresses');
@@ -223,6 +228,15 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('monthly-lists/{listId}/products', [MonthlyListController::class, 'addProduct']);
     Route::delete('monthly-lists/{listId}/products/{productId}', [MonthlyListController::class, 'removeProduct']);
     Route::post('monthly-lists/{listId}/products/{productId}', [MonthlyListController::class, 'updateProductQuantity']);
+
+    // Notification Management Routes
+    Route::prefix('notifications')->middleware('auth:sanctum')->group(function () {
+        Route::post('/register-device', [App\Http\Controllers\Api\NotificationController::class, 'registerDevice']);
+        Route::delete('/unregister-device', [App\Http\Controllers\Api\NotificationController::class, 'unregisterDevice']);
+        Route::get('/device-tokens', [App\Http\Controllers\Api\NotificationController::class, 'getDeviceTokens']);
+        Route::post('/test', [App\Http\Controllers\Api\NotificationController::class, 'testNotification']);
+        Route::post('/update-last-used', [App\Http\Controllers\Api\NotificationController::class, 'updateLastUsed']);
+    });
 
     // Delivery Boy routes
     Route::prefix('delivery-boy')->middleware(['auth:sanctum', \App\Http\Middleware\DeliveryBoyAuthentication::class])->group(function () {

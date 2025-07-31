@@ -117,6 +117,64 @@ Success Response (200):
 {
     "status": "success",
     "token": "string",
+
+Forgot Password
+--------------
+1. Send OTP for Forgot Password
+URL: /api/forgot-password/send-otp
+Method: POST
+Auth Required: No
+
+Request Body:
+{
+    "phone": "string",
+    "otp": "string"
+}
+
+Success Response (200):
+{
+    "status": "success",
+    "message": "OTP sent successfully to your mobile number",
+    "data": {
+        "phone": "string",
+        "user_exists": true
+    }
+}
+
+Error Response (404):
+{
+    "status": "error",
+    "message": "No account found with this mobile number. Please check the number or register.",
+    "requires_registration": true
+}
+
+2. Reset Password
+URL: /api/forgot-password/reset
+Method: POST
+Auth Required: No
+
+Request Body:
+{
+    "phone": "string",
+    "otp": "string",
+    "new_password": "string"
+}
+
+Success Response (200):
+{
+    "status": "success",
+    "message": "Password reset successfully",
+    "data": {
+        "token": "string",
+        "user": {
+            "id": "integer",
+            "name": "string",
+            "email": "string",
+            "phone": "string",
+            "role": "string"
+        }
+    }
+}
     "user": {
         "id": "integer",
         "name": "string",

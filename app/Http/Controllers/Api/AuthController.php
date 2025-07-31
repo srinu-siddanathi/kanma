@@ -35,15 +35,29 @@ class AuthController extends Controller
         $user = Auth::user();
         $token = $user->createToken('auth-token')->plainTextToken;
 
+        // Handle device token registration if provided
+        $deviceTokenRegistered = false;
+        if ($request->has('device_token')) {
+            $deviceTokenRegistered = $this->registerDeviceToken($user, $request);
+        }
+
         return response()->json([
             'token' => $token,
             'user' => $user,
+            'device_token_registered' => $deviceTokenRegistered,
         ]);
     }
 
     public function logout(Request $request)
     {
-        $request->user()->currentAccessToken()->delete();
+        $user = $request->user();
+        
+        // Handle device token cleanup if provided
+        if ($request->has('device_token')) {
+            $this->unregisterDeviceToken($user, $request->device_token);
+        }
+        
+        $user->currentAccessToken()->delete();
         
         return response()->json([
             'status' => 'success',
@@ -120,11 +134,18 @@ class AuthController extends Controller
 
         $token = $user->createToken('auth-token')->plainTextToken;
 
+        // Handle device token registration if provided
+        $deviceTokenRegistered = false;
+        if ($request->has('device_token')) {
+            $deviceTokenRegistered = $this->registerDeviceToken($user, $request);
+        }
+
         return response()->json([
             'status' => 'success',
             'token' => $token,
             'user' => $user->fresh(),
-            'is_new_user' => !$user->profile_completed
+            'is_new_user' => !$user->profile_completed,
+            'device_token_registered' => $deviceTokenRegistered,
         ]);
     }
 
@@ -230,6 +251,107 @@ class AuthController extends Controller
         return $code;
     }
 
+    /**
+     * Register device token for push notifications
+     */
+    private function registerDeviceToken(User $user, Request $request): bool
+    {
+        try {
+            $validated = $request->validate([
+                'device_token' => 'required|string|max:255',
+                'device_type' => 'nullable|in:android,ios,web',
+                'app_version' => 'nullable|string|max:20',
+                'device_model' => 'nullable|string|max:100'
+            ]);
+
+            // Set default device type if not provided
+            $deviceType = $validated['device_type'] ?? 'android';
+
+            // Check if token already exists for this user
+            $existingToken = \App\Models\UserDeviceToken::where('user_id', $user->id)
+                ->where('device_token', $validated['device_token'])
+                ->first();
+
+            if ($existingToken) {
+                // Update existing token
+                $existingToken->update([
+                    'device_type' => $deviceType,
+                    'app_version' => $validated['app_version'] ?? $existingToken->app_version,
+                    'device_model' => $validated['device_model'] ?? $existingToken->device_model,
+                    'is_active' => true,
+                    'last_used_at' => now()
+                ]);
+
+                \Log::info('Device token updated during login', [
+                    'user_id' => $user->id,
+                    'device_token' => $existingToken->device_token,
+                    'device_type' => $existingToken->device_type
+                ]);
+
+                return true;
+            }
+
+            // Create new device token
+            \App\Models\UserDeviceToken::create([
+                'user_id' => $user->id,
+                'device_token' => $validated['device_token'],
+                'device_type' => $deviceType,
+                'app_version' => $validated['app_version'],
+                'device_model' => $validated['device_model'],
+                'is_active' => true,
+                'last_used_at' => now()
+            ]);
+
+            \Log::info('Device token registered during login', [
+                'user_id' => $user->id,
+                'device_token' => $validated['device_token'],
+                'device_type' => $deviceType
+            ]);
+
+            return true;
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            \Log::warning('Device token validation failed during login', [
+                'user_id' => $user->id,
+                'errors' => $e->errors()
+            ]);
+            return false;
+        } catch (\Exception $e) {
+            \Log::error('Error registering device token during login', [
+                'user_id' => $user->id,
+                'error' => $e->getMessage()
+            ]);
+            return false;
+        }
+    }
+
+    /**
+     * Unregister device token during logout
+     */
+    private function unregisterDeviceToken(User $user, string $deviceToken): void
+    {
+        try {
+            $deviceTokenModel = \App\Models\UserDeviceToken::where('user_id', $user->id)
+                ->where('device_token', $deviceToken)
+                ->first();
+
+            if ($deviceTokenModel) {
+                $deviceTokenModel->deactivate();
+                
+                \Log::info('Device token deactivated during logout', [
+                    'user_id' => $user->id,
+                    'device_token' => $deviceToken
+                ]);
+            }
+        } catch (\Exception $e) {
+            \Log::error('Error unregistering device token during logout', [
+                'user_id' => $user->id,
+                'device_token' => $deviceToken,
+                'error' => $e->getMessage()
+            ]);
+        }
+    }
+
     public function register(Request $request): JsonResponse
     {
         try {
@@ -294,8 +416,157 @@ class AuthController extends Controller
             \Log::error('Registration error: ' . $e->getMessage());
             return response()->json([
                 'status' => 'error',
-                'message' => 'Registration failed',
-                'debug' => $e->getMessage() // Remove in production
+                'message' => 'Registration failed. Please try again.'
+            ], 500);
+        }
+    }
+
+    /**
+     * Send OTP for forgot password functionality
+     * This endpoint accepts mobile number and OTP from Android app
+     * Verifies mobile number exists and sends OTP via SMS
+     */
+    public function forgotPassword(Request $request): JsonResponse
+    {
+        try {
+            $validated = $request->validate([
+                'phone' => 'required|string|size:10',
+                'otp' => 'required|string|size:6'
+            ]);
+
+            // Check if user exists with this phone number
+            $user = User::where('phone', $validated['phone'])->first();
+
+            if (!$user) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'No account found with this mobile number. Please check the number or register.',
+                    'requires_registration' => true
+                ], 404);
+            }
+
+            // Store the OTP in database for tracking (optional, for audit purposes)
+            Otp::create([
+                'phone' => $validated['phone'],
+                'otp' => $validated['otp'],
+                'type' => 'forgot_password',
+                'expires_at' => now()->addMinutes(10),
+                'is_used' => false
+            ]);
+
+            // Send OTP via SMS using Msg91Service
+            $msg91Service = new \App\Services\Msg91Service();
+            $smsResult = $msg91Service->sendOtp($validated['phone'], $validated['otp']);
+
+            if (!$smsResult['success']) {
+                \Log::error('SMS sending failed for forgot password', [
+                    'phone' => $validated['phone'],
+                    'error' => $smsResult['message']
+                ]);
+
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Failed to send OTP. Please try again later.'
+                ], 500);
+            }
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'OTP sent successfully to your mobile number',
+                'data' => [
+                    'phone' => $validated['phone'],
+                    'user_exists' => true
+                ]
+            ]);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Invalid input data',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            \Log::error('Forgot password error: ' . $e->getMessage());
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Something went wrong. Please try again later.'
+            ], 500);
+        }
+    }
+
+    /**
+     * Reset password after OTP verification (handled by Android app)
+     * This endpoint is called after Android app verifies OTP locally
+     */
+    public function resetPassword(Request $request): JsonResponse
+    {
+        try {
+            $validated = $request->validate([
+                'phone' => 'required|string|size:10',
+                'otp' => 'required|string|size:6',
+                'new_password' => 'required|string|min:6'
+            ]);
+
+            // Verify OTP from database (optional verification)
+            $otpRecord = Otp::where('phone', $validated['phone'])
+                ->where('otp', $validated['otp'])
+                ->where('type', 'forgot_password')
+                ->where('is_used', false)
+                ->where('expires_at', '>', now())
+                ->latest()
+                ->first();
+
+            if (!$otpRecord) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Invalid or expired OTP'
+                ], 422);
+            }
+
+            // Find user
+            $user = User::where('phone', $validated['phone'])->first();
+
+            if (!$user) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'User not found'
+                ], 404);
+            }
+
+            // Update password
+            $user->update([
+                'password' => Hash::make($validated['new_password'])
+            ]);
+
+            // Mark OTP as used
+            $otpRecord->update(['is_used' => true]);
+
+            // Revoke all existing tokens for security
+            $user->tokens()->delete();
+
+            // Generate new token
+            $token = $user->createToken('auth-token')->plainTextToken;
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Password reset successfully',
+                'data' => [
+                    'token' => $token,
+                    'user' => $user->fresh()
+                ]
+            ]);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Invalid input data',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            \Log::error('Reset password error: ' . $e->getMessage());
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to reset password. Please try again.'
             ], 500);
         }
     }
@@ -332,6 +603,12 @@ class AuthController extends Controller
                 $otpModel->update(['is_used' => true]);
                 $token = $user->createToken('auth_token')->plainTextToken;
 
+                // Handle device token registration if provided
+                $deviceTokenRegistered = false;
+                if ($request->has('device_token')) {
+                    $deviceTokenRegistered = $this->registerDeviceToken($user, $request);
+                }
+
                 DB::commit();
 
                 return response()->json([
@@ -346,7 +623,8 @@ class AuthController extends Controller
                             'referral_code' => $user->referral_code,
                             'profile_completed' => false,
                             'created_at' => $user->created_at
-                        ]
+                        ],
+                        'device_token_registered' => $deviceTokenRegistered,
                     ]
                 ]);
 

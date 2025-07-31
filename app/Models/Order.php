@@ -29,6 +29,9 @@ class Order extends Model
         'delivery_instructions',
         'delivery_notes',
         'coupon_id',
+        'refund_info',
+        'cancelled_at',
+        'cancellation_reason',
     ];
 
     protected $casts = [
@@ -37,6 +40,8 @@ class Order extends Model
         'wallet_amount_used' => 'decimal:2',
         'delivery_latitude' => 'decimal:8',
         'delivery_longitude' => 'decimal:8',
+        'refund_info' => 'array',
+        'cancelled_at' => 'datetime',
     ];
 
     public function user(): BelongsTo

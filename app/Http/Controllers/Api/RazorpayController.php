@@ -404,4 +404,114 @@ class RazorpayController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Get comprehensive refund status for an order
+     */
+    public function getOrderRefundStatus(Request $request)
+    {
+        $request->validate([
+            'order_id' => 'required|exists:orders,id'
+        ]);
+
+        try {
+            $order = Order::findOrFail($request->order_id);
+            
+            // Ensure user can only view their own orders
+            if ($order->user_id !== auth()->id()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthorized access to order'
+                ], 403);
+            }
+
+            $refundStatus = [
+                'order_id' => $order->id,
+                'order_status' => $order->status,
+                'payment_method' => $order->payment_method,
+                'payment_status' => $order->payment_status,
+                'total_amount' => $order->total_amount,
+                'wallet_amount_used' => $order->wallet_amount_used,
+                'refunds' => []
+            ];
+
+            // Get wallet refund status
+            if ($order->wallet_amount_used > 0) {
+                $walletTransaction = \App\Models\WalletTransaction::where('user_id', $order->user_id)
+                    ->where('reference_type', 'App\\Models\\Order')
+                    ->where('reference_id', $order->id)
+                    ->where('type', 'credit')
+                    ->where('description', 'like', '%Refund for cancelled order%')
+                    ->first();
+
+                $refundStatus['refunds']['wallet'] = [
+                    'amount' => $order->wallet_amount_used,
+                    'status' => $walletTransaction ? 'processed' : 'pending',
+                    'processed_at' => $walletTransaction ? $walletTransaction->created_at : null,
+                    'transaction_id' => $walletTransaction ? $walletTransaction->id : null
+                ];
+            }
+
+            // Get Razorpay refund status
+            if ($order->payment_method === 'razorpay' && $order->payment_status === 'completed') {
+                $payment = Payment::where('order_id', $order->id)
+                    ->where('payment_method', 'razorpay')
+                    ->latest()
+                    ->first();
+
+                if ($payment && $payment->refund_id) {
+                    try {
+                        // Fetch refund status from Razorpay
+                        $refund = $this->razorpay->refund->fetch($payment->refund_id);
+                        
+                        $refundStatus['refunds']['razorpay'] = [
+                            'refund_id' => $refund->id,
+                            'amount' => $refund->amount / 100, // Convert from paise
+                            'status' => $refund->status,
+                            'reason' => $payment->refund_reason,
+                            'processed_at' => $refund->created_at,
+                            'refund_details' => $refund->toArray()
+                        ];
+                    } catch (\Exception $e) {
+                        Log::error('Failed to fetch Razorpay refund status', [
+                            'order_id' => $order->id,
+                            'refund_id' => $payment->refund_id,
+                            'error' => $e->getMessage()
+                        ]);
+                        
+                        $refundStatus['refunds']['razorpay'] = [
+                            'refund_id' => $payment->refund_id,
+                            'amount' => $payment->refund_amount,
+                            'status' => 'unknown',
+                            'reason' => $payment->refund_reason,
+                            'error' => 'Failed to fetch refund status from Razorpay'
+                        ];
+                    }
+                } else {
+                    $refundStatus['refunds']['razorpay'] = [
+                        'status' => 'not_initiated',
+                        'message' => 'No refund initiated for this payment'
+                    ];
+                }
+            }
+
+            // Add order refund info if available
+            if ($order->refund_info) {
+                $refundStatus['order_refund_info'] = $order->refund_info;
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => $refundStatus
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Order refund status check failed: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to get refund status',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 } 

@@ -1,0 +1,552 @@
+{
+	"info": {
+		"_postman_id": "push-notification-api-collection",
+		"name": "Push Notification API",
+		"description": "Collection for testing push notification functionality with Firebase FCM and login integration",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Login with Device Token",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"email\": \"{{user_email}}\",\n    \"password\": \"{{user_password}}\",\n    \"device_token\": \"{{device_token}}\",\n    \"device_type\": \"android\",\n    \"app_version\": \"1.0.0\",\n    \"device_model\": \"Samsung Galaxy S21\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/login",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"login"
+					]
+				},
+				"description": "Login with email/password and register device token for push notifications. This is the recommended way to register device tokens during user authentication."
+			},
+			"response": []
+		},
+		{
+			"name": "OTP Login with Device Token",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"phone\": \"{{user_phone}}\",\n    \"otp\": \"{{otp_code}}\",\n    \"device_token\": \"{{device_token}}\",\n    \"device_type\": \"android\",\n    \"app_version\": \"1.0.0\",\n    \"device_model\": \"Samsung Galaxy S21\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/login/otp/verify",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"login",
+						"otp",
+						"verify"
+					]
+				},
+				"description": "Login with OTP and register device token for push notifications."
+			},
+			"response": []
+		},
+		{
+			"name": "Registration with Device Token",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"phone\": \"{{user_phone}}\",\n    \"otp\": \"{{otp_code}}\",\n    \"device_token\": \"{{device_token}}\",\n    \"device_type\": \"android\",\n    \"app_version\": \"1.0.0\",\n    \"device_model\": \"Samsung Galaxy S21\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/verify-registration",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"verify-registration"
+					]
+				},
+				"description": "Complete registration with OTP and register device token for push notifications."
+			},
+			"response": []
+		},
+		{
+			"name": "Logout with Device Token Cleanup",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{auth_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"device_token\": \"{{device_token}}\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/logout",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"logout"
+					]
+				},
+				"description": "Logout and deactivate device token. This ensures the device won't receive notifications after logout."
+			},
+			"response": []
+		},
+		{
+			"name": "Register Device Token (Standalone)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{auth_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"device_token\": \"{{device_token}}\",\n    \"device_type\": \"android\",\n    \"app_version\": \"1.0.0\",\n    \"device_model\": \"Samsung Galaxy S21\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/notifications/register-device",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"notifications",
+						"register-device"
+					]
+				},
+				"description": "Register a device token for push notifications (standalone endpoint). Use this if you need to register a device token separately from login."
+			},
+			"response": []
+		},
+		{
+			"name": "Get Device Tokens",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{auth_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/notifications/device-tokens",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"notifications",
+						"device-tokens"
+					]
+				},
+				"description": "Get all active device tokens for the authenticated user."
+			},
+			"response": []
+		},
+		{
+			"name": "Test Notification",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{auth_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/notifications/test",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"notifications",
+						"test"
+					]
+				},
+				"description": "Send a test notification to the user's registered devices. Use this to verify that notifications are working."
+			},
+			"response": []
+		},
+		{
+			"name": "Update Last Used",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{auth_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"device_token\": \"{{device_token}}\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/notifications/update-last-used",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"notifications",
+						"update-last-used"
+					]
+				},
+				"description": "Update the last used timestamp for a device token. This can be called periodically to track device activity."
+			},
+			"response": []
+		},
+		{
+			"name": "Unregister Device Token",
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{auth_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"device_token\": \"{{device_token}}\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/notifications/unregister-device",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"notifications",
+						"unregister-device"
+					]
+				},
+				"description": "Unregister a device token (deactivate it). This should be called when the user logs out or when the app is uninstalled."
+			},
+			"response": []
+		},
+		{
+			"name": "Register Device Token - iOS",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{auth_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"device_token\": \"{{ios_device_token}}\",\n    \"device_type\": \"ios\",\n    \"app_version\": \"1.0.0\",\n    \"device_model\": \"iPhone 13\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/notifications/register-device",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"notifications",
+						"register-device"
+					]
+				},
+				"description": "Register an iOS device token for push notifications."
+			},
+			"response": []
+		},
+		{
+			"name": "Register Device Token - Web",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{auth_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"device_token\": \"{{web_device_token}}\",\n    \"device_type\": \"web\",\n    \"app_version\": \"1.0.0\",\n    \"device_model\": \"Chrome Browser\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/notifications/register-device",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"notifications",
+						"register-device"
+					]
+				},
+				"description": "Register a web device token for push notifications."
+			},
+			"response": []
+		},
+		{
+			"name": "Login without Device Token",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"email\": \"{{user_email}}\",\n    \"password\": \"{{user_password}}\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/login",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"login"
+					]
+				},
+				"description": "Test case: Login without device token. Should work normally without device token registration."
+			},
+			"response": []
+		},
+		{
+			"name": "Register Device Token - Invalid Token",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{auth_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"device_token\": \"\",\n    \"device_type\": \"android\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/notifications/register-device",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"notifications",
+						"register-device"
+					]
+				},
+				"description": "Test case: Try to register an empty device token. Should return validation error."
+			},
+			"response": []
+		},
+		{
+			"name": "Register Device Token - Invalid Device Type",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{auth_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"device_token\": \"{{device_token}}\",\n    \"device_type\": \"windows\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/notifications/register-device",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"notifications",
+						"register-device"
+					]
+				},
+				"description": "Test case: Try to register with invalid device type. Should return validation error."
+			},
+			"response": []
+		},
+		{
+			"name": "Test Notification - No Device Tokens",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{auth_token_no_devices}}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/notifications/test",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"notifications",
+						"test"
+					]
+				},
+				"description": "Test case: Try to send test notification to user with no registered device tokens. Should return appropriate message."
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000",
+			"type": "string"
+		},
+		{
+			"key": "auth_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "auth_token_no_devices",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "user_email",
+			"value": "user@example.com",
+			"type": "string"
+		},
+		{
+			"key": "user_password",
+			"value": "password123",
+			"type": "string"
+		},
+		{
+			"key": "user_phone",
+			"value": "9876543210",
+			"type": "string"
+		},
+		{
+			"key": "otp_code",
+			"value": "123456",
+			"type": "string"
+		},
+		{
+			"key": "device_token",
+			"value": "fcm_device_token_here",
+			"type": "string"
+		},
+		{
+			"key": "ios_device_token",
+			"value": "ios_fcm_token_here",
+			"type": "string"
+		},
+		{
+			"key": "web_device_token",
+			"value": "web_fcm_token_here",
+			"type": "string"
+		}
+	]
+} 

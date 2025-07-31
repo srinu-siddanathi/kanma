@@ -199,4 +199,28 @@ class User extends Authenticatable
     {
         return $this->hasMany(MonthlyList::class);
     }
+
+    /**
+     * Get the device tokens for the user.
+     */
+    public function deviceTokens()
+    {
+        return $this->hasMany(UserDeviceToken::class);
+    }
+
+    /**
+     * Get active device tokens for the user.
+     */
+    public function activeDeviceTokens()
+    {
+        return $this->deviceTokens()->active();
+    }
+
+    /**
+     * Get device tokens by type for the user.
+     */
+    public function deviceTokensByType($deviceType)
+    {
+        return $this->deviceTokens()->active()->byDeviceType($deviceType);
+    }
 }

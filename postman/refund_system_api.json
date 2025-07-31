@@ -1,0 +1,310 @@
+{
+	"info": {
+		"_postman_id": "refund-system-api-collection",
+		"name": "Refund System API",
+		"description": "Collection for testing refund functionality when cancelling orders",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Cancel Order (Wallet Only)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{auth_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/orders/{{order_id}}/cancel",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"orders",
+						"{{order_id}}",
+						"cancel"
+					]
+				},
+				"description": "Cancel an order that was paid using wallet only. This will trigger immediate wallet refund."
+			},
+			"response": []
+		},
+		{
+			"name": "Cancel Order (Razorpay Only)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{auth_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/orders/{{order_id}}/cancel",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"orders",
+						"{{order_id}}",
+						"cancel"
+					]
+				},
+				"description": "Cancel an order that was paid using Razorpay only. This will trigger automatic Razorpay refund."
+			},
+			"response": []
+		},
+		{
+			"name": "Cancel Order (Mixed Payment)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{auth_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/orders/{{order_id}}/cancel",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"orders",
+						"{{order_id}}",
+						"cancel"
+					]
+				},
+				"description": "Cancel an order that used both wallet and Razorpay payment. This will trigger both wallet and Razorpay refunds."
+			},
+			"response": []
+		},
+		{
+			"name": "Get Comprehensive Refund Status",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{auth_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/razorpay/order-refund-status?order_id={{order_id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"razorpay",
+						"order-refund-status"
+					],
+					"query": [
+						{
+							"key": "order_id",
+							"value": "{{order_id}}",
+							"description": "ID of the order to check refund status"
+						}
+					]
+				},
+				"description": "Get comprehensive refund status for an order including both wallet and Razorpay refunds."
+			},
+			"response": []
+		},
+		{
+			"name": "Get Razorpay Refund Status",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{auth_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/razorpay/refund-status?order_id={{order_id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"razorpay",
+						"refund-status"
+					],
+					"query": [
+						{
+							"key": "order_id",
+							"value": "{{order_id}}",
+							"description": "ID of the order to check Razorpay refund status"
+						}
+					]
+				},
+				"description": "Get Razorpay-specific refund status for an order."
+			},
+			"response": []
+		},
+		{
+			"name": "Cancel Order - Already Cancelled",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{auth_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/orders/{{cancelled_order_id}}/cancel",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"orders",
+						"{{cancelled_order_id}}",
+						"cancel"
+					]
+				},
+				"description": "Test case: Try to cancel an order that is already cancelled. Should return error."
+			},
+			"response": []
+		},
+		{
+			"name": "Cancel Order - Completed Order",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{auth_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/orders/{{completed_order_id}}/cancel",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"orders",
+						"{{completed_order_id}}",
+						"cancel"
+					]
+				},
+				"description": "Test case: Try to cancel a completed order. Should return error."
+			},
+			"response": []
+		},
+		{
+			"name": "Cancel Order - Unauthorized",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{invalid_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/orders/{{order_id}}/cancel",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"orders",
+						"{{order_id}}",
+						"cancel"
+					]
+				},
+				"description": "Test case: Try to cancel an order with invalid token. Should return unauthorized error."
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000",
+			"type": "string"
+		},
+		{
+			"key": "auth_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "order_id",
+			"value": "1",
+			"type": "string"
+		},
+		{
+			"key": "cancelled_order_id",
+			"value": "2",
+			"type": "string"
+		},
+		{
+			"key": "completed_order_id",
+			"value": "3",
+			"type": "string"
+		},
+		{
+			"key": "invalid_token",
+			"value": "invalid_token_here",
+			"type": "string"
+		}
+	]
+} 
