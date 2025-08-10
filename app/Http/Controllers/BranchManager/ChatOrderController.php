@@ -5,6 +5,7 @@ namespace App\Http\Controllers\BranchManager;
 use App\Http\Controllers\Controller;
 use App\Models\ChatOrder;
 use App\Models\ChatMessage;
+use App\Helpers\NotificationHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -123,6 +124,11 @@ class ChatOrderController extends Controller
 
         $oldStatus = $chatOrder->status;
         $chatOrder->update($validated);
+
+        // Send delivery update notification for delivery-related statuses
+        if ($oldStatus !== $validated['status'] && in_array($validated['status'], ['ready', 'delivered'])) {
+            NotificationHelper::sendDeliveryUpdate($chatOrder->user_id, $chatOrder->id, $validated['status']);
+        }
 
         // Add a status update message to the chat
         $message = new ChatMessage();

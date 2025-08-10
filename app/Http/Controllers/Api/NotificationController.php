@@ -190,33 +190,83 @@ class NotificationController extends Controller
     }
 
     /**
-     * Test notification to user's devices
+     * Test notification to user's devices or specific device token
      */
-    public function testNotification(): JsonResponse
+    public function testNotification(Request $request): JsonResponse
     {
         try {
             $user = auth()->user();
             
-            $result = $this->firebaseService->sendToUser(
-                $user->id,
-                'Test Notification',
-                'This is a test notification from your app!',
-                [
-                    'type' => 'test',
-                    'timestamp' => now()->toISOString()
-                ]
-            );
-
-            if ($result) {
-                return response()->json([
-                    'status' => 'success',
-                    'message' => 'Test notification sent successfully'
+            // Check if a specific device token is provided for testing
+            $deviceToken = $request->input('device_token');
+            $title = $request->input('title', 'Test Notification');
+            $body = $request->input('body', 'This is a test notification from your app!');
+            
+            if ($deviceToken) {
+                // Send to specific device token
+                Log::info('Sending test notification to specific device token', [
+                    'user_id' => $user->id,
+                    'device_token' => $deviceToken,
+                    'title' => $title,
+                    'body' => $body
                 ]);
+                
+                $result = $this->firebaseService->sendToDevice(
+                    $deviceToken,
+                    $title,
+                    $body,
+                    [
+                        'type' => 'test',
+                        'user_id' => $user->id,
+                        'timestamp' => now()->toISOString()
+                    ]
+                );
+                
+                if ($result) {
+                    return response()->json([
+                        'status' => 'success',
+                        'message' => 'Test notification sent successfully to device token',
+                        'data' => [
+                            'device_token' => $deviceToken,
+                            'title' => $title,
+                            'body' => $body
+                        ]
+                    ]);
+                } else {
+                    return response()->json([
+                        'status' => 'error',
+                        'message' => 'Failed to send test notification to device token'
+                    ], 400);
+                }
             } else {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'Failed to send test notification. Check if you have registered device tokens.'
-                ], 400);
+                // Send to user's registered devices
+                Log::info('Sending test notification to user\'s registered devices', [
+                    'user_id' => $user->id,
+                    'title' => $title,
+                    'body' => $body
+                ]);
+                
+                $result = $this->firebaseService->sendToUserLatestDevice(
+                    $user->id,
+                    $title,
+                    $body,
+                    [
+                        'type' => 'test',
+                        'timestamp' => now()->toISOString()
+                    ]
+                );
+
+                if ($result) {
+                    return response()->json([
+                        'status' => 'success',
+                        'message' => 'Test notification sent successfully to user devices'
+                    ]);
+                } else {
+                    return response()->json([
+                        'status' => 'error',
+                        'message' => 'Failed to send test notification. Check if you have registered device tokens.'
+                    ], 400);
+                }
             }
 
         } catch (\Exception $e) {
@@ -227,7 +277,7 @@ class NotificationController extends Controller
 
             return response()->json([
                 'status' => 'error',
-                'message' => 'Failed to send test notification'
+                'message' => 'Failed to send test notification: ' . $e->getMessage()
             ], 500);
         }
     }

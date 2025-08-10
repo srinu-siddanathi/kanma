@@ -26,6 +26,7 @@ use App\Http\Controllers\Api\WalletController;
 use App\Http\Controllers\Api\MonthlyListController;
 use App\Http\Controllers\Api\DeliveryBoyController;
 use App\Http\Controllers\Api\CouponController;
+use App\Http\Controllers\Api\RefundController;
 
 /*
 |--------------------------------------------------------------------------
@@ -203,6 +204,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/wallet/transactions', [WalletController::class, 'getTransactions']);
     Route::post('/wallet/deposit/initiate', [WalletController::class, 'initiateDeposit']);
     Route::post('/wallet/deposit/verify', [WalletController::class, 'verifyDeposit']);
+
+    // Refund history
+    Route::get('/refunds/history', [RefundController::class, 'history']);
 
     // Coupon APIs
     Route::prefix('coupons')->group(function () {

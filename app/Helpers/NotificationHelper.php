@@ -28,18 +28,18 @@ class NotificationHelper
         try {
             $statusMessages = [
                 'pending' => 'Your order has been placed successfully!',
-                'confirmed' => 'Your order has been confirmed and is being prepared.',
-                'processing' => 'Your order is being prepared by our kitchen.',
+                'confirmed' => 'Your order has been confirmed.',
+                'processing' => 'Your order is updated to processing.',
                 'ready' => 'Your order is ready for pickup/delivery!',
                 'out_for_delivery' => 'Your order is out for delivery!',
-                'delivered' => 'Your order has been delivered. Enjoy your meal!',
+                'delivered' => 'Your order has been delivered.',
                 'cancelled' => 'Your order has been cancelled.',
                 'failed' => 'Your order could not be processed.'
             ];
 
             $message = $statusMessages[$status] ?? "Your order status has been updated to: {$status}";
 
-            return self::getFirebaseService()->sendToUser(
+            return self::getFirebaseService()->sendToUserLatestDevice(
                 $userId,
                 'Order Status Update',
                 $message,
@@ -67,7 +67,7 @@ class NotificationHelper
     public static function sendPaymentSuccess(int $userId, int $orderId, float $amount): bool
     {
         try {
-            return self::getFirebaseService()->sendToUser(
+            return self::getFirebaseService()->sendToUserLatestDevice(
                 $userId,
                 'Payment Successful',
                 "Payment of ₹{$amount} for order #{$orderId} has been processed successfully.",
@@ -94,7 +94,7 @@ class NotificationHelper
     public static function sendPaymentFailure(int $userId, int $orderId, string $reason): bool
     {
         try {
-            return self::getFirebaseService()->sendToUser(
+            return self::getFirebaseService()->sendToUserLatestDevice(
                 $userId,
                 'Payment Failed',
                 "Payment for order #{$orderId} failed. Reason: {$reason}",
@@ -126,7 +126,7 @@ class NotificationHelper
                 $message .= " - {$deliveryBoyName}";
             }
 
-            return self::getFirebaseService()->sendToUser(
+            return self::getFirebaseService()->sendToUserLatestDevice(
                 $userId,
                 'Delivery Update',
                 $message,
@@ -154,7 +154,7 @@ class NotificationHelper
     public static function sendPromotionalNotification(int $userId, string $title, string $message, array $data = []): bool
     {
         try {
-            return self::getFirebaseService()->sendToUser(
+            return self::getFirebaseService()->sendToUserLatestDevice(
                 $userId,
                 $title,
                 $message,
@@ -181,7 +181,7 @@ class NotificationHelper
             $title = $type === 'credit' ? 'Wallet Credited' : 'Wallet Debited';
             $message = "₹{$amount} has been {$type}ed to your wallet. {$description}";
 
-            return self::getFirebaseService()->sendToUser(
+            return self::getFirebaseService()->sendToUserLatestDevice(
                 $userId,
                 $title,
                 $message,
@@ -208,7 +208,7 @@ class NotificationHelper
     public static function sendCouponNotification(int $userId, string $couponCode, string $discount, string $validUntil): bool
     {
         try {
-            return self::getFirebaseService()->sendToUser(
+            return self::getFirebaseService()->sendToUserLatestDevice(
                 $userId,
                 'New Coupon Available!',
                 "Use code {$couponCode} to get {$discount} off. Valid until {$validUntil}",
@@ -235,7 +235,7 @@ class NotificationHelper
     public static function sendGeneralNotification(int $userId, string $title, string $message, array $data = []): bool
     {
         try {
-            return self::getFirebaseService()->sendToUser(
+            return self::getFirebaseService()->sendToUserLatestDevice(
                 $userId,
                 $title,
                 $message,
@@ -254,12 +254,21 @@ class NotificationHelper
     }
 
     /**
-     * Send notification to multiple users
+     * Send notification to multiple users (latest device only)
      */
     public static function sendToMultipleUsers(array $userIds, string $title, string $message, array $data = []): array
     {
         try {
-            return self::getFirebaseService()->sendToMultipleUsers($userIds, $title, $message, $data);
+            $results = [];
+            foreach ($userIds as $userId) {
+                $results[$userId] = self::getFirebaseService()->sendToUserLatestDevice(
+                    $userId,
+                    $title,
+                    $message,
+                    $data
+                );
+            }
+            return $results;
         } catch (\Exception $e) {
             Log::error('Error sending notification to multiple users', [
                 'user_count' => count($userIds),

@@ -4,6 +4,8 @@ namespace App\Http\Controllers\BranchManager;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order;
+use App\Helpers\NotificationHelper;
+use App\Services\Msg91Service;
 use Illuminate\Http\Request;
 
 class OrderController extends Controller
@@ -39,10 +41,42 @@ class OrderController extends Controller
         }
 
         $validated = $request->validate([
-            'status' => 'required|in:pending,processing,completed,cancelled',
+            'status' => 'required|in:pending,confirmed,processing,ready,out_for_delivery,delivered,completed,cancelled,failed',
         ]);
 
+        $oldStatus = $order->status;
         $order->update($validated);
+
+        if ($oldStatus !== $validated['status']) {
+            // Push notification
+            NotificationHelper::sendOrderStatusUpdate($order->user_id, $order->id, $validated['status']);
+
+            // SMS notification
+            try {
+                $msg91 = new Msg91Service();
+                $userPhone = $order->user->phone;
+                $phoneWithCountry = '91' . preg_replace('/^\+?91?/', '', $userPhone);
+                \Log::info('Attempting to send order status SMS', [
+                    'order_id' => $order->id,
+                    'user_id' => $order->user_id,
+                    'phone' => $phoneWithCountry,
+                    'status' => $validated['status'],
+                ]);
+                $smsResult = $msg91->sendOrderStatusSms($phoneWithCountry, (string)$order->id, $validated['status'], optional($order->shop)->name);
+                \Log::info('Order status SMS result', [
+                    'order_id' => $order->id,
+                    'success' => $smsResult['success'] ?? null,
+                    'message' => $smsResult['message'] ?? null,
+                ]);
+            } catch (\Throwable $e) {
+                \Log::error('Failed to send order status SMS', [
+                    'order_id' => $order->id,
+                    'user_id' => $order->user_id,
+                    'status' => $validated['status'],
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
 
         return back()->with('success', 'Order status updated successfully');
     }

@@ -50,8 +50,10 @@ class RegisterController extends Controller
         // Store OTP in cache for 10 minutes
         Cache::put('otp_' . $request->phone, $otp, now()->addMinutes(10));
 
-        // Send OTP via MSG91
-        $result = $this->msg91Service->sendOtp($request->phone, $otp);
+        // Send OTP via MSG91 (registration template)
+        $phone = '91' . $request->phone;
+        $templateId = config('services.msg91.registration_template_id');
+        $result = $this->msg91Service->sendOtp($phone, $otp, $templateId);
 
         if (!$result['success']) {
             return response()->json([

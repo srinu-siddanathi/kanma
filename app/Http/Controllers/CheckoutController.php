@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\Setting;
+use App\Helpers\NotificationHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
 use Razorpay\Api\Api;
@@ -257,6 +258,9 @@ class CheckoutController extends Controller
                 ]);
                 Log::info('Order item created', ['order_item' => $orderItem->toArray()]);
             }
+
+            // Send notification to user about order creation
+            NotificationHelper::sendOrderStatusUpdate($order->user_id, $order->id, 'pending');
 
             // Notify all admins about the new order
             $adminUsers = \App\Models\User::where('role', 'admin')->get();

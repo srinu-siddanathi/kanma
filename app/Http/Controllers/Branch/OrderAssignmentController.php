@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Branch;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\User;
+use App\Helpers\NotificationHelper;
 use Illuminate\Http\Request;
 
 class OrderAssignmentController extends Controller
@@ -40,10 +41,16 @@ class OrderAssignmentController extends Controller
             abort(403);
         }
 
+        $oldStatus = $order->status;
         $order->update([
             'delivery_boy_id' => $deliveryBoy->id,
             'status' => 'assigned'
         ]);
+
+        // Send delivery update notification
+        if ($oldStatus !== 'assigned') {
+            NotificationHelper::sendDeliveryUpdate($order->user_id, $order->id, 'assigned', $deliveryBoy->name);
+        }
 
         return redirect()
             ->back()

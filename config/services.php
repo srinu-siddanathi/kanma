@@ -60,13 +60,16 @@ return [
 
     'msg91' => [
         'auth_key' => env('MSG91_AUTH_KEY'),
-        'template_id' => env('MSG91_TEMPLATE_ID'),
+        'reset_password_template_id' => env('RESET_PASSWORD_TEMPLATE_ID'),
+        'registration_template_id' => env('REGISTRATION_TEMPLATE_ID'),
+        'order_status_flow_id' => env('MSG91_ORDER_STATUS_FLOW_ID'),
         'test_mode' => env('MSG91_TEST_MODE', true),
     ],
 
     'firebase' => [
-        'server_key' => env('FIREBASE_SERVER_KEY'),
+        'server_key' => env('FIREBASE_SERVER_KEY'), // Legacy - can be removed after migration
         'project_id' => env('FIREBASE_PROJECT_ID'),
+        'service_account_path' => env('FIREBASE_SERVICE_ACCOUNT_PATH', base_path('firebase-credentials.json')),
     ],
 
 ];

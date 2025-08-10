@@ -139,7 +139,7 @@ class OrderController extends Controller
             }
 
             // Calculate delivery fee and small cart fee based on membership
-            $deliveryFee = 50; // Default delivery fee
+            $deliveryFee = 0; // Default delivery fee
             $smallCartFee = 0; // Small cart fee
             $hasActiveMembership = false;
             $membershipDetails = null;
@@ -430,7 +430,7 @@ class OrderController extends Controller
             }
 
             // Check if online refund is required
-            $refundInfo['online_refund_required'] = $order->payment_method === 'razorpay' && $order->payment_status === 'completed';
+            $refundInfo['online_refund_required'] = $order->payment_method === 'razorpay' && $order->payment_status === 'paid';
 
             // If payment was made online, initiate refund process
             if ($refundInfo['online_refund_required']) {

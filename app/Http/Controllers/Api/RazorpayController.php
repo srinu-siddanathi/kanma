@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\Payment;
+use App\Helpers\NotificationHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Razorpay\Api\Api;
@@ -114,12 +115,19 @@ class RazorpayController extends Controller
 
             // Update order status
             $order = Order::findOrFail($request->order_id);
+            $oldStatus = $order->status;
             $order->update([
                 'payment_status' => 'paid',
                 'payment_method' => 'razorpay',
                 'payment_id' => $request->razorpay_payment_id,
                 'status' => 'confirmed' // Update order status to confirmed after successful payment
             ]);
+
+            // Send notifications
+            NotificationHelper::sendPaymentSuccess($order->user_id, $order->id, $order->total_amount);
+            if ($oldStatus !== 'confirmed') {
+                NotificationHelper::sendOrderStatusUpdate($order->user_id, $order->id, 'confirmed');
+            }
 
             return response()->json([
                 'success' => true,
@@ -137,10 +145,14 @@ class RazorpayController extends Controller
             // Update order and payment status on failure
             try {
                 $order = Order::findOrFail($request->order_id);
+                $oldStatus = $order->status;
                 $order->update([
                     'payment_status' => 'failed',
                     'status' => 'payment_failed'
                 ]);
+
+                // Send payment failure notification
+                NotificationHelper::sendPaymentFailure($order->user_id, $order->id, 'Payment verification failed');
 
                 $paymentRecord = Payment::where('payment_id', $request->razorpay_order_id)->first();
                 if ($paymentRecord) {
@@ -175,10 +187,14 @@ class RazorpayController extends Controller
 
         try {
             $order = Order::findOrFail($request->order_id);
+            $oldStatus = $order->status;
             $order->update([
                 'payment_status' => 'failed',
                 'status' => 'payment_failed'
             ]);
+
+            // Send payment failure notification
+            NotificationHelper::sendPaymentFailure($order->user_id, $order->id, $request->error_description);
 
             $paymentRecord = Payment::where('payment_id', $request->razorpay_order_id)->first();
             if ($paymentRecord) {

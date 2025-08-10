@@ -222,6 +222,11 @@ class AuthController extends Controller
 
             } catch (\Exception $e) {
                 DB::rollBack();
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'An error occurred while completing profile',
+                    'debug' => $e->getMessage() // Remove in production
+                ], 500);
                 throw $e;
             }
 
@@ -397,13 +402,28 @@ class AuthController extends Controller
                 'expires_at' => now()->addMinutes(10)
             ]);
 
+            // Send OTP via SMS using Msg91Service (same as forgotPassword)
+            $msg91Service = new \App\Services\Msg91Service();
+            $phone = "91".$validated['phone'];
+            $templateId = config('services.msg91.registration_template_id');
+            $smsResult = $msg91Service->sendOtp($phone, $otp, $templateId);
+
+            if (!$smsResult['success']) {
+                \Log::error('SMS sending failed for registration', [
+                    'phone' => $validated['phone'],
+                    'error' => $smsResult['message'] ?? 'Unknown error'
+                ]);
+
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Failed to send OTP. Please try again later.'
+                ], 500);
+            }
+
             return response()->json([
                 'status' => 'success',
                 'message' => 'OTP sent successfully',
-                'data' => [
-                    'phone' => $validated['phone'],
-                    'otp' => $otp // Remove this in production
-                ]
+                'phone' => $validated['phone'],
             ]);
 
         } catch (\Illuminate\Validation\ValidationException $e) {
@@ -456,7 +476,9 @@ class AuthController extends Controller
 
             // Send OTP via SMS using Msg91Service
             $msg91Service = new \App\Services\Msg91Service();
-            $smsResult = $msg91Service->sendOtp($validated['phone'], $validated['otp']);
+            $phone = "91".$validated['phone'];
+            $templateId = config('services.msg91.reset_password_template_id');
+            $smsResult = $msg91Service->sendOtp($phone, $validated['otp'], $templateId);
 
             if (!$smsResult['success']) {
                 \Log::error('SMS sending failed for forgot password', [
