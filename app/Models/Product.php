@@ -11,6 +11,7 @@ use App\Models\Branch;
 use App\Models\Shop;
 use App\Models\ProductVariant;
 use App\Models\ProductImage;
+use App\Models\OrderItem;
 
 class Product extends Model
 {
@@ -100,6 +101,11 @@ class Product extends Model
     public function images()
     {
         return $this->hasMany(ProductImage::class)->orderBy('sort_order');
+    }
+
+    public function orderItems()
+    {
+        return $this->hasMany(OrderItem::class);
     }
 
     public function scopeWithActiveVariants($query)

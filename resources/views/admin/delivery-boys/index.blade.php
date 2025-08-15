@@ -43,7 +43,7 @@
                         <td class="px-6 py-4 whitespace-nowrap">{{ $deliveryBoy->name }}</td>
                         <td class="px-6 py-4 whitespace-nowrap">{{ $deliveryBoy->email }}</td>
                         <td class="px-6 py-4 whitespace-nowrap">{{ $deliveryBoy->phone }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap">{{ $deliveryBoy->branch->name }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">{{ $deliveryBoy->branch->name ?? 'N/A' }}</td>
                         <td class="px-6 py-4 whitespace-nowrap">{{ $deliveryBoy->bike_number }}</td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full 

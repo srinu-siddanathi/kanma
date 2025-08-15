@@ -364,15 +364,46 @@ class ProductController extends Controller
 
     public function destroy(Product $product)
     {
-        // Delete image if exists
-        $this->deleteImage($product->image_path);
-        
-        $product->branches()->detach();
-        $product->delete();
-
-        return redirect()
-            ->route('admin.products.index')
-            ->with('success', 'Product deleted successfully');
+        try {
+            // Start a database transaction
+            \DB::beginTransaction();
+            
+            // Delete related order items first (since they don't have cascade delete)
+            $product->orderItems()->delete();
+            
+            // Delete product images (these have cascade delete, but being explicit)
+            $product->images()->delete();
+            
+            // Delete product variants (these have cascade delete, but being explicit)
+            $product->variants()->delete();
+            
+            // Detach from branches
+            $product->branches()->detach();
+            
+            // Delete the product
+            $product->delete();
+            
+            // Commit the transaction
+            \DB::commit();
+            
+            return redirect()
+                ->route('admin.products.index')
+                ->with('success', 'Product deleted successfully');
+                
+        } catch (\Exception $e) {
+            // Rollback the transaction on error
+            \DB::rollBack();
+            
+            \Log::error('Error deleting product:', [
+                'product_id' => $product->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return redirect()
+                ->route('admin.products.index')
+                ->with('error', 'Failed to delete product: ' . $e->getMessage());
+        }
     }
 
     public function verify(Product $product)
