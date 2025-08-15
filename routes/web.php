@@ -182,6 +182,7 @@ Route::prefix('admin')->group(function () {
         Route::post('/delivery-boys', [App\Http\Controllers\Admin\DeliveryBoyController::class, 'store'])->name('delivery-boys.store');
         Route::get('/delivery-boys/{deliveryBoy}/edit', [App\Http\Controllers\Admin\DeliveryBoyController::class, 'edit'])->name('delivery-boys.edit');
         Route::put('/delivery-boys/{deliveryBoy}', [App\Http\Controllers\Admin\DeliveryBoyController::class, 'update'])->name('delivery-boys.update');
+        Route::delete('/delivery-boys/{deliveryBoy}', [App\Http\Controllers\Admin\DeliveryBoyController::class, 'destroy'])->name('delivery-boys.destroy');
         Route::post('/delivery-boys/{deliveryBoy}/toggle-status', [App\Http\Controllers\Admin\DeliveryBoyController::class, 'toggleStatus'])->name('delivery-boys.toggle-status');
 
         // Newsletter Management

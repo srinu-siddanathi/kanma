@@ -111,4 +111,54 @@ class DeliveryBoyController extends Controller
             'message' => 'Status updated successfully'
         ]);
     }
+
+    public function destroy(User $deliveryBoy)
+    {
+        // Verify this delivery boy belongs to the branch
+        if ($deliveryBoy->branch_id !== auth()->user()->branch_id) {
+            abort(403, 'You can only delete delivery boys from your branch.');
+        }
+
+        // Verify this is actually a delivery boy
+        if ($deliveryBoy->role !== 'delivery_boy') {
+            abort(403, 'Only delivery boys can be deleted.');
+        }
+
+        try {
+            // Check if delivery boy has any active orders
+            $activeOrders = $deliveryBoy->activeOrders()->count();
+            if ($activeOrders > 0) {
+                return redirect()
+                    ->route('branch.delivery-boys.index')
+                    ->with('error', 'Cannot delete delivery boy with active orders. Please reassign or complete the orders first.');
+            }
+
+            // Check if delivery boy has any assigned orders
+            $assignedOrders = \App\Models\Order::where('delivery_boy_id', $deliveryBoy->id)->count();
+            if ($assignedOrders > 0) {
+                return redirect()
+                    ->route('branch.delivery-boys.index')
+                    ->with('error', 'Cannot delete delivery boy with assigned orders. Please reassign the orders first.');
+            }
+
+            // Delete the delivery boy
+            $deliveryBoy->delete();
+
+            return redirect()
+                ->route('branch.delivery-boys.index')
+                ->with('success', 'Delivery boy deleted successfully');
+
+        } catch (\Exception $e) {
+            \Log::error('Error deleting delivery boy:', [
+                'delivery_boy_id' => $deliveryBoy->id,
+                'branch_id' => auth()->user()->branch_id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return redirect()
+                ->route('branch.delivery-boys.index')
+                ->with('error', 'Failed to delete delivery boy: ' . $e->getMessage());
+        }
+    }
 } 

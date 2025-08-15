@@ -18,6 +18,12 @@
         </div>
     @endif
 
+    @if(session('error'))
+        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+            {{ session('error') }}
+        </div>
+    @endif
+
     @if($deliveryBoys->isEmpty())
         <div class="text-center py-8">
             <p class="text-gray-500 text-lg">No delivery boys found.</p>
@@ -57,8 +63,16 @@
                         <td class="px-6 py-4 whitespace-nowrap">
                             <a href="{{ route('admin.delivery-boys.edit', $deliveryBoy) }}" 
                                class="text-blue-500 hover:underline mr-3">Edit</a>
+                            <form action="{{ route('admin.delivery-boys.destroy', $deliveryBoy) }}" 
+                                  method="POST" 
+                                  onsubmit="return confirm('Are you sure you want to delete this delivery boy? This action cannot be undone.');"
+                                  class="inline">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="text-red-600 hover:text-red-900">Delete</button>
+                            </form>
                             <button onclick="toggleWorkingStatus({{ $deliveryBoy->id }}, {{ $deliveryBoy->is_working_today ? 'false' : 'true' }})" 
-                                    class="text-indigo-600 hover:text-indigo-900">
+                                    class="text-indigo-600 hover:text-indigo-900 ml-3">
                                 {{ $deliveryBoy->is_working_today ? 'Mark Not Working' : 'Mark Working' }}
                             </button>
                         </td>
