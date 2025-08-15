@@ -6,7 +6,7 @@
         <div>
             <h1 class="text-2xl font-bold text-gray-900">Chat Order #{{ $chatOrder->id }}</h1>
             <p class="text-sm text-gray-500">
-                Customer: {{ $chatOrder->user->name }} ({{ $chatOrder->user->email }})
+                Customer: {{ $chatOrder->user?->name ?? 'Unknown User' }} ({{ $chatOrder->user?->email ?? 'No email available' }})
             </p>
         </div>
         <div class="flex items-center space-x-4">
@@ -55,7 +55,7 @@
                 <div class="flex {{ $message->sender_id === auth()->id() ? 'justify-end' : 'justify-start' }}">
                     <div class="max-w-lg {{ $message->sender_id === auth()->id() ? 'bg-indigo-100' : 'bg-gray-100' }} rounded-lg px-4 py-2">
                         <div class="text-xs text-gray-500 mb-1">
-                            {{ $message->sender->name }} • {{ $message->created_at->format('M d, Y H:i') }}
+                            {{ $message->sender?->name ?? 'Unknown User' }} • {{ $message->created_at->format('M d, Y H:i') }}
                         </div>
                         
                         @if($message->type === 'text')

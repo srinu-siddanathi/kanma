@@ -285,7 +285,7 @@ class CheckoutController extends Controller
             }
 
             // Initialize fees
-            $deliveryFee = 0; // Default delivery fee
+            $deliveryFee = 50; // Default delivery fee
             $smallCartFee = 0; // Small cart fee
             $hasActiveMembership = false;
             $membershipDetails = null;

@@ -29,22 +29,29 @@ class BranchController extends Controller
             'address' => 'required|string',
             'phone' => 'nullable|string|max:20',
             'email' => 'nullable|email|max:255',
+            'password' => 'required|string|min:8|confirmed',
             'latitude' => 'nullable|numeric|between:-90,90',
             'longitude' => 'nullable|numeric|between:-180,180',
+            'pincode' => 'nullable|string|size:6',
             'is_active' => 'boolean'
         ]);
 
         $validated['is_active'] = $request->has('is_active');
 
         $branch = Branch::create($validated);
+        
         if(!empty($validated['email'])){
             $user = User::create([
                 'name' => $validated['name'],
                 'email' => $validated['email'],
-                'password' => Hash::make($validated['password'] ?? Str::random(12)),
+                'password' => Hash::make($validated['password']),
                 'role' => 'branch_manager',
                 'branch_id' => $branch->id
             ]);
+            
+            // Associate user with branch
+            $branch->user()->associate($user);
+            $branch->save();
         }
 
         return redirect()
@@ -63,7 +70,7 @@ class BranchController extends Controller
             'name' => 'required|string|max:255',
             'address' => 'nullable|string',
             'phone' => 'nullable|string|max:20|regex:/^([0-9\s\-\+\(\)]*)$/',
-            'email' => 'required|email|unique:users,email,' . ($branch->user_id ?? ''),
+            'email' => 'required|email|unique:users,email,' . ($branch->user?->id ?? ''),
             'password' => 'nullable|string|min:8|confirmed',
             'latitude' => 'nullable|numeric|between:-90,90',
             'longitude' => 'nullable|numeric|between:-180,180',
@@ -92,9 +99,6 @@ class BranchController extends Controller
                 'branch_id' => $branch->id
             ]);
 
-            // Assign branch manager role
-            $user->assignRole('branch-manager');
-
             // Associate user with branch
             $branch->user()->associate($user);
         }
@@ -113,15 +117,6 @@ class BranchController extends Controller
         // Save any changes to relationships
         $branch->save();
 
-        // Debug log
-        \Log::info('Branch update data:', [
-            'phone' => $validated['phone'],
-            'latitude' => $validated['latitude'],
-            'longitude' => $validated['longitude'],
-            'pincode' => $validated['pincode'],
-            'updated_branch' => $branch->fresh()
-        ]);
-
         return redirect()
             ->route('admin.branches.index')
             ->with('success', 'Branch updated successfully');
@@ -129,14 +124,29 @@ class BranchController extends Controller
 
     public function destroy(Branch $branch)
     {
-        // Delete branch manager user
-        $branch->user->delete();
-        
-        // Delete branch
-        $branch->delete();
+        try {
+            // Check if branch has orders
+            if ($branch->orders()->exists()) {
+                return redirect()
+                    ->route('admin.branches.index')
+                    ->with('error', 'Cannot delete branch. It has associated orders. Please handle the orders first.');
+            }
 
-        return redirect()
-            ->route('admin.branches.index')
-            ->with('success', 'Branch deleted successfully');
+            // Delete branch manager user if exists
+            if ($branch->user) {
+                $branch->user->delete();
+            }
+            
+            // Delete branch
+            $branch->delete();
+
+            return redirect()
+                ->route('admin.branches.index')
+                ->with('success', 'Branch deleted successfully');
+        } catch (\Exception $e) {
+            return redirect()
+                ->route('admin.branches.index')
+                ->with('error', 'Failed to delete branch: ' . $e->getMessage());
+        }
     }
 } 

@@ -230,6 +230,35 @@ class NotificationHelper
     }
 
     /**
+     * Send order assignment notification to delivery boy
+     */
+    public static function sendOrderAssignmentToDeliveryBoy(int $deliveryBoyId, int $orderId, string $customerName, string $deliveryAddress, float $totalAmount): bool
+    {
+        try {
+            return self::getFirebaseService()->sendToUserLatestDevice(
+                $deliveryBoyId,
+                'New Order Assigned',
+                "You have been assigned order #{$orderId}. Please check your orders.",
+                [
+                    'type' => 'order_assignment',
+                    'order_id' => $orderId,
+                    'customer_name' => $customerName,
+                    'delivery_address' => $deliveryAddress,
+                    'total_amount' => $totalAmount,
+                    'timestamp' => now()->toISOString()
+                ]
+            );
+        } catch (\Exception $e) {
+            Log::error('Error sending order assignment notification to delivery boy', [
+                'delivery_boy_id' => $deliveryBoyId,
+                'order_id' => $orderId,
+                'error' => $e->getMessage()
+            ]);
+            return false;
+        }
+    }
+
+    /**
      * Send general notification
      */
     public static function sendGeneralNotification(int $userId, string $title, string $message, array $data = []): bool

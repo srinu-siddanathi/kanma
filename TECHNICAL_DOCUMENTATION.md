@@ -336,3 +336,7 @@ GOOGLE_MAPS_API_KEY=your_maps_api_key
 ---
 
 *This documentation provides a comprehensive overview of the technical architecture and integrations used in the Kanma e-commerce platform. For specific implementation details or troubleshooting, please refer to the individual service documentation or contact the development team.*
+
+
+
+

@@ -32,10 +32,10 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="text-sm font-medium text-gray-900">
-                                {{ $chatOrder->user->name }}
+                                {{ $chatOrder->user?->name ?? 'Unknown User' }}
                             </div>
                             <div class="text-sm text-gray-500">
-                                {{ $chatOrder->user->email }}
+                                {{ $chatOrder->user?->email ?? 'No email available' }}
                             </div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">

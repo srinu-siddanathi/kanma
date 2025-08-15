@@ -12,9 +12,9 @@
     <div class="min-h-screen flex">
         <!-- Sidebar -->
         <div
-            class="bg-gray-800 text-white w-64 space-y-6 py-7 px-2 absolute inset-y-0 left-0 transform -translate-x-full md:relative md:translate-x-0 transition duration-200 ease-in-out">
+            class="bg-gray-800 text-white w-64 flex flex-col absolute inset-y-0 left-0 transform -translate-x-full md:relative md:translate-x-0 transition duration-200 ease-in-out">
             <!-- Logo and Branch Name -->
-            <div class="px-4">
+            <div class="px-4 py-7">
                 <div class="flex items-center space-x-2 mb-3">
                     <svg class="h-8 w-8 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -25,7 +25,7 @@
                 <div class="text-sm text-gray-400">{{ auth()->user()->branch->name }}</div>
             </div>
 
-            <nav class="mt-10">
+            <nav class="flex-1 px-2 mt-10 overflow-y-auto">
                 <a href="{{ route('branch.dashboard') }}"
                     class="{{ request()->routeIs('branch.dashboard') ? 'bg-gray-700' : '' }} flex items-center py-2.5 px-4 rounded transition duration-200 hover:bg-gray-700">
                     <svg class="h-5 w-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -108,9 +108,12 @@
                 </a> -->
             </nav>
 
+            <!-- Spacer to ensure navigation doesn't overlap with user section -->
+            <div class="h-4"></div>
+
             <!-- User Info and Logout -->
-            <div class="absolute bottom-0 left-0 right-0 p-4">
-                <div class="border-t border-gray-700 pt-4 mb-4">
+            <div class="p-4 border-t border-gray-700">
+                <div class="pt-4 mb-4">
                     <div class="flex items-center px-4 mb-3">
                         <div class="flex-shrink-0">
                             <svg class="h-8 w-8 rounded-full text-gray-400" fill="none" stroke="currentColor"

@@ -14,6 +14,7 @@ use App\Http\Controllers\Admin\SubcategoryController;
 use App\Http\Controllers\BranchManager\CategoryController as BranchManagerCategoryController;
 use App\Http\Controllers\BranchManager\SubcategoryController as BranchManagerSubcategoryController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\BranchManager\ProfileController as BranchManagerProfileController;
 use App\Http\Controllers\Admin\SubscriptionPlanController;
 use App\Http\Controllers\Branch\ProductController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
@@ -254,10 +255,9 @@ Route::prefix('admin')->group(function () {
         Route::put('/subcategories/{subcategory}', [BranchManagerSubcategoryController::class, 'update'])->name('subcategories.update');
         Route::delete('/subcategories/{subcategory}', [BranchManagerSubcategoryController::class, 'destroy'])->name('subcategories.destroy');
 
-        Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-        Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
-        Route::put('/password', [ProfileController::class, 'updatePassword'])->name('password.update');
-        Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+        Route::get('/profile', [BranchManagerProfileController::class, 'edit'])->name('profile.edit');
+        Route::put('/profile', [BranchManagerProfileController::class, 'update'])->name('profile.update');
+        Route::put('/password', [BranchManagerProfileController::class, 'updatePassword'])->name('password.update');
 
         // Delivery Boy Management
         Route::resource('delivery-boys', DeliveryBoyController::class);

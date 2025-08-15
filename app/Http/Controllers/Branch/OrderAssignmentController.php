@@ -50,6 +50,15 @@ class OrderAssignmentController extends Controller
         // Send delivery update notification
         if ($oldStatus !== 'assigned') {
             NotificationHelper::sendDeliveryUpdate($order->user_id, $order->id, 'assigned', $deliveryBoy->name);
+            
+            // Send notification to delivery boy about new order assignment
+            NotificationHelper::sendOrderAssignmentToDeliveryBoy(
+                $deliveryBoy->id,
+                $order->id,
+                $order->user->name,
+                $order->delivery_address,
+                $order->total_amount
+            );
         }
 
         return redirect()

@@ -139,7 +139,7 @@ class OrderController extends Controller
             }
 
             // Calculate delivery fee and small cart fee based on membership
-            $deliveryFee = 0; // Default delivery fee
+            $deliveryFee = 50; // Default delivery fee
             $smallCartFee = 0; // Small cart fee
             $hasActiveMembership = false;
             $membershipDetails = null;
