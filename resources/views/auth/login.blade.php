@@ -37,12 +37,17 @@
                     <label for="password" class="block text-sm font-medium text-white">
                         Password
                     </label>
-                    <div class="mt-1">
+                    <div class="mt-1 relative">
                         <input id="password" name="password" type="password" required
-                               class="appearance-none block w-full px-3 py-2 border border-white/20 rounded-md 
+                               class="appearance-none block w-full px-3 py-2 pr-10 border border-white/20 rounded-md 
                                       shadow-sm bg-white/10 text-white placeholder-white/50
                                       focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
                                placeholder="Enter your password">
+                        <button class="absolute inset-y-0 right-0 pr-3 flex items-center" type="button" onclick="togglePassword('password')">
+                            <svg width="16" height="16" class="text-white/60 hover:text-white">
+                                <use xlink:href="#eye"></use>
+                            </svg>
+                        </button>
                     </div>
                     <x-input-error :messages="$errors->get('password')" class="mt-2" />
                 </div>

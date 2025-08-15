@@ -73,8 +73,15 @@
 
                             <div class="col-md-6">
                                 <label for="current_password" class="form-label">Current Password</label>
-                                <input type="password" class="form-control @error('current_password') is-invalid @enderror" 
-                                    id="current_password" name="current_password" required>
+                                <div class="input-group">
+                                    <input type="password" class="form-control @error('current_password') is-invalid @enderror" 
+                                        id="current_password" name="current_password" required>
+                                    <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('current_password')">
+                                        <svg width="16" height="16" class="password-toggle-icon">
+                                            <use xlink:href="#eye"></use>
+                                        </svg>
+                                    </button>
+                                </div>
                                 @error('current_password')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
@@ -82,8 +89,15 @@
 
                             <div class="col-md-6">
                                 <label for="password" class="form-label">New Password</label>
-                                <input type="password" class="form-control @error('password') is-invalid @enderror" 
-                                    id="password" name="password" required>
+                                <div class="input-group">
+                                    <input type="password" class="form-control @error('password') is-invalid @enderror" 
+                                        id="password" name="password" required>
+                                    <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('password')">
+                                        <svg width="16" height="16" class="password-toggle-icon">
+                                            <use xlink:href="#eye"></use>
+                                        </svg>
+                                    </button>
+                                </div>
                                 @error('password')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
@@ -91,8 +105,15 @@
 
                             <div class="col-md-6">
                                 <label for="password_confirmation" class="form-label">Confirm New Password</label>
-                                <input type="password" class="form-control" 
-                                    id="password_confirmation" name="password_confirmation" required>
+                                <div class="input-group">
+                                    <input type="password" class="form-control" 
+                                        id="password_confirmation" name="password_confirmation" required>
+                                    <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('password_confirmation')">
+                                        <svg width="16" height="16" class="password-toggle-icon">
+                                            <use xlink:href="#eye"></use>
+                                        </svg>
+                                    </button>
+                                </div>
                             </div>
 
                             <div class="col-12">
@@ -116,8 +137,15 @@
                                     @method('delete')
                                     <div class="mb-3">
                                         <label for="delete_password" class="form-label">Current Password</label>
-                                        <input type="password" class="form-control @error('delete_password', 'userDeletion') is-invalid @enderror" 
-                                            id="delete_password" name="password" required>
+                                        <div class="input-group">
+                                            <input type="password" class="form-control @error('delete_password', 'userDeletion') is-invalid @enderror" 
+                                                id="delete_password" name="password" required>
+                                            <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('delete_password')">
+                                                <svg width="16" height="16" class="password-toggle-icon">
+                                                    <use xlink:href="#eye"></use>
+                                                </svg>
+                                            </button>
+                                        </div>
                                         @error('delete_password', 'userDeletion')
                                             <div class="invalid-feedback">{{ $message }}</div>
                                         @enderror

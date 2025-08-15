@@ -110,12 +110,26 @@
                             
                             <div class="mb-3">
                                 <label for="password" class="form-label">Password <span class="text-danger">*</span></label>
-                                <input type="password" class="form-control" id="password" name="password" required>
+                                <div class="input-group">
+                                    <input type="password" class="form-control" id="password" name="password" required>
+                                    <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('password')">
+                                        <svg width="16" height="16" class="password-toggle-icon">
+                                            <use xlink:href="#eye"></use>
+                                        </svg>
+                                    </button>
+                                </div>
                             </div>
                             
                             <div class="mb-3">
                                 <label for="password_confirmation" class="form-label">Confirm Password <span class="text-danger">*</span></label>
-                                <input type="password" class="form-control" id="password_confirmation" name="password_confirmation" required>
+                                <div class="input-group">
+                                    <input type="password" class="form-control" id="password_confirmation" name="password_confirmation" required>
+                                    <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('password_confirmation')">
+                                        <svg width="16" height="16" class="password-toggle-icon">
+                                            <use xlink:href="#eye"></use>
+                                        </svg>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                         

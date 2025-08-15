@@ -77,8 +77,15 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label for="current_password" class="block text-sm font-medium text-gray-700">Current Password</label>
-                            <input type="password" name="current_password" id="current_password" 
-                                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                            <div class="relative">
+                                <input type="password" name="current_password" id="current_password" 
+                                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 pr-10">
+                                <button class="absolute inset-y-0 right-0 pr-3 flex items-center" type="button" onclick="togglePassword('current_password')">
+                                    <svg width="16" height="16" class="text-gray-400 hover:text-gray-600">
+                                        <use xlink:href="#eye"></use>
+                                    </svg>
+                                </button>
+                            </div>
                             @error('current_password')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
@@ -86,8 +93,15 @@
 
                         <div>
                             <label for="password" class="block text-sm font-medium text-gray-700">New Password</label>
-                            <input type="password" name="password" id="password" 
-                                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                            <div class="relative">
+                                <input type="password" name="password" id="password" 
+                                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 pr-10">
+                                <button class="absolute inset-y-0 right-0 pr-3 flex items-center" type="button" onclick="togglePassword('password')">
+                                    <svg width="16" height="16" class="text-gray-400 hover:text-gray-600">
+                                        <use xlink:href="#eye"></use>
+                                    </svg>
+                                </button>
+                            </div>
                             @error('password')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
@@ -95,8 +109,15 @@
 
                         <div>
                             <label for="password_confirmation" class="block text-sm font-medium text-gray-700">Confirm New Password</label>
-                            <input type="password" name="password_confirmation" id="password_confirmation" 
-                                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                            <div class="relative">
+                                <input type="password" name="password_confirmation" id="password_confirmation" 
+                                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 pr-10">
+                                <button class="absolute inset-y-0 right-0 pr-3 flex items-center" type="button" onclick="togglePassword('password_confirmation')">
+                                    <svg width="16" height="16" class="text-gray-400 hover:text-gray-600">
+                                        <use xlink:href="#eye"></use>
+                                    </svg>
+                                </button>
+                            </div>
                         </div>
                     </div>
 

@@ -75,9 +75,16 @@
 
             <div class="mb-4">
                 <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
-                <input type="password" name="password" id="password" 
-                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                       required>
+                <div class="relative">
+                    <input type="password" name="password" id="password" 
+                           class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 pr-10"
+                           required>
+                    <button class="absolute inset-y-0 right-0 pr-3 flex items-center" type="button" onclick="togglePassword('password')">
+                        <svg width="16" height="16" class="text-gray-400 hover:text-gray-600">
+                            <use xlink:href="#eye"></use>
+                        </svg>
+                    </button>
+                </div>
                 @error('password')
                     <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
                 @enderror
