@@ -22,7 +22,6 @@ class Product extends Model
         'slug',
         'description',
         'category_id',
-        'subcategory_id',
         'price',
         'base_unit',
         'image_path',
@@ -63,10 +62,7 @@ class Product extends Model
         return $this->belongsTo(Category::class);
     }
 
-    public function subcategory(): BelongsTo
-    {
-        return $this->belongsTo(Subcategory::class);
-    }
+
 
     public function branches(): BelongsToMany
     {

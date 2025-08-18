@@ -4,10 +4,47 @@
 <div class="container mx-auto px-4">
     <div class="flex justify-between items-center mb-6">
         <h1 class="text-2xl font-bold">Available Products</h1>
-        <a href="{{ route('branch.products.index') }}" class="text-blue-500 hover:underline">
-            Back to Products
-        </a>
+        <div class="flex items-center space-x-4">
+            <!-- Search Form -->
+            <form method="GET" action="{{ route('branch.products.available') }}" class="flex items-center">
+                <div class="relative">
+                    <input type="text" 
+                           name="search" 
+                           value="{{ request('search') }}"
+                           placeholder="Search products..." 
+                           class="w-64 pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                    </div>
+                </div>
+                <button type="submit" 
+                        class="ml-2 inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    Search
+                </button>
+                @if(request('search'))
+                    <a href="{{ route('branch.products.available') }}" 
+                       class="ml-2 inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        Clear
+                    </a>
+                @endif
+            </form>
+            
+            <a href="{{ route('branch.products.index') }}" class="text-blue-500 hover:underline">
+                Back to Products
+            </a>
+        </div>
     </div>
+
+    @if(request('search'))
+    <div class="mb-4 bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded">
+        <div class="flex items-center justify-between">
+            <span>Search results for: "<strong>{{ request('search') }}</strong>" ({{ $availableProducts->total() }} products found)</span>
+            <a href="{{ route('branch.products.available') }}" class="text-blue-800 hover:text-blue-900 underline">Clear search</a>
+        </div>
+    </div>
+    @endif
 
     @if($availableProducts->isEmpty())
         <div class="text-center py-8">

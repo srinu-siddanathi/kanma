@@ -35,12 +35,26 @@ class ProductController extends Controller
         return view('branch.products.index', compact('products'));
     }
 
-    public function available()
+    public function available(Request $request)
     {
         $branch = auth()->user()->branch;
-        $availableProducts = Product::whereDoesntHave('branches', function($query) use ($branch) {
+        $query = Product::whereDoesntHave('branches', function($query) use ($branch) {
             $query->where('branch_id', $branch->id);
-        })->with(['category', 'subcategory'])->paginate(10);
+        })->with(['category']);
+
+        // Add search functionality
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%")
+                  ->orWhereHas('category', function($q) use ($search) {
+                      $q->where('name', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        $availableProducts = $query->paginate(10);
 
         return view('branch.products.available', compact('availableProducts'));
     }

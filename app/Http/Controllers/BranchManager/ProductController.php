@@ -9,12 +9,21 @@ use Illuminate\Http\Request;
 
 class ProductController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $products = Product::with(['category', 'subcategory'])
-            ->where('branch_id', auth()->user()->branch_id)
-            ->latest()
-            ->paginate(10);
+        $query = Product::with(['category', 'subcategory'])
+            ->where('branch_id', auth()->user()->branch_id);
+
+        // Add search functionality
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%");
+            });
+        }
+
+        $products = $query->latest()->paginate(10);
 
         return view('branch-manager.products.index', compact('products'));
     }
