@@ -127,6 +127,9 @@ class RazorpayController extends Controller
             NotificationHelper::sendPaymentSuccess($order->user_id, $order->id, $order->total_amount);
             if ($oldStatus !== 'confirmed') {
                 NotificationHelper::sendOrderStatusUpdate($order->user_id, $order->id, 'confirmed');
+                
+                // Send confirmation emails to customer and branch manager
+                \App\Services\OrderEmailService::sendOrderConfirmationEmails($order);
             }
 
             return response()->json([

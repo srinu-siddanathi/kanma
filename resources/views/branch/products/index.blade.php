@@ -53,7 +53,7 @@
                     </td>
                     <td class="px-6 py-4">{{ $product->name }}</td>
                     <td class="px-6 py-4">
-                        {{ $product->category->name }}
+                    {{ $product->category ? $product->category->name : 'No Category' }}
                         
                     </td>
                     <td class="px-6 py-4">

@@ -132,7 +132,7 @@
                                 </div>
                                 <div class="d-flex align-items-center">
                                     <span class="me-3">📧</span>
-                                    <a href="mailto:support@kanma.in" class="text-decoration-none">support@kanma.in</a>
+                                    <a href="{{ route('contact') }}" class="text-decoration-none">support@kanma.in</a>
                                 </div>
                             </div>
                         </div>
@@ -155,7 +155,7 @@
                     <a href="tel:8333916492" class="btn btn-primary">
                         <span class="me-2">📞</span> Call Us
                     </a>
-                    <a href="mailto:support@kanma.in" class="btn btn-outline-primary">
+                    <a href="contact" class="btn btn-outline-primary">
                         <span class="me-2">📧</span> Email Us
                     </a>
                 </div>

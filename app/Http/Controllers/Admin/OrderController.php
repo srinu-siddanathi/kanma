@@ -44,7 +44,7 @@ class OrderController extends Controller
 
     public function show(Order $order)
     {
-        $order->load(['user', 'branch', 'items.product']);
+        $order->load(['user', 'branch', 'items.product', 'coupon']);
         return view('admin.orders.show', compact('order'));
     }
 
@@ -62,6 +62,11 @@ class OrderController extends Controller
         // Send notification to user about order status update
         if ($oldStatus !== $validated['status']) {
             NotificationHelper::sendOrderStatusUpdate($order->user_id, $order->id, $validated['status']);
+
+            // Send confirmation emails when order is confirmed
+            if ($validated['status'] === 'confirmed') {
+                \App\Services\OrderEmailService::sendOrderConfirmationEmails($order);
+            }
 
             // Send SMS to user
             try {

@@ -51,6 +51,11 @@ class OrderController extends Controller
             // Push notification
             NotificationHelper::sendOrderStatusUpdate($order->user_id, $order->id, $validated['status']);
 
+            // Send confirmation emails when order is confirmed
+            if ($validated['status'] === 'confirmed') {
+                \App\Services\OrderEmailService::sendOrderConfirmationEmails($order);
+            }
+
             // SMS notification
             try {
                 $msg91 = new Msg91Service();

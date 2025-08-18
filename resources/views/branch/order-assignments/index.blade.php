@@ -11,10 +11,37 @@
         <div class="md:col-span-1">
             <div class="bg-white rounded-lg shadow p-4">
                 <h2 class="text-lg font-semibold mb-4">Delivery Boys Status</h2>
-                @foreach($deliveryBoys as $deliveryBoy)
-                <div class="mb-4 p-3 border rounded {{ $deliveryBoy->active_orders_count >= 5 ? 'bg-red-50' : 'bg-green-50' }}">
-                    <p class="font-medium">{{ $deliveryBoy->name }}</p>
-                    <p class="text-sm text-gray-600">Active Orders: {{ $deliveryBoy->active_orders_count }}</p>
+                @php
+                    // Sort delivery boys: working first, then non-working
+                    $workingDeliveryBoys = $deliveryBoys->where('is_working_today', true);
+                    $nonWorkingDeliveryBoys = $deliveryBoys->where('is_working_today', false);
+                @endphp
+                
+                <!-- Working Delivery Boys -->
+                @foreach($workingDeliveryBoys as $deliveryBoy)
+                <div class="mb-4 p-3 border rounded bg-green-100 border-green-300">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="font-medium text-green-800">{{ $deliveryBoy->name }}</p>
+                            <p class="text-sm text-green-600">Active Orders: {{ $deliveryBoy->active_orders_count }}</p>
+                            <p class="text-xs text-green-500">Working Today</p>
+                        </div>
+                        <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                    </div>
+                </div>
+                @endforeach
+                
+                <!-- Non-Working Delivery Boys -->
+                @foreach($nonWorkingDeliveryBoys as $deliveryBoy)
+                <div class="mb-4 p-3 border rounded bg-red-100 border-red-300">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="font-medium text-red-800">{{ $deliveryBoy->name }}</p>
+                            <p class="text-sm text-red-600">Active Orders: {{ $deliveryBoy->active_orders_count }}</p>
+                            <p class="text-xs text-red-500">Not Working Today</p>
+                        </div>
+                        <div class="w-3 h-3 bg-red-500 rounded-full"></div>
+                    </div>
                 </div>
                 @endforeach
             </div>
@@ -34,7 +61,12 @@
                     <div class="p-4 border-b">
                         <div class="flex justify-between items-start mb-2">
                             <div>
-                                <p class="font-medium">Order #{{ $order->id }}</p>
+                                <p class="font-medium">
+                                    <button onclick="showOrderDetails({{ $order->id }})" 
+                                            class="text-blue-600 hover:text-blue-900 underline">
+                                        Order #{{ $order->id }}
+                                    </button>
+                                </p>
                                 <p class="text-sm text-gray-600">
                                     {{ $order->customer ? $order->customer->name : 'No customer name' }}
                                 </p>
@@ -71,5 +103,73 @@
             </div>
         </div>
     </div>
+
+    <!-- Order Details Modal -->
+    <div id="orderDetailsModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold">Order Details</h2>
+                <button onclick="closeOrderDetails()" class="text-gray-500 hover:text-gray-700">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <div id="orderDetailsContent">
+                <!-- Content will be loaded here -->
+            </div>
+        </div>
+    </div>
 </div>
+
+@push('scripts')
+<script>
+function showOrderDetails(orderId) {
+    // Show modal
+    const modal = document.getElementById('orderDetailsModal');
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+
+    // Show loading state
+    document.getElementById('orderDetailsContent').innerHTML = 
+        '<div class="text-center py-8"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div><p class="mt-2 text-gray-600">Loading order details...</p></div>';
+
+    // Fetch order details
+    fetch(`/admin/branch/orders/${orderId}/details`, {
+        headers: {
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to load order details');
+            }
+            return response.text();
+        })
+        .then(html => {
+            document.getElementById('orderDetailsContent').innerHTML = html;
+        })
+        .catch(error => {
+            console.error('Error loading order details:', error);
+            document.getElementById('orderDetailsContent').innerHTML = 
+                '<div class="text-red-500 text-center py-8">Error loading order details. Please try again.</div>';
+        });
+}
+
+function closeOrderDetails() {
+    const modal = document.getElementById('orderDetailsModal');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+}
+
+// Close modal when clicking outside
+document.getElementById('orderDetailsModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeOrderDetails();
+    }
+});
+</script>
+@endpush
 @endsection 
