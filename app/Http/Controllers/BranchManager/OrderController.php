@@ -45,7 +45,18 @@ class OrderController extends Controller
         ]);
 
         $oldStatus = $order->status;
-        $order->update($validated);
+        
+        // Prepare update data
+        $updateData = [
+            'status' => $validated['status'],
+        ];
+        
+        // Auto-update payment status for COD orders when completed
+        if ($validated['status'] === 'completed' && $order->payment_method === 'cod') {
+            $updateData['payment_status'] = 'paid';
+        }
+        
+        $order->update($updateData);
 
         if ($oldStatus !== $validated['status']) {
             // Push notification

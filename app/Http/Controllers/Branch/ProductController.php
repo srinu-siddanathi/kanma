@@ -18,7 +18,7 @@ class ProductController extends Controller
         $branch = auth()->user()->branch;
         $products = $branch->products()
             ->select('products.*')
-            ->with(['category', 'subcategory', 'branch'])
+            ->with(['category',  'branch'])
             ->withPivot('price', 'is_active')
             ->orderBy('products.created_at', 'desc')
             ->paginate(10);
