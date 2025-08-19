@@ -25,7 +25,7 @@ class ShopController extends Controller
         
         // Get paginated products for this shop
         $products = $shop->products()
-            ->with(['category', 'subcategory'])
+            ->with(['category'])
             ->latest()
             ->paginate(10); // 10 products per page
 

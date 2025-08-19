@@ -12,7 +12,7 @@ class ProductController extends Controller
     public function show($id)
     {
         try {
-            $product = Product::with(['category', 'subcategory', 'shop'])
+            $product = Product::with(['category', 'shop'])
                 ->findOrFail($id);
             
             // Fetch similar products (same category, exclude current)

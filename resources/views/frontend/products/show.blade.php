@@ -21,14 +21,7 @@
                         <meta itemprop="position" content="2" />
                     </li>
                     @endif
-                    @if($product->subcategory)
-                    <li class="breadcrumb-item" itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
-                        <a href="{{ route('shop', ['subcategory' => $product->subcategory->id]) }}" itemprop="item">
-                            <span itemprop="name">{{ $product->subcategory->name }}</span>
-                        </a>
-                        <meta itemprop="position" content="3" />
-                    </li>
-                    @endif
+                    {{-- Subcategory breadcrumb removed as subcategory relationship was removed --}}
                     <li class="breadcrumb-item active" aria-current="page" itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
                         <span itemprop="name">{{ $product->name }}</span>
                         <meta itemprop="position" content="4" />
@@ -62,9 +55,6 @@
                     <div class="mb-2 text-muted small">
                         @if($product->category)
                             {{ $product->category->name }}
-                            @if($product->subcategory)
-                                / {{ $product->subcategory->name }}
-                            @endif
                         @endif
                     </div>
                     <h2 class="fw-bold mb-2">{{ $product->name }}</h2>

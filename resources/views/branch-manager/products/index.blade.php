@@ -75,7 +75,7 @@
                     <tr>
                         <td class="px-6 py-4 whitespace-nowrap">{{ $product->name }}</td>
                         <td class="px-6 py-4 whitespace-nowrap">{{ $product->category->name }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap">{{ $product->subcategory->name }}</td>
+                                                        <td class="px-6 py-4 whitespace-nowrap">-</td>
                         <td class="px-6 py-4 whitespace-nowrap">₹{{ number_format($product->price, 2) }}</td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 

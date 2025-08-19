@@ -12,7 +12,7 @@ class BranchProductController extends Controller
     {
         $branch = auth()->user()->branch;
         return response()->json([
-            'data' => $branch->products()->with(['category', 'subcategory'])->paginate(20),
+            'data' => $branch->products()->with(['category'])->paginate(20),
             'message' => 'Products retrieved successfully'
         ]);
     }

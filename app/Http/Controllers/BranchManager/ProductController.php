@@ -11,7 +11,7 @@ class ProductController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Product::with(['category', 'subcategory'])
+        $query = Product::with(['category'])
             ->where('branch_id', auth()->user()->branch_id);
 
         // Add search functionality

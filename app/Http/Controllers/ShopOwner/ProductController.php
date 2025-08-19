@@ -17,7 +17,7 @@ class ProductController extends Controller
     public function index()
     {
         $products = auth()->user()->shop->products()
-            ->with(['category', 'subcategory', 'images'])
+            ->with(['category', 'images'])
             ->latest()
             ->paginate(10);
 
