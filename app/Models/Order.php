@@ -5,9 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Traits\HasTimezoneFormatting;
 
 class Order extends Model
 {
+    use HasTimezoneFormatting;
     protected $fillable = [
         'user_id',
         'branch_id',
@@ -42,7 +44,33 @@ class Order extends Model
         'delivery_longitude' => 'decimal:8',
         'refund_info' => 'array',
         'cancelled_at' => 'datetime',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
+
+    /**
+     * Get the formatted created_at date in user's timezone
+     */
+    public function getFormattedCreatedAtAttribute()
+    {
+        return $this->created_at ? $this->created_at->format('Y-m-d H:i:s') : null;
+    }
+
+    /**
+     * Get the formatted created_at date in UTC
+     */
+    public function getCreatedAtUtcAttribute()
+    {
+        return $this->created_at ? $this->created_at->utc()->format('Y-m-d H:i:s') : null;
+    }
+
+    /**
+     * Get the formatted created_at date in Asia/Kolkata timezone
+     */
+    public function getCreatedAtAsiaKolkataAttribute()
+    {
+        return $this->created_at ? $this->created_at->setTimezone('Asia/Kolkata')->format('Y-m-d H:i:s') : null;
+    }
 
     public function user(): BelongsTo
     {

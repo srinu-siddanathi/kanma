@@ -163,7 +163,7 @@
                                     </div>
                                     <div class="ml-3">
                                         <p class="text-sm font-medium text-green-800">Total Discount Given</p>
-                                        <p class="text-2xl font-bold text-green-900">₹{{ number_format($coupon->usages->sum('discount_amount'), 2) }}</p>
+                                        <p class="text-2xl font-bold text-green-900">₹{{ number_format($coupon->usages->sum('discount_amount') ?? 0, 2) }}</p>
                                     </div>
                                 </div>
                             </div>
@@ -177,7 +177,7 @@
                                     </div>
                                     <div class="ml-3">
                                         <p class="text-sm font-medium text-purple-800">Unique Users</p>
-                                        <p class="text-2xl font-bold text-purple-900">{{ $coupon->usages->unique('user_id')->count() }}</p>
+                                        <p class="text-2xl font-bold text-purple-900">{{ $coupon->usages->whereNotNull('user_id')->unique('user_id')->count() }}</p>
                                     </div>
                                 </div>
                             </div>
@@ -202,7 +202,7 @@
                                         User
                                     </th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Order
+                                        Order Amount
                                     </th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         Discount Amount
@@ -216,18 +216,22 @@
                                 @foreach($coupon->usages as $usage)
                                 <tr>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm font-medium text-gray-900">{{ $usage->user->name }}</div>
-                                        <div class="text-sm text-gray-500">{{ $usage->user->email }}</div>
+                                        <div class="text-sm font-medium text-gray-900">
+                                            {{ $usage->user ? $usage->user->name : 'User Deleted' }}
+                                        </div>
+                                        <div class="text-sm text-gray-500">
+                                            {{ $usage->user ? $usage->user->email : 'N/A' }}
+                                        </div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm text-gray-900">Order #{{ $usage->order->id }}</div>
-                                        <div class="text-sm text-gray-500">₹{{ number_format($usage->order->total_amount, 2) }}</div>
+                                        <div class="text-sm text-gray-900">Order Amount</div>
+                                        <div class="text-sm text-gray-500">₹{{ number_format($usage->order_amount ?? 0, 2) }}</div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm font-medium text-green-600">₹{{ number_format($usage->discount_amount, 2) }}</div>
+                                        <div class="text-sm font-medium text-green-600">₹{{ number_format($usage->discount_amount ?? 0, 2) }}</div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        {{ $usage->created_at->format('M d, Y H:i') }}
+                                        {{ $usage->created_at ? $usage->created_at->format('M d, Y H:i') : 'N/A' }}
                                     </td>
                                 </tr>
                                 @endforeach

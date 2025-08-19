@@ -118,11 +118,10 @@ class Coupon extends Model
     /**
      * Handle successful payment - confirm coupon usage
      */
-    public function confirmUsage(int $orderId, int $userId): void
+    public function confirmUsage(int $usageId): void
     {
         $usage = $this->usages()
-            ->where('order_id', $orderId)
-            ->where('user_id', $userId)
+            ->where('id', $usageId)
             ->where('status', CouponUsage::STATUS_PENDING)
             ->first();
 
@@ -135,11 +134,10 @@ class Coupon extends Model
     /**
      * Handle failed payment - mark coupon usage as failed
      */
-    public function failUsage(int $orderId, int $userId): void
+    public function failUsage(int $usageId): void
     {
         $usage = $this->usages()
-            ->where('order_id', $orderId)
-            ->where('user_id', $userId)
+            ->where('id', $usageId)
             ->where('status', CouponUsage::STATUS_PENDING)
             ->first();
 
@@ -149,13 +147,12 @@ class Coupon extends Model
     }
 
     /**
-     * Get pending usage for an order
+     * Get pending usage by usage ID
      */
-    public function getPendingUsage(int $orderId, int $userId): ?CouponUsage
+    public function getPendingUsage(int $usageId): ?CouponUsage
     {
         return $this->usages()
-            ->where('order_id', $orderId)
-            ->where('user_id', $userId)
+            ->where('id', $usageId)
             ->where('status', CouponUsage::STATUS_PENDING)
             ->first();
     }

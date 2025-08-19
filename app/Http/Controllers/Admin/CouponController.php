@@ -104,7 +104,14 @@ class CouponController extends Controller
 
     public function show(Coupon $coupon)
     {
-        $coupon->load(['usages.user', 'usages.order']);
+        $coupon->load(['usages.user']);
+        
+        // Filter out usages with null users and ensure user_id is not null
+        $validUsages = $coupon->usages->filter(function($usage) {
+            return $usage->user !== null && $usage->user_id !== null;
+        });
+        
+        $coupon->setRelation('usages', $validUsages);
         
         return view('admin.coupons.show', compact('coupon'));
     }

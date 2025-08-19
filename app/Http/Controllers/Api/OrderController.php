@@ -321,9 +321,47 @@ class OrderController extends Controller
             ->latest()
             ->get();
 
+        // Transform orders to include consistent timezone formatting
+        $transformedOrders = $orders->map(function ($order) {
+            return [
+                'id' => $order->id,
+                'status' => $order->status,
+                'total_amount' => $order->total_amount,
+                'payment_method' => $order->payment_method,
+                'payment_status' => $order->payment_status,
+                'delivery_address' => $order->delivery_address,
+                'created_at' => $order->getApiDate('created_at'),
+                'created_at_utc' => $order->getUtcDate('created_at'),
+                'created_at_asia_kolkata' => $order->getAsiaKolkataDate('created_at'),
+                'updated_at' => $order->getApiDate('updated_at'),
+                'items' => $order->items->map(function ($item) {
+                    return [
+                        'id' => $item->id,
+                        'product' => [
+                            'id' => $item->product->id,
+                            'name' => $item->product->name,
+                            'image_path' => $item->product->image_path,
+                        ],
+                        'quantity' => $item->quantity,
+                        'price' => $item->price,
+                        'subtotal' => $item->subtotal,
+                    ];
+                }),
+                'branch' => $order->branch ? [
+                    'id' => $order->branch->id,
+                    'name' => $order->branch->name,
+                ] : null,
+            ];
+        });
+
         return response()->json([
             'status' => 'success',
-            'data' => $orders
+            'data' => $transformedOrders,
+            'timezone_info' => [
+                'api_timezone' => config('timezone.api_timezone', 'Asia/Kolkata'),
+                'database_timezone' => config('timezone.database_timezone', 'UTC'),
+                'app_timezone' => config('timezone.app_timezone', 'Asia/Kolkata'),
+            ]
         ]);
     }
 
