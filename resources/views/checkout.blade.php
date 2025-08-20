@@ -417,16 +417,31 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .then(response => {
                 console.log('Server response received', response);
-                return response.json();
+                return response.json().then(data => ({
+                    status: response.status,
+                    data: data
+                }));
             })
-            .then(data => {
-                console.log('Server response data:', data);
-                if (data.redirect) {
-                    console.log('Redirecting to:', data.redirect);
-                    window.location.href = data.redirect;
+            .then(response => {
+                console.log('Server response data:', response);
+                
+                // Check if the response indicates an error
+                if (response.status >= 400 || !response.data.success) {
+                    // Show error message
+                    const errorMessage = response.data.message || 'An error occurred while processing your payment.';
+                    alert(errorMessage);
+                    checkoutBtn.disabled = false;
+                    checkoutBtn.innerHTML = 'Proceed to Checkout';
+                    return;
+                }
+                
+                // Success case
+                if (response.data.redirect) {
+                    console.log('Redirecting to:', response.data.redirect);
+                    window.location.href = response.data.redirect;
                 } else {
                     console.log('No redirect URL, going to orders page');
-                    alert('Order placed successfully! Redirecting to orders page...');
+                    alert('Payment successful! Redirecting to orders page...');
                     window.location.href = "{{ route('orders') }}";
                 }
             })

@@ -55,6 +55,16 @@ class OrderController extends Controller
         ]);
 
         $oldStatus = $order->status;
+        $requestId = uniqid('order_status_', true);
+        
+        \Log::info('Admin updating order status', [
+            'request_id' => $requestId,
+            'order_id' => $order->id,
+            'old_status' => $oldStatus,
+            'new_status' => $validated['status'],
+            'user_id' => auth()->id(),
+            'request_data' => $request->all()
+        ]);
         
         // Prepare update data
         $updateData = [
@@ -68,12 +78,32 @@ class OrderController extends Controller
         
         $order->update($updateData);
 
+        \Log::info('Order status updated in database', [
+            'request_id' => $requestId,
+            'order_id' => $order->id,
+            'old_status' => $oldStatus,
+            'new_status' => $validated['status'],
+            'status_changed' => $oldStatus !== $validated['status']
+        ]);
+
         // Send notification to user about order status update
         if ($oldStatus !== $validated['status']) {
+            \Log::info('Sending notifications for status change', [
+                'request_id' => $requestId,
+                'order_id' => $order->id,
+                'old_status' => $oldStatus,
+                'new_status' => $validated['status']
+            ]);
+
             NotificationHelper::sendOrderStatusUpdate($order->user_id, $order->id, $validated['status']);
 
             // Send confirmation emails when order is confirmed
             if ($validated['status'] === 'confirmed') {
+                \Log::info('Sending confirmation emails', [
+                    'request_id' => $requestId,
+                    'order_id' => $order->id,
+                    'status' => $validated['status']
+                ]);
                 \App\Services\OrderEmailService::sendOrderConfirmationEmails($order);
             }
 
@@ -83,19 +113,26 @@ class OrderController extends Controller
                 $userPhone = $order->user->phone;
                 $phoneWithCountry = '91' . preg_replace('/^\+?91?/', '', $userPhone);
                 \Log::info('Attempting to send order status SMS', [
+                    'request_id' => $requestId,
                     'order_id' => $order->id,
                     'user_id' => $order->user_id,
                     'phone' => $phoneWithCountry,
                     'status' => $validated['status'],
+                    'old_status' => $oldStatus,
+                    'new_status' => $validated['status'],
+                    'timestamp' => now()->toISOString()
                 ]);
+                
                 $smsResult = $msg91->sendOrderStatusSms($phoneWithCountry, (string)$order->id, $validated['status'], optional($order->shop)->name);
                 \Log::info('Order status SMS result', [
+                    'request_id' => $requestId,
                     'order_id' => $order->id,
                     'success' => $smsResult['success'] ?? null,
                     'message' => $smsResult['message'] ?? null,
                 ]);
             } catch (\Throwable $e) {
                 \Log::error('Failed to send order status SMS', [
+                    'request_id' => $requestId,
                     'order_id' => $order->id,
                     'user_id' => $order->user_id,
                     'status' => $validated['status'],
@@ -112,6 +149,13 @@ class OrderController extends Controller
                 }
                 NotificationHelper::sendDeliveryUpdate($order->user_id, $order->id, $validated['status'], $deliveryBoyName);
             }
+        } else {
+            \Log::info('No status change detected, skipping notifications', [
+                'request_id' => $requestId,
+                'order_id' => $order->id,
+                'old_status' => $oldStatus,
+                'new_status' => $validated['status']
+            ]);
         }
 
         return back()->with('success', 'Order status updated successfully');

@@ -178,6 +178,29 @@ class CheckoutController extends Controller
             $address = \App\Models\Address::findOrFail($request->delivery_address);
             Log::info('Address found', ['address' => $address->toArray()]);
 
+            // Validate that the address has coordinates
+            if (empty($address->latitude) || empty($address->longitude)) {
+                Log::warning('Address missing coordinates', [
+                    'address_id' => $address->id,
+                    'address_data' => $address->toArray()
+                ]);
+                
+                if ($request->ajax()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'The selected address is missing location coordinates. Please update your address with proper location details.',
+                        'debug_info' => [
+                            'user_authenticated' => auth()->check(),
+                            'user_id' => auth()->id(),
+                            'cart_items' => count($cart),
+                            'selected_address' => $address->toArray()
+                        ]
+                    ], 400);
+                } else {
+                    return redirect()->back()->with('error', 'The selected address is missing location coordinates. Please update your address with proper location details.');
+                }
+            }
+
             // Calculate total
             $total = 0;
             $orderItems = [];

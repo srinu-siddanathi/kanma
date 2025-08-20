@@ -29,6 +29,12 @@ class AddressController extends Controller
         return view('addresses.index', compact('addresses'));
     }
 
+    public function manage()
+    {
+        // Redirect to the addresses index page where users can manage their addresses
+        return redirect()->route('addresses.index');
+    }
+
     public function getAddressesForModal()
     {
         if (!request()->ajax()) {
@@ -238,6 +244,17 @@ class AddressController extends Controller
             'is_default' => 'boolean'
         ]);
 
+        // If coordinates are not provided, try to get them from postal code
+        if (empty($validated['latitude']) || empty($validated['longitude'])) {
+            if (!empty($validated['postal_code'])) {
+                $coordinates = $this->geocodingService->getCoordinatesFromPincode($validated['postal_code']);
+                if ($coordinates) {
+                    $validated['latitude'] = $coordinates['latitude'];
+                    $validated['longitude'] = $coordinates['longitude'];
+                }
+            }
+        }
+
         if ($validated['is_default']) {
             Auth::user()->addresses()->update(['is_default' => false]);
         }
@@ -288,6 +305,17 @@ class AddressController extends Controller
             'longitude' => 'nullable|numeric',
             'is_default' => 'boolean'
         ]);
+
+        // If coordinates are not provided, try to get them from postal code
+        if (empty($validated['latitude']) || empty($validated['longitude'])) {
+            if (!empty($validated['postal_code'])) {
+                $coordinates = $this->geocodingService->getCoordinatesFromPincode($validated['postal_code']);
+                if ($coordinates) {
+                    $validated['latitude'] = $coordinates['latitude'];
+                    $validated['longitude'] = $coordinates['longitude'];
+                }
+            }
+        }
 
         if ($validated['is_default']) {
             Auth::user()->addresses()->where('id', '!=', $address->id)->update(['is_default' => false]);

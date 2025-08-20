@@ -220,6 +220,7 @@ Route::prefix('admin')->group(function () {
     Route::middleware(['auth', 'branch.manager'])->prefix('branch')->name('branch.')->group(function () {
         Route::get('/dashboard', [BranchManagerDashboardController::class, 'show'])->name('dashboard');
         Route::get('/orders', [BranchManagerOrderController::class, 'list'])->name('orders');
+        Route::put('/orders/{order}/update-status', [BranchManagerOrderController::class, 'updateStatus'])->name('orders.update-status');
         
         // Chat Orders
         Route::get('/chat-orders', [ChatOrderController::class, 'index'])->name('chat-orders.index');
@@ -308,6 +309,7 @@ Route::prefix('admin')->group(function () {
         // Order Management
         Route::get('/orders', [ShopOwnerOrderController::class, 'index'])->name('orders.index');
         Route::get('/orders/{order}', [ShopOwnerOrderController::class, 'show'])->name('orders.show');
+        Route::put('/orders/{order}/update-status', [ShopOwnerOrderController::class, 'updateStatus'])->name('orders.update-status');
     });
 });
 

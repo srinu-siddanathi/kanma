@@ -63,6 +63,8 @@ return [
         'reset_password_template_id' => env('RESET_PASSWORD_TEMPLATE_ID'),
         'registration_template_id' => env('REGISTRATION_TEMPLATE_ID'),
         'order_status_flow_id' => env('MSG91_ORDER_STATUS_FLOW_ID'),
+        'order_status_confirmation_template_id' => env('MSG91_ORDER_STATUS_CONFIRMATION_TEMPLATE_ID'),
+        'order_status_delivered_template_id' => env('MSG91_ORDER_STATUS_DELIVERED_TEMPLATE_ID'),
         'test_mode' => env('MSG91_TEST_MODE', true),
     ],
 

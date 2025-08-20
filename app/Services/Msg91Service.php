@@ -238,8 +238,8 @@ class Msg91Service
     {
         $flowId = config('services.msg91.order_status_flow_id');
         $variables = [
-            'order_id' => $orderId,
-            'status' => $status,
+            'var1' => $orderId,
+            'var2' => $status,
         ];
         if ($shopName) {
             $variables['shop_name'] = $shopName;

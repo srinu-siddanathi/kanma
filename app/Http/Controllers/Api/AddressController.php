@@ -67,6 +67,18 @@ class AddressController extends Controller
             'longitude' => 'nullable|numeric'
         ]);
 
+        // If coordinates are not provided, try to get them from postal code
+        if (empty($validated['latitude']) || empty($validated['longitude'])) {
+            if (!empty($validated['postal_code'])) {
+                $geocodingService = app(\App\Services\GeocodingService::class);
+                $coordinates = $geocodingService->getCoordinatesFromPincode($validated['postal_code']);
+                if ($coordinates) {
+                    $validated['latitude'] = $coordinates['latitude'];
+                    $validated['longitude'] = $coordinates['longitude'];
+                }
+            }
+        }
+
         // If this is set as default, unset any existing default address
         if ($validated['is_default'] ?? false) {
             auth()->user()->addresses()->update(['is_default' => false]);

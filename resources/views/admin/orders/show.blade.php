@@ -37,6 +37,7 @@
                                 <select name="status" onchange="this.form.submit()" 
                                     class="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
                                     <option value="pending" {{ $order->status === 'pending' ? 'selected' : '' }}>Pending</option>
+                                    <option value="confirmed" {{ $order->status === 'confirmed' ? 'selected' : '' }}>Confirmed</option>
                                     <option value="processing" {{ $order->status === 'processing' ? 'selected' : '' }}>Processing</option>
                                     <option value="completed" {{ $order->status === 'completed' ? 'selected' : '' }}>Completed</option>
                                     <option value="cancelled" {{ $order->status === 'cancelled' ? 'selected' : '' }}>Cancelled</option>
