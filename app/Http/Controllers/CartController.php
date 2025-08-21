@@ -42,6 +42,26 @@ class CartController extends Controller
         if (isset($cart[$cartItemId])) {
             $cart[$cartItemId]['quantity'] += intval($request->quantity);
         } else {
+            // Handle image: check products table first, then product_images table
+            $imagePath = null;
+            
+            // First check if product has image_path in products table
+            if ($product->image_path) {
+                $imagePath = $product->image_path;
+            }
+            // Then check product_images table for primary image
+            elseif ($product->images->where('is_primary', true)->first()) {
+                $imagePath = $product->images->where('is_primary', true)->first()->image_path;
+            }
+            // Then check for any image in product_images table
+            elseif ($product->images->first()) {
+                $imagePath = $product->images->first()->image_path;
+            }
+            // If no images found, use default
+            else {
+                $imagePath = 'images/no-image.png';
+            }
+
             $cart[$cartItemId] = [
                 'product_id' => $product->id,
                 'product_name' => $product->name,
@@ -49,7 +69,7 @@ class CartController extends Controller
                 'quantity' => intval($request->quantity),
                 'unit' => $variant->unit,
                 'price' => floatval($variant->price),
-                'image_path' => $product->image_path,
+                'image_path' => $imagePath,
                 'discount_percentage' => floatval($variant->discount_percentage),
                 'discounted_price' => floatval($variant->discounted_price)
             ];

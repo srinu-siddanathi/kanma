@@ -90,6 +90,26 @@ class CartController extends Controller
                 ? $price - ($price * ($product->discount / 100))
                 : $price;
 
+            // Handle image: check products table first, then product_images table
+            $imageUrl = null;
+            
+            // First check if product has image_path in products table
+            if ($product->image_path) {
+                $imageUrl = asset($product->image_path);
+            }
+            // Then check product_images table for primary image
+            elseif ($product->images->where('is_primary', true)->first()) {
+                $imageUrl = asset($product->images->where('is_primary', true)->first()->image_path);
+            }
+            // Then check for any image in product_images table
+            elseif ($product->images->first()) {
+                $imageUrl = asset($product->images->first()->image_path);
+            }
+            // If no images found, use default
+            else {
+                $imageUrl = asset('images/no-image.png');
+            }
+
             // Add or update item
             $cartItems[$itemKey] = [
                 'product_id' => $validated['product_id'],
@@ -99,7 +119,7 @@ class CartController extends Controller
                 'unit' => $request->has('variant_id') ? $variant->unit : $product->base_unit,
                 'price' => $price,
                 'discounted_price' => round($discountedPrice, 2),
-                'image_url' => $product->images->first()?->image_url,
+                'image_url' => $imageUrl,
                 'discount' => $product->discount,
                 'deal' => $product->is_deal,
                 'stock' => $request->has('variant_id') ? $variant->stock : null
