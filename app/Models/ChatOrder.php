@@ -11,6 +11,7 @@ class ChatOrder extends Model
     protected $fillable = [
         'user_id',
         'shop_id',
+        'branch_id',
         'name',
         'status',
         'total_amount',
@@ -34,6 +35,11 @@ class ChatOrder extends Model
     public function shop(): BelongsTo
     {
         return $this->belongsTo(Shop::class)->withDefault();
+    }
+
+    public function branch(): BelongsTo
+    {
+        return $this->belongsTo(Branch::class)->withDefault();
     }
 
     public function messages(): HasMany

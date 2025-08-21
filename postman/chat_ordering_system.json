@@ -50,7 +50,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"My Order\",\n    \"notes\": \"Order notes\"\n}",
+							"raw": "{\n    \"name\": \"My Order\",\n    \"branch_id\": 1,\n    \"notes\": \"Order notes\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"

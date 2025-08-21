@@ -415,6 +415,7 @@ Success Response (200):
                     "product": {
                         "id": "integer",
                         "name": "string",
+                        "image_url": "string",
                         "price": "decimal"
                     },
                     "quantity": "integer",
@@ -476,24 +477,39 @@ Query Parameters:
 Success Response (200):
 {
     "status": "success",
-    "data": [
-        {
-            "id": "integer",
-            "name": "string",
-            "description": "string",
-            "price": "decimal",
-            "image_path": "string|null",
-            "is_active": "boolean",
-            "category": {
+    "data": {
+        "products": [
+            {
                 "id": "integer",
-                "name": "string"
-            },
-            "subcategory": {
-                "id": "integer",
-                "name": "string"
+                "name": "string",
+                "description": "string",
+                "images": [
+                    {
+                        "id": "integer",
+                        "url": "string",
+                        "is_primary": "boolean"
+                    }
+                ],
+                "category": {
+                    "id": "integer",
+                    "name": "string"
+                },
+                "price": "decimal",
+                "discounted_price": "decimal",
+                "unit": "string",
+                "deal": "boolean",
+                "discount": "decimal",
+                "featured": "boolean",
+                "is_available": "boolean"
             }
+        ],
+        "pagination": {
+            "current_page": "integer",
+            "last_page": "integer",
+            "per_page": "integer",
+            "total": "integer"
         }
-    ]
+    }
 }
 
 Get Product Details
@@ -509,23 +525,24 @@ Success Response (200):
         "id": "integer",
         "name": "string",
         "description": "string",
-        "price": "decimal",
-        "image_path": "string|null",
-        "is_active": "boolean",
+        "images": [
+            {
+                "id": "integer",
+                "url": "string",
+                "is_primary": "boolean"
+            }
+        ],
         "category": {
             "id": "integer",
             "name": "string"
         },
-        "subcategory": {
-            "id": "integer",
-            "name": "string"
-        },
-        "branches": [
-            {
-                "id": "integer",
-                "name": "string"
-            }
-        ]
+        "price": "decimal",
+        "discounted_price": "decimal",
+        "unit": "string",
+        "deal": "boolean",
+        "discount": "decimal",
+        "featured": "boolean",
+        "is_available": "boolean"
     }
 }
 

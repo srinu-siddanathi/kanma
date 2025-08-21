@@ -18,7 +18,7 @@ class ChatOrderController extends Controller
         $chatOrders = ChatOrder::with(['user', 'messages' => function($query) {
                 $query->latest();
             }])
-            ->where('shop_id', $branch->shop_id)
+            ->where('branch_id', $branch->id)
             ->latest()
             ->paginate(10);
 
@@ -36,8 +36,8 @@ class ChatOrderController extends Controller
 
     public function show(ChatOrder $chatOrder)
     {
-        // Ensure the chat order belongs to the branch manager's shop
-        if ($chatOrder->shop_id !== auth()->user()->branch->shop_id) {
+        // Ensure the chat order belongs to the branch manager's branch
+        if ($chatOrder->branch_id !== auth()->user()->branch->id) {
             abort(403);
         }
 
@@ -54,8 +54,8 @@ class ChatOrderController extends Controller
 
     public function storeMessage(Request $request, ChatOrder $chatOrder)
     {
-        // Verify the chat order belongs to the branch manager's shop
-        if ($chatOrder->shop_id !== auth()->user()->branch->shop_id) {
+        // Verify the chat order belongs to the branch manager's branch
+        if ($chatOrder->branch_id !== auth()->user()->branch->id) {
             abort(403);
         }
 
@@ -113,8 +113,8 @@ class ChatOrderController extends Controller
 
     public function updateStatus(Request $request, ChatOrder $chatOrder)
     {
-        // Ensure the chat order belongs to the branch manager's shop
-        if ($chatOrder->shop_id !== auth()->user()->branch->shop_id) {
+        // Ensure the chat order belongs to the branch manager's branch
+        if ($chatOrder->branch_id !== auth()->user()->branch->id) {
             abort(403);
         }
 

@@ -170,11 +170,13 @@ Route::prefix('admin')->group(function () {
         Route::resource('branches', BranchController::class);
 
         // Shop Management
-        Route::get('/shops', [AdminShopController::class, 'index'])->name('shops.index');
-        Route::get('/shops/{shop}', [AdminShopController::class, 'show'])->name('shops.show');
-        Route::post('/shops/{shop}/approve', [AdminShopController::class, 'approve'])->name('shops.approve');
-        Route::post('/shops/{shop}/reject', [AdminShopController::class, 'reject'])->name('shops.reject');
-        Route::post('/shops/{shop}/verify', [AdminShopController::class, 'verify'])->name('shops.verify');
+            Route::get('/shops', [AdminShopController::class, 'index'])->name('shops.index');
+    Route::get('/shops/{shop}', [AdminShopController::class, 'show'])->name('shops.show');
+    Route::get('/shops/{shop}/edit', [AdminShopController::class, 'edit'])->name('shops.edit');
+    Route::put('/shops/{shop}', [AdminShopController::class, 'update'])->name('shops.update');
+    Route::post('/shops/{shop}/approve', [AdminShopController::class, 'approve'])->name('shops.approve');
+    Route::post('/shops/{shop}/reject', [AdminShopController::class, 'reject'])->name('shops.reject');
+    Route::post('/shops/{shop}/verify', [AdminShopController::class, 'verify'])->name('shops.verify');
 
         // Delivery Boys Management
         Route::get('/delivery-boys', [App\Http\Controllers\Admin\DeliveryBoyController::class, 'index'])->name('delivery-boys.index');

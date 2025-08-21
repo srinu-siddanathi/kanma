@@ -84,4 +84,45 @@ class ShopController extends Controller
             ->route('admin.shops.show', $shop)
             ->with('success', 'Shop has been verified successfully');
     }
+
+    public function edit(Shop $shop)
+    {
+        $shop->load('user');
+        return view('admin.shops.edit', compact('shop'));
+    }
+
+    public function update(Request $request, Shop $shop)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'address' => 'required|string',
+            'phone' => 'required|string|max:20',
+            'email' => 'required|email|unique:shops,email,' . $shop->id,
+            'latitude' => 'nullable|numeric|between:-90,90',
+            'longitude' => 'nullable|numeric|between:-180,180',
+            'working_hours' => 'nullable|array',
+            'working_hours.*.open' => 'required_with:working_hours.*.close|string',
+            'working_hours.*.close' => 'required_with:working_hours.*.open|string',
+            'is_active' => 'boolean',
+            'is_verified' => 'boolean'
+        ]);
+
+        // Handle working hours validation
+        if (isset($validated['working_hours'])) {
+            $workingHours = [];
+            foreach ($validated['working_hours'] as $day => $hours) {
+                if (!empty($hours['open']) && !empty($hours['close'])) {
+                    $workingHours[$day] = $hours;
+                }
+            }
+            $validated['working_hours'] = $workingHours;
+        }
+
+        $shop->update($validated);
+
+        return redirect()
+            ->route('admin.shops.show', $shop)
+            ->with('success', 'Shop updated successfully');
+    }
 } 

@@ -7,9 +7,15 @@
     <div class="max-w-4xl mx-auto">
         <div class="flex justify-between items-center mb-6">
             <h2 class="text-2xl font-bold">Shop Details</h2>
-            <a href="{{ route('admin.shops.index') }}" class="text-indigo-600 hover:text-indigo-900">
-                ← Back to Shops
-            </a>
+            <div class="flex space-x-3">
+                <a href="{{ route('admin.shops.edit', $shop) }}" 
+                   class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700">
+                    Edit Shop
+                </a>
+                <a href="{{ route('admin.shops.index') }}" class="text-indigo-600 hover:text-indigo-900">
+                    ← Back to Shops
+                </a>
+            </div>
         </div>
 
         <div class="bg-white shadow rounded-lg overflow-hidden mb-6">
@@ -66,6 +72,41 @@
                             <dt class="text-sm font-medium text-gray-500">Description</dt>
                             <dd class="mt-1 text-sm text-gray-900">{{ $shop->description ?? 'No description provided' }}</dd>
                         </div>
+                        <div>
+                            <dt class="text-sm font-medium text-gray-500">Latitude</dt>
+                            <dd class="mt-1 text-sm text-gray-900">{{ $shop->latitude ?? 'Not set' }}</dd>
+                        </div>
+                        <div>
+                            <dt class="text-sm font-medium text-gray-500">Longitude</dt>
+                            <dd class="mt-1 text-sm text-gray-900">{{ $shop->longitude ?? 'Not set' }}</dd>
+                        </div>
+                        @if($shop->latitude && $shop->longitude)
+                        <div class="sm:col-span-2">
+                            <dt class="text-sm font-medium text-gray-500">Location</dt>
+                            <dd class="mt-1 text-sm text-gray-900">
+                                <a href="https://www.google.com/maps?q={{ $shop->latitude }},{{ $shop->longitude }}" 
+                                   target="_blank" 
+                                   class="text-indigo-600 hover:text-indigo-900">
+                                    View on Google Maps
+                                </a>
+                            </dd>
+                        </div>
+                        @endif
+                        @if($shop->working_hours)
+                        <div class="sm:col-span-2">
+                            <dt class="text-sm font-medium text-gray-500">Working Hours</dt>
+                            <dd class="mt-1 text-sm text-gray-900">
+                                <div class="grid grid-cols-1 gap-1 sm:grid-cols-2">
+                                    @foreach($shop->working_hours as $day => $hours)
+                                        <div class="flex justify-between">
+                                            <span class="capitalize">{{ $day }}:</span>
+                                            <span>{{ $hours['open'] }} - {{ $hours['close'] }}</span>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </dd>
+                        </div>
+                        @endif
                     </dl>
                 </div>
             </div>

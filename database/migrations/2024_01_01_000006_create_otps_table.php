@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->string('phone');
             $table->string('otp');
-            $table->timestamp('expires_at');
+            $table->timestamp('expires_at')->nullable();
             $table->boolean('verified')->default(false);
             $table->timestamps();
         });

@@ -17,7 +17,7 @@ class ChatOrderController extends Controller
     public function index()
     {
         $user = Auth::user();
-        $orders = ChatOrder::with(['shop', 'messages'])
+        $orders = ChatOrder::with(['shop', 'branch', 'messages'])
             ->where('user_id', $user->id)
             ->latest()
             ->paginate(10);
@@ -32,6 +32,7 @@ class ChatOrderController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
+            'branch_id' => 'required|exists:branches,id',
             'notes' => 'nullable|string'
         ]);
 
@@ -45,6 +46,7 @@ class ChatOrderController extends Controller
 
         $order = ChatOrder::create([
             'user_id' => Auth::id(),
+            'branch_id' => $request->branch_id,
             'name' => $request->name,
             'notes' => $request->notes,
             'status' => 'pending'
@@ -61,7 +63,7 @@ class ChatOrderController extends Controller
     {
         $this->authorize('view', $chatOrder);
 
-        $chatOrder->load(['shop', 'messages.sender']);
+        $chatOrder->load(['shop', 'branch', 'messages.sender']);
 
         return response()->json([
             'status' => 'success',

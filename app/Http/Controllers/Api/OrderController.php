@@ -345,7 +345,7 @@ class OrderController extends Controller
                         'product' => [
                             'id' => $item->product->id,
                             'name' => $item->product->name,
-                            'image_path' => $item->product->image_path,
+                            'image_path' => $item->product->image_url,
                         ],
                         'quantity' => $item->quantity,
                         'price' => $item->price,

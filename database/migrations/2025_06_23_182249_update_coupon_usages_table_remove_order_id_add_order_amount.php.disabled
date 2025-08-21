@@ -11,12 +11,21 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Check if order_id column exists before trying to drop it
+        if (Schema::hasColumn('coupon_usages', 'order_id')) {
+            Schema::table('coupon_usages', function (Blueprint $table) {
+                // Try to drop foreign key constraint if it exists
+                try {
+                    $table->dropForeign(['order_id']);
+                } catch (\Exception $e) {
+                    // Foreign key constraint might not exist, continue
+                }
+                $table->dropColumn('order_id');
+            });
+        }
+        
+        // Add order_amount column
         Schema::table('coupon_usages', function (Blueprint $table) {
-            // Remove order_id column
-            $table->dropForeign(['order_id']);
-            $table->dropColumn('order_id');
-            
-            // Add order_amount column
             $table->decimal('order_amount', 10, 2)->after('user_id');
         });
     }

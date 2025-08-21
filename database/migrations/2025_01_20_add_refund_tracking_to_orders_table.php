@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('orders', function (Blueprint $table) {
-            $table->json('refund_info')->nullable()->after('payment_id');
+            $table->json('refund_info')->nullable()->after('total_amount');
             $table->timestamp('cancelled_at')->nullable()->after('refund_info');
             $table->string('cancellation_reason')->nullable()->after('cancelled_at');
         });

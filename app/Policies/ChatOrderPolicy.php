@@ -12,7 +12,9 @@ class ChatOrderPolicy
 
     public function view(User $user, ChatOrder $chatOrder)
     {
-        return $user->id === $chatOrder->user_id || $user->shop->id === $chatOrder->shop_id;
+        return $user->id === $chatOrder->user_id || 
+               ($user->shop && $user->shop->id === $chatOrder->shop_id) ||
+               ($user->branch && $user->branch->id === $chatOrder->branch_id);
     }
 
     public function create(User $user)
@@ -22,11 +24,15 @@ class ChatOrderPolicy
 
     public function update(User $user, ChatOrder $chatOrder)
     {
-        return $user->id === $chatOrder->user_id || $user->shop->id === $chatOrder->shop_id;
+        return $user->id === $chatOrder->user_id || 
+               ($user->shop && $user->shop->id === $chatOrder->shop_id) ||
+               ($user->branch && $user->branch->id === $chatOrder->branch_id);
     }
 
     public function delete(User $user, ChatOrder $chatOrder)
     {
-        return $user->id === $chatOrder->user_id || $user->shop->id === $chatOrder->shop_id;
+        return $user->id === $chatOrder->user_id || 
+               ($user->shop && $user->shop->id === $chatOrder->shop_id) ||
+               ($user->branch && $user->branch->id === $chatOrder->branch_id);
     }
 } 
