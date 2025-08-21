@@ -134,6 +134,46 @@
                             @enderror
                         </div>
 
+                        <!-- Password Change -->
+                        <div class="sm:col-span-2">
+                            <h3 class="text-lg font-medium text-gray-900 mb-4">Password Management</h3>
+                            <div class="bg-yellow-50 border border-yellow-200 rounded-md p-4 mb-4">
+                                <div class="flex">
+                                    <div class="flex-shrink-0">
+                                        <svg class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                                        </svg>
+                                    </div>
+                                    <div class="ml-3">
+                                        <h3 class="text-sm font-medium text-yellow-800">Password Change</h3>
+                                        <div class="mt-2 text-sm text-yellow-700">
+                                            <p>Leave password fields empty if you don't want to change the password.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                <div>
+                                    <label for="new_password" class="block text-sm font-medium text-gray-700">New Password</label>
+                                    <input type="password" name="new_password" id="new_password" 
+                                           class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                           placeholder="Enter new password">
+                                    @error('new_password')
+                                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                    @enderror
+                                </div>
+                                <div>
+                                    <label for="new_password_confirmation" class="block text-sm font-medium text-gray-700">Confirm New Password</label>
+                                    <input type="password" name="new_password_confirmation" id="new_password_confirmation" 
+                                           class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                           placeholder="Confirm new password">
+                                    @error('new_password_confirmation')
+                                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                    @enderror
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Status -->
                         <div class="sm:col-span-2">
                             <h3 class="text-lg font-medium text-gray-900 mb-4">Status</h3>
@@ -171,6 +211,8 @@
 document.addEventListener('DOMContentLoaded', function() {
     const latitudeInput = document.getElementById('latitude');
     const longitudeInput = document.getElementById('longitude');
+    const newPasswordInput = document.getElementById('new_password');
+    const confirmPasswordInput = document.getElementById('new_password_confirmation');
     
     // Coordinate validation
     function validateCoordinates() {
@@ -190,8 +232,25 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
+    // Password validation
+    function validatePassword() {
+        const password = newPasswordInput.value;
+        const confirmPassword = confirmPasswordInput.value;
+        
+        if (password && password.length < 8) {
+            newPasswordInput.setCustomValidity('Password must be at least 8 characters long');
+        } else if (password && confirmPassword && password !== confirmPassword) {
+            confirmPasswordInput.setCustomValidity('Passwords do not match');
+        } else {
+            newPasswordInput.setCustomValidity('');
+            confirmPasswordInput.setCustomValidity('');
+        }
+    }
+    
     latitudeInput.addEventListener('input', validateCoordinates);
     longitudeInput.addEventListener('input', validateCoordinates);
+    newPasswordInput.addEventListener('input', validatePassword);
+    confirmPasswordInput.addEventListener('input', validatePassword);
     
     // Add a button to open Google Maps for coordinate picking
     const locationSection = document.querySelector('h3');

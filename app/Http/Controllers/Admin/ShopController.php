@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\Product;
 use Illuminate\Http\Request;
 
+
 class ShopController extends Controller
 {
     public function index()
@@ -105,7 +106,9 @@ class ShopController extends Controller
             'working_hours.*.open' => 'required_with:working_hours.*.close|string',
             'working_hours.*.close' => 'required_with:working_hours.*.open|string',
             'is_active' => 'boolean',
-            'is_verified' => 'boolean'
+            'is_verified' => 'boolean',
+            'new_password' => 'nullable|string|min:8|confirmed',
+            'new_password_confirmation' => 'nullable|string'
         ]);
 
         // Handle working hours validation
@@ -119,7 +122,19 @@ class ShopController extends Controller
             $validated['working_hours'] = $workingHours;
         }
 
+        // Update shop details
         $shop->update($validated);
+
+        // Handle password change if provided
+        if (!empty($validated['new_password'])) {
+            $shop->user->update([
+                'password' => bcrypt($validated['new_password'])
+            ]);
+            
+            return redirect()
+                ->route('admin.shops.show', $shop)
+                ->with('success', 'Shop updated successfully. Password has been changed.');
+        }
 
         return redirect()
             ->route('admin.shops.show', $shop)

@@ -531,6 +531,8 @@ document.getElementById('productViewModal').addEventListener('click', function(e
         closeProductModal();
     }
 });
+
+
 </script>
 @endpush
 @endsection 
