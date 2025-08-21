@@ -35,17 +35,43 @@ class ProductController extends Controller
                     ? $product->price - ($product->price * ($product->discount / 100))
                     : $product->price;
 
+                // Handle images: check products table first, then product_images table
+                $images = [];
+                
+                // First check if product has image_path in products table
+                if ($product->image_path) {
+                    $images[] = [
+                        'id' => null,
+                        'url' => asset($product->image_path),
+                        'is_primary' => true
+                    ];
+                }
+                
+                // Then check product_images table
+                if ($product->images->isNotEmpty()) {
+                    foreach ($product->images as $image) {
+                        $images[] = [
+                            'id' => $image->id,
+                            'url' => asset($image->image_path),
+                            'is_primary' => $image->is_primary
+                        ];
+                    }
+                }
+                
+                // If no images found, use default
+                if (empty($images)) {
+                    $images[] = [
+                        'id' => null,
+                        'url' => asset('images/no-image.png'),
+                        'is_primary' => true
+                    ];
+                }
+
                 $data = [
                     'id' => $product->id,
                     'name' => $product->name,
                     'description' => $product->description,
-                    'images' => $product->images->map(function($image) {
-                        return [
-                            'id' => $image->id,
-                            'url' => $image->image_url,
-                            'is_primary' => $image->is_primary
-                        ];
-                    }),
+                    'images' => $images,
                     'category' => $product->category ? [
                         'id' => $product->category->id,
                         'name' => $product->category->name
@@ -116,13 +142,31 @@ class ProductController extends Controller
                     ? $product->price - ($product->price * ($product->discount / 100))
                     : $product->price;
 
+                // Handle image: check products table first, then product_images table
+                $image = null;
+                
+                // First check if product has image_path in products table
+                if ($product->image_path) {
+                    $image = asset($product->image_path);
+                }
+                // Then check product_images table for primary image
+                elseif ($product->images->where('is_primary', true)->first()) {
+                    $image = asset($product->images->where('is_primary', true)->first()->image_path);
+                }
+                // Then check for any image in product_images table
+                elseif ($product->images->first()) {
+                    $image = asset($product->images->first()->image_path);
+                }
+                // If no images found, use default
+                else {
+                    $image = asset('images/no-image.png');
+                }
+
                 $data = [
                     'id' => $product->id,
                     'name' => $product->name,
                     'description' => $product->description,
-                    'image' => $product->images->where('is_primary', true)->first()?->image_url 
-                        ?? $product->images->first()?->image_url 
-                        ?? null,
+                    'image' => $image,
                     'category' => $product->category ? [
                         'id' => $product->category->id,
                         'name' => $product->category->name
@@ -180,17 +224,43 @@ class ProductController extends Controller
                 ? $product->price - ($product->price * ($product->discount / 100))
                 : $product->price;
 
+            // Handle images: check products table first, then product_images table
+            $images = [];
+            
+            // First check if product has image_path in products table
+            if ($product->image_path) {
+                $images[] = [
+                    'id' => null,
+                    'url' => asset($product->image_path),
+                    'is_primary' => true
+                ];
+            }
+            
+            // Then check product_images table
+            if ($product->images->isNotEmpty()) {
+                foreach ($product->images as $image) {
+                    $images[] = [
+                        'id' => $image->id,
+                        'url' => asset($image->image_path),
+                        'is_primary' => $image->is_primary
+                    ];
+                }
+            }
+            
+            // If no images found, use default
+            if (empty($images)) {
+                $images[] = [
+                    'id' => null,
+                    'url' => asset('images/no-image.png'),
+                    'is_primary' => true
+                ];
+            }
+
             $data = [
                 'id' => $product->id,
                 'name' => $product->name,
                 'description' => $product->description,
-                'images' => $product->images->map(function($image) {
-                    return [
-                        'id' => $image->id,
-                        'url' => $image->image_url,
-                        'is_primary' => $image->is_primary
-                    ];
-                }),
+                'images' => $images,
                 'category' => $product->category ? [
                     'id' => $product->category->id,
                     'name' => $product->category->name

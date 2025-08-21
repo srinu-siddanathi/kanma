@@ -88,9 +88,75 @@ class ShopController extends Controller
             ->with(['category', 'images'])
             ->paginate(20);
 
+        $transformedProducts = $products->map(function ($product) {
+            $discountedPrice = $product->discount > 0 
+                ? $product->price - ($product->price * ($product->discount / 100))
+                : $product->price;
+
+            // Handle images: check products table first, then product_images table
+            $images = [];
+            
+            // First check if product has image_path in products table
+            if ($product->image_path) {
+                $images[] = [
+                    'id' => null,
+                    'url' => asset($product->image_path),
+                    'is_primary' => true
+                ];
+            }
+            
+            // Then check product_images table
+            if ($product->images->isNotEmpty()) {
+                foreach ($product->images as $image) {
+                    $images[] = [
+                        'id' => $image->id,
+                        'url' => asset($image->image_path),
+                        'is_primary' => $image->is_primary
+                    ];
+                }
+            }
+            
+            // If no images found, use default
+            if (empty($images)) {
+                $images[] = [
+                    'id' => null,
+                    'url' => asset('images/no-image.png'),
+                    'is_primary' => true
+                ];
+            }
+
+            $data = [
+                'id' => $product->id,
+                'name' => $product->name,
+                'description' => $product->description,
+                'images' => $images,
+                'category' => $product->category ? [
+                    'id' => $product->category->id,
+                    'name' => $product->category->name
+                ] : null,
+                'price' => $product->price,
+                'discounted_price' => round($discountedPrice, 2),
+                'unit' => $product->base_unit,
+                'deal' => $product->is_deal,
+                'discount' => $product->discount,
+                'featured' => $product->is_featured,
+                'is_available' => $product->is_active
+            ];
+
+            return $data;
+        });
+
         return response()->json([
             'status' => 'success',
-            'data' => $products
+            'data' => [
+                'products' => $transformedProducts,
+                'pagination' => [
+                    'current_page' => $products->currentPage(),
+                    'last_page' => $products->lastPage(),
+                    'per_page' => $products->perPage(),
+                    'total' => $products->total()
+                ]
+            ]
         ]);
     }
 

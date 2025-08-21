@@ -52,7 +52,17 @@ class ProductController extends Controller
             $validated['image_path'] = 'uploads/products/' . $filename;
         }
 
+        // Create the product
         $product = Product::create($validated);
+
+        // Create a default product variant
+        $product->variants()->create([
+            'quantity' => 1,
+            'unit' => 'pieces', // Default unit
+            'price' => $validated['price'],
+            'stock' => 100, // Default stock
+            'is_active' => true
+        ]);
 
         // Handle selected existing images
         if ($request->has('selected_images') && is_array($request->input('selected_images')) && !empty($request->input('selected_images'))) {
@@ -117,6 +127,24 @@ class ProductController extends Controller
         }
 
         $product->update($validated);
+
+        // Update the default variant price if it exists, or create one if it doesn't
+        $defaultVariant = $product->variants()->first();
+        if ($defaultVariant) {
+            // Update the existing default variant
+            $defaultVariant->update([
+                'price' => $validated['price']
+            ]);
+        } else {
+            // Create a default variant if none exists
+            $product->variants()->create([
+                'quantity' => 1,
+                'unit' => 'pieces', // Default unit
+                'price' => $validated['price'],
+                'stock' => 100, // Default stock
+                'is_active' => true
+            ]);
+        }
 
         // Handle selected existing images
         if ($request->has('selected_images') && is_array($request->input('selected_images')) && !empty($request->input('selected_images'))) {

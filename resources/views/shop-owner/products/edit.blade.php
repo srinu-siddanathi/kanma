@@ -90,6 +90,24 @@
                             @enderror
                         </div>
 
+                        <!-- Default Variant Information -->
+                        @if($product->variants->count() > 0)
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <h4 class="text-sm font-medium text-gray-700 mb-3">Default Variant Information</h4>
+                            <div class="grid grid-cols-2 gap-4 text-sm">
+                                @foreach($product->variants as $variant)
+                                <div class="bg-white p-3 rounded border">
+                                    <div class="font-medium text-gray-900">{{ $variant->quantity }} {{ $variant->unit }}</div>
+                                    <div class="text-gray-600">Price: ₹{{ number_format($variant->price, 2) }}</div>
+                                    <div class="text-gray-600">Stock: {{ $variant->stock }}</div>
+                                    <div class="text-gray-600">Status: {{ $variant->is_active ? 'Active' : 'Inactive' }}</div>
+                                </div>
+                                @endforeach
+                            </div>
+                            
+                        </div>
+                        @endif
+
                         <!-- Image Search Section -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Search Existing Images</label>
