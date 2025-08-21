@@ -16,7 +16,7 @@
             <div class="p-6">
                 <div class="flex items-center mb-6">
                     @if($shop->image_path)
-                        <img src="{{ Storage::url($shop->image_path) }}" 
+                        <img src="{{ asset($shop->image_path) }}" 
                              alt="{{ $shop->name }}" 
                              class="h-24 w-24 object-cover rounded-lg mr-6">
                     @endif
@@ -113,11 +113,30 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="flex items-center">
-                                        @if($product->image_path)
-                                            <img src="{{ Storage::url($product->image_path) }}" 
-                                                 alt="{{ $product->name }}" 
-                                                 class="h-10 w-10 object-cover rounded mr-3">
-                                        @endif
+                                        <div class="flex space-x-1 mr-3">
+                                            @if($product->image_path)
+                                                <img src="{{ asset($product->image_path) }}" 
+                                                     alt="{{ $product->name }}" 
+                                                     class="h-10 w-10 object-cover rounded border">
+                                            @endif
+                                            @foreach($product->images->take(2) as $image)
+                                                <img src="{{ asset($image->image_path) }}" 
+                                                     alt="{{ $product->name }}" 
+                                                     class="h-10 w-10 object-cover rounded border">
+                                            @endforeach
+                                            @if($product->images->count() > 2)
+                                                <div class="h-10 w-10 bg-gray-100 rounded border flex items-center justify-center">
+                                                    <span class="text-xs text-gray-600">+{{ $product->images->count() - 2 }}</span>
+                                                </div>
+                                            @endif
+                                            @if(!$product->image_path && $product->images->count() == 0)
+                                                <div class="h-10 w-10 bg-gray-100 rounded border flex items-center justify-center">
+                                                    <svg class="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                                    </svg>
+                                                </div>
+                                            @endif
+                                        </div>
                                         <div class="text-sm font-medium text-gray-900">{{ $product->name }}</div>
                                     </div>
                                 </td>
@@ -363,6 +382,23 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Add these functions to the global scope
+    window.verifyProduct = function(productId) {
+        if (confirm('Are you sure you want to verify this product?')) {
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = "{{ route('admin.products.verify', ['product' => ':id']) }}".replace(':id', productId);
+            
+            const csrfToken = document.createElement('input');
+            csrfToken.type = 'hidden';
+            csrfToken.name = '_token';
+            csrfToken.value = '{{ csrf_token() }}';
+            
+            form.appendChild(csrfToken);
+            document.body.appendChild(form);
+            form.submit();
+        }
+    }
+
     window.openRejectModal = function(productId) {
         const modal = document.getElementById('rejectModal');
         const form = document.getElementById('rejectForm');
@@ -393,7 +429,7 @@ async function viewProduct(productId) {
         // Update modal content
         document.getElementById('productName').textContent = product.name;
         document.getElementById('productDescription').textContent = product.description || 'No description available';
-        document.getElementById('productCategory').textContent = `${product.category.name} > ${product.subcategory.name}`;
+        document.getElementById('productCategory').textContent = product.category ? product.category.name : 'No category';
         document.getElementById('productPrice').textContent = `₹${parseFloat(product.price).toFixed(2)}`;
         
         // Update status with badge
@@ -407,16 +443,35 @@ async function viewProduct(productId) {
         document.getElementById('productStatus').innerHTML = '';
         document.getElementById('productStatus').appendChild(statusBadge);
 
-        // Update image
+        // Update images
         const imageContainer = document.getElementById('productImage');
-        imageContainer.innerHTML = product.image_path ? 
-            `<img src="/storage/${product.image_path}" alt="${product.name}" class="w-full h-auto rounded-lg">` :
-            `<div class="w-full h-48 bg-gray-100 rounded-lg flex items-center justify-center">
+        let imageHtml = '';
+        
+        // Show main image if exists
+        if (product.image_path) {
+            imageHtml += `<img src="${product.image_path.startsWith('http') ? product.image_path : '/' + product.image_path}" alt="${product.name}" class="w-full h-auto rounded-lg mb-4">`;
+        }
+        
+        // Show additional images if any
+        if (product.images && product.images.length > 0) {
+            imageHtml += '<div class="grid grid-cols-3 gap-2">';
+            product.images.forEach(image => {
+                imageHtml += `<img src="${image.image_path.startsWith('http') ? image.image_path : '/' + image.image_path}" alt="${product.name}" class="w-full h-24 object-cover rounded border">`;
+            });
+            imageHtml += '</div>';
+        }
+        
+        // Show placeholder if no images
+        if (!product.image_path && (!product.images || product.images.length === 0)) {
+            imageHtml = `<div class="w-full h-48 bg-gray-100 rounded-lg flex items-center justify-center">
                 <svg class="h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
                           d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
             </div>`;
+        }
+        
+        imageContainer.innerHTML = imageHtml;
 
         // Show modal
         document.getElementById('productViewModal').classList.remove('hidden');

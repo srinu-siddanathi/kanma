@@ -48,8 +48,11 @@
                 <thead class="bg-gray-50">
                     <tr>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Duration</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Free Orders</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Delivery Radius</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                     </tr>
@@ -58,8 +61,15 @@
                     @forelse($plans as $plan)
                     <tr>
                         <td class="px-6 py-4 whitespace-nowrap">{{ $plan->name }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $plan->type === 'katha' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800' }}">
+                                {{ ucfirst($plan->type) }}
+                            </span>
+                        </td>
                         <td class="px-6 py-4 whitespace-nowrap">₹{{ number_format($plan->price, 2) }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap">{{ $plan->duration_in_days }} days</td>
+                        <td class="px-6 py-4 whitespace-nowrap">{{ $plan->validity_days }} days</td>
+                        <td class="px-6 py-4 whitespace-nowrap">{{ $plan->free_orders ?? 0 }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">{{ $plan->free_delivery_radius ?? 0 }} KM</td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $plan->is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
                                 {{ $plan->is_active ? 'Active' : 'Inactive' }}
@@ -76,7 +86,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="5" class="px-6 py-4 text-center text-gray-500">No subscription plans found</td>
+                        <td colspan="8" class="px-6 py-4 text-center text-gray-500">No subscription plans found</td>
                     </tr>
                     @endforelse
                 </tbody>

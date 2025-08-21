@@ -54,8 +54,8 @@ class SubscriptionPlanSeeder extends Seeder
             'price' => 0,
             'validity_days' => 30,
             'wallet_addon' => 0,
-            'free_orders' => 0,
-            'free_delivery_radius' => 0,
+            'free_orders' => 10,
+            'free_delivery_radius' => 5,
             'is_active' => true
         ]);
     }

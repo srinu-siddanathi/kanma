@@ -285,6 +285,11 @@ class CheckoutController extends Controller
             // Send notification to user about order creation
             NotificationHelper::sendOrderStatusUpdate($order->user_id, $order->id, 'pending');
 
+            // Send immediate emails for COD orders
+            if ($request->payment_method === 'cod') {
+                \App\Services\OrderPlacementEmailService::sendCodOrderPlacementEmails($order);
+            }
+
             // Notify all admins about the new order
             $adminUsers = \App\Models\User::where('role', 'admin')->get();
             foreach ($adminUsers as $admin) {

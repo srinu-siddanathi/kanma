@@ -58,18 +58,18 @@
                     </div>
 
                     <div class="katha-only">
-                        <label for="wallet_addon" class="block text-sm font-medium text-gray-700">Wallet Addon</label>
-                        <input type="text" name="wallet_addon" id="wallet_addon" value="{{ old('wallet_addon', $plan->wallet_addon) }}"
+                        <label for="wallet_addon" class="block text-sm font-medium text-gray-700">Wallet Addon (₹)</label>
+                        <input type="number" name="wallet_addon" id="wallet_addon" value="{{ old('wallet_addon', $plan->wallet_addon) }}" min="0" step="0.01"
                             class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
                     </div>
 
-                    <div class="katha-only">
-                        <label for="free_orders" class="block text-sm font-medium text-gray-700">Free Special Orders</label>
+                    <div>
+                        <label for="free_orders" class="block text-sm font-medium text-gray-700">Free Orders</label>
                         <input type="number" name="free_orders" id="free_orders" value="{{ old('free_orders', $plan->free_orders) }}" min="0"
                             class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
                     </div>
 
-                    <div class="katha-only">
+                    <div>
                         <label for="free_delivery_radius" class="block text-sm font-medium text-gray-700">Free Delivery Radius (KM)</label>
                         <input type="number" name="free_delivery_radius" id="free_delivery_radius" value="{{ old('free_delivery_radius', $plan->free_delivery_radius) }}" min="0"
                             class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">

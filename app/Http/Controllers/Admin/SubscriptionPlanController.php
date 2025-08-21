@@ -40,6 +40,7 @@ class SubscriptionPlanController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
+            'type' => 'required|in:katha,o2',
             'name' => 'required|string|max:255',
             'description' => 'required|string',
             'price' => 'required|numeric|min:0',
@@ -62,6 +63,7 @@ class SubscriptionPlanController extends Controller
     public function update(Request $request, SubscriptionPlan $plan)
     {
         $validated = $request->validate([
+            'type' => 'required|in:katha,o2',
             'name' => 'required|string|max:255',
             'description' => 'required|string',
             'price' => 'required|numeric|min:0',

@@ -69,9 +69,19 @@
                         <div class="text-sm text-gray-900">₹{{ number_format($product->price, 2) }}</div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $product->is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                            {{ $product->is_active ? 'Active' : 'Inactive' }}
-                        </span>
+                        <div>
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                {{ $product->status === 'verified' ? 'bg-green-100 text-green-800' : 
+                                   ($product->status === 'rejected' ? 'bg-red-100 text-red-800' : 
+                                   'bg-yellow-100 text-yellow-800') }}">
+                                {{ ucfirst($product->status) }}
+                            </span>
+                            @if($product->status === 'rejected' && $product->rejection_reason)
+                                <div class="mt-1 text-xs text-red-600">
+                                    Reason: {{ Str::limit($product->rejection_reason, 50) }}
+                                </div>
+                            @endif
+                        </div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <a href="{{ route('shop-owner.products.edit', $product) }}" class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</a>

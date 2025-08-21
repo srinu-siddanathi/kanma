@@ -167,8 +167,14 @@
 
             @if($recipientType === 'customer')
                 <p>Your order has been placed successfully! We're excited to prepare your order and get it delivered to you as soon as possible.</p>
+                @if($order->payment_method === 'cod')
+                    <p><strong>Payment Method:</strong> Cash on Delivery (COD) - Payment will be collected upon delivery.</p>
+                @endif
             @else
                 <p>A new order has been placed and requires your attention. Please review the order details and confirm it as soon as possible.</p>
+                @if($order->payment_method === 'cod')
+                    <p><strong>⚠️ COD Order:</strong> This is a Cash on Delivery order. Payment will be collected upon delivery.</p>
+                @endif
             @endif
 
             <div class="order-info">
@@ -254,7 +260,7 @@
                 </p>
             @else
                 <div style="text-align: center;">
-                    <a href="{{ route('admin.orders.show', $order->id) }}" class="cta-button">Review Order</a>
+                    <a href="{{ route('branch-manager.orders.show', $order->id) }}" class="cta-button">Review Order</a>
                 </div>
                 <p style="text-align: center; color: #6c757d; font-size: 14px;">
                     Please review and confirm this order as soon as possible to ensure timely delivery.

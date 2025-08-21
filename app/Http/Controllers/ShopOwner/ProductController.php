@@ -56,13 +56,13 @@ class ProductController extends Controller
 
         // Handle selected existing images
         if ($request->has('selected_images') && is_array($request->input('selected_images')) && !empty($request->input('selected_images'))) {
-            foreach ($request->input('selected_images') as $imagePath) {
+            foreach ($request->input('selected_images') as $index => $imagePath) {
                 if (!empty($imagePath)) {
                     ProductImage::create([
                         'product_id' => $product->id,
                         'image_path' => $imagePath,
                         'is_primary' => false,
-                        'sort_order' => ProductImage::where('product_id', $product->id)->count()
+                        'sort_order' => $index
                     ]);
                 }
             }
@@ -124,13 +124,13 @@ class ProductController extends Controller
             $product->images()->delete();
             
             // Create new product images from selected images
-            foreach ($request->input('selected_images') as $imagePath) {
+            foreach ($request->input('selected_images') as $index => $imagePath) {
                 if (!empty($imagePath)) {
                     ProductImage::create([
                         'product_id' => $product->id,
                         'image_path' => $imagePath,
                         'is_primary' => false,
-                        'sort_order' => ProductImage::where('product_id', $product->id)->count()
+                        'sort_order' => $index
                     ]);
                 }
             }

@@ -270,6 +270,11 @@ class OrderController extends Controller
             $cartKey = 'cart_' . $user->id;
             Cache::forget($cartKey);
 
+            // Send immediate emails for COD orders
+            if ($validated['payment_method'] === 'cod') {
+                \App\Services\OrderPlacementEmailService::sendCodOrderPlacementEmails($order);
+            }
+
             DB::commit();
 
             return response()->json([
