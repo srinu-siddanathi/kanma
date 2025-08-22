@@ -3,7 +3,14 @@
 @section('content')
 <div class="container mx-auto px-4">
     <div class="flex justify-between items-center mb-6">
-        <h1 class="text-2xl font-bold">Products</h1>
+        <div>
+            <h1 class="text-2xl font-bold">Products</h1>
+            <div class="flex space-x-4 mt-2 text-sm text-gray-600">
+                <span>Total: {{ $products->total() }}</span>
+                <span>Main Store: {{ $products->where('shop_id', null)->count() }}</span>
+                <span>Shop Products: {{ $products->where('shop_id', '!=', null)->count() }}</span>
+            </div>
+        </div>
         <a href="{{ route('admin.products.create') }}" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
             Create Product
         </a>
@@ -18,7 +25,7 @@
     <!-- Filters Section -->
     <div class="bg-white rounded-lg shadow mb-6 p-4">
         <form action="{{ route('admin.products.index') }}" method="GET" class="space-y-4">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-6 gap-4">
                 <!-- Search -->
                 <div>
                     <label for="search" class="block text-sm font-medium text-gray-700 mb-1">Search</label>
@@ -68,6 +75,30 @@
                         <span class="ml-2 text-sm text-gray-700">Featured Products</span>
                     </label>
                 </div>
+
+                <!-- Shop Products Filter -->
+                <div>
+                    <label class="inline-flex items-center">
+                        <input type="checkbox" 
+                               name="shop_products" 
+                               value="1"
+                               {{ request('shop_products') == '1' ? 'checked' : '' }}
+                               class="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                        <span class="ml-2 text-sm text-gray-700">Shop Products Only</span>
+                    </label>
+                </div>
+
+                <!-- Main Store Products Filter -->
+                <div>
+                    <label class="inline-flex items-center">
+                        <input type="checkbox" 
+                               name="main_store_products" 
+                               value="1"
+                               {{ request('main_store_products') == '1' ? 'checked' : '' }}
+                               class="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                        <span class="ml-2 text-sm text-gray-700">Main Store Products Only</span>
+                    </label>
+                </div>
             </div>
 
             <div class="flex justify-end space-x-3">
@@ -83,12 +114,27 @@
         </form>
     </div>
 
+    <!-- Legend -->
+    <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+        <div class="flex items-center space-x-4 text-sm">
+            <div class="flex items-center">
+                <div class="w-4 h-4 bg-blue-50 border border-blue-200 rounded mr-2"></div>
+                <span class="text-blue-800">Shop Products</span>
+            </div>
+            <div class="flex items-center">
+                <div class="w-4 h-4 bg-white border border-gray-200 rounded mr-2"></div>
+                <span class="text-gray-700">Main Store Products</span>
+            </div>
+        </div>
+    </div>
+
     <div class="bg-white rounded-lg shadow overflow-hidden">
         <table class="min-w-full">
             <thead class="bg-gray-50">
                 <tr>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Image</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Shop</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
@@ -97,9 +143,12 @@
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
                 @foreach($products as $product)
-                <tr>
+                <tr class="{{ $product->shop_id ? 'bg-blue-50 hover:bg-blue-100' : 'hover:bg-gray-50' }}">
                     <td class="px-6 py-4">
-                        @if($product->images->isNotEmpty())
+                        @if($product->image_path)
+                            <img src="{{ asset($product->image_path) }}" alt="{{ $product->name }}" 
+                                 class="h-12 w-12 object-cover rounded">
+                        @elseif($product->images->isNotEmpty())
                             <img src="{{ asset($product->images->first()->image_path) }}" alt="{{ $product->name }}" 
                                  class="h-12 w-12 object-cover rounded">
                         @else
@@ -112,7 +161,14 @@
                         @endif
                     </td>
                     <td class="px-6 py-4">
-                        <div class="text-sm font-medium text-gray-900">{{ $product->name }}</div>
+                        <div class="text-sm font-medium text-gray-900">
+                            {{ $product->name }}
+                            @if($product->shop_id)
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 ml-2">
+                                    Shop Product
+                                </span>
+                            @endif
+                        </div>
                         <div class="flex space-x-2 mt-1">
                             @if($product->is_deal)
                                 <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
@@ -128,6 +184,14 @@
                                 </span>
                             @endif
                         </div>
+                    </td>
+                    <td class="px-6 py-4">
+                        @if($product->shop)
+                            <div class="text-sm text-gray-900">{{ $product->shop->name }}</div>
+                            <div class="text-xs text-gray-500">{{ $product->shop->user->name ?? 'N/A' }}</div>
+                        @else
+                            <span class="text-sm text-gray-500">Main Store</span>
+                        @endif
                     </td>
                     <td class="px-6 py-4">
                         {{ $product->category?->name ?? 'No Category' }}

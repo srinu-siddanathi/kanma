@@ -17,7 +17,7 @@ class ProductController extends Controller
 
     public function index()
     {
-        $query = Product::with(['category', 'images']);
+        $query = Product::with(['category', 'images', 'shop']);
 
         // Apply search filter
         if (request('search')) {
@@ -53,6 +53,16 @@ class ProductController extends Controller
             ]);
             
             $query->where('is_featured', '=', 1);
+        }
+
+        // Apply shop products filter
+        if (request()->has('shop_products')) {
+            $query->whereNotNull('shop_id');
+        }
+
+        // Apply main store products filter
+        if (request()->has('main_store_products')) {
+            $query->whereNull('shop_id');
         }
 
         // Log the query before pagination
