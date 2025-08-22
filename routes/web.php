@@ -228,6 +228,7 @@ Route::prefix('admin')->group(function () {
         // Chat Orders
         Route::get('/chat-orders', [ChatOrderController::class, 'index'])->name('chat-orders.index');
         Route::get('/chat-orders/{chatOrder}', [ChatOrderController::class, 'show'])->name('chat-orders.show');
+        Route::get('/chat-orders/{chatOrder}/messages', [ChatOrderController::class, 'getMessages'])->name('chat-orders.messages.index');
         Route::post('/chat-orders/{chatOrder}/messages', [ChatOrderController::class, 'storeMessage'])->name('chat-orders.messages.store');
         Route::put('/chat-orders/{chatOrder}/status', [ChatOrderController::class, 'updateStatus'])->name('chat-orders.update-status');
         
@@ -386,3 +387,8 @@ Route::post('/register', [App\Http\Controllers\Auth\RegisterController::class, '
 
 // Shop Owner Registration
 Route::post('/shop-owner/register', [App\Http\Controllers\ShopOwnerRegistrationController::class, 'register'])->name('shop-owner.register');
+
+// Captcha routes
+Route::get('/captcha/new', function () {
+    return App\Services\CaptchaService::getNewCaptcha();
+})->name('captcha.new');

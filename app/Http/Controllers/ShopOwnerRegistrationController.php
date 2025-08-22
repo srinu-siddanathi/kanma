@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\Shop;
+use App\Services\CaptchaService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
@@ -27,7 +28,17 @@ class ShopOwnerRegistrationController extends Controller
                 'shop_address' => 'required|string|max:500',
                 'terms' => 'required|accepted',
                 'newsletter' => 'nullable|in:0,1',
+                'captcha_key' => 'required|string',
+                'captcha_answer' => 'required|string',
             ]);
+
+            // Verify captcha
+            if (!CaptchaService::verify($validated['captcha_key'], $validated['captcha_answer'])) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Invalid captcha answer. Please try again.',
+                ], 422);
+            }
 
             DB::beginTransaction();
 

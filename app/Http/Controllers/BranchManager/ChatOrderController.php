@@ -52,6 +52,24 @@ class ChatOrderController extends Controller
         return view('branch-manager.chat-orders.show', compact('chatOrder'));
     }
 
+    public function getMessages(ChatOrder $chatOrder)
+    {
+        // Ensure the chat order belongs to the branch manager's branch
+        if ($chatOrder->branch_id !== auth()->user()->branch->id) {
+            abort(403);
+        }
+
+        $messages = $chatOrder->messages()
+            ->with('sender')
+            ->latest()
+            ->get();
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $messages
+        ]);
+    }
+
     public function storeMessage(Request $request, ChatOrder $chatOrder)
     {
         // Verify the chat order belongs to the branch manager's branch

@@ -181,6 +181,28 @@
                                     Subscribe to our newsletter for updates and offers
                                 </label>
                             </div>
+                            
+                            <!-- Captcha Section -->
+                            <div class="mb-3 captcha-container">
+                                <label class="form-label">Security Verification <span class="text-danger">*</span></label>
+                                <div class="row align-items-end">
+                                    <div class="col-md-6">
+                                        <div class="d-flex align-items-center">
+                                            <span class="me-2">What is</span>
+                                            <span id="captchaQuestion" class="captcha-question mx-2"></span>
+                                            <span class="me-2">?</span>
+                                            <button type="button" class="btn btn-sm btn-outline-secondary ms-2 captcha-refresh-btn" id="refreshCaptcha" title="Refresh Captcha">
+                                                <i class="bi bi-arrow-clockwise"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <input type="number" class="form-control captcha-input" id="captchaAnswer" name="captcha_answer" placeholder="Enter your answer" required>
+                                        <input type="hidden" id="captchaKey" name="captcha_key">
+                                    </div>
+                                </div>
+                                <div class="form-text">Please solve this simple math problem to verify you're human.</div>
+                            </div>
                         </div>
                     </div>
                 </form>
@@ -211,12 +233,44 @@ function togglePassword(inputId) {
     icon.setAttribute('xlink:href', type === 'password' ? '#eye' : '#eye-slash');
 }
 
+// Captcha functionality
+function loadCaptcha() {
+    fetch('{{ route("captcha.new") }}')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById('captchaQuestion').textContent = data.question;
+                document.getElementById('captchaKey').value = data.captcha_key;
+            }
+        })
+        .catch(error => {
+            console.error('Error loading captcha:', error);
+        });
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('shopOwnerForm');
     
     if (!form) {
         console.error('Shop owner form not found');
         return;
+    }
+    
+    // Load initial captcha when modal opens
+    const modal = document.getElementById('shopOwnerModal');
+    if (modal) {
+        modal.addEventListener('shown.bs.modal', function() {
+            loadCaptcha();
+        });
+    }
+    
+    // Refresh captcha button
+    const refreshCaptchaBtn = document.getElementById('refreshCaptcha');
+    if (refreshCaptchaBtn) {
+        refreshCaptchaBtn.addEventListener('click', function() {
+            loadCaptcha();
+            document.getElementById('captchaAnswer').value = '';
+        });
     }
     
     form.addEventListener('submit', function(e) {
@@ -280,6 +334,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     text: data.message || 'Something went wrong. Please try again.',
                     confirmButtonText: 'OK'
                 });
+                
+                // If captcha error, refresh captcha
+                if (data.message && data.message.includes('captcha')) {
+                    loadCaptcha();
+                    document.getElementById('captchaAnswer').value = '';
+                }
             }
         })
         .catch(error => {
@@ -290,6 +350,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 text: 'An error occurred. Please try again.',
                 confirmButtonText: 'OK'
             });
+            
+            // Refresh captcha on any error
+            loadCaptcha();
+            document.getElementById('captchaAnswer').value = '';
         })
         .finally(() => {
             // Reset button state
