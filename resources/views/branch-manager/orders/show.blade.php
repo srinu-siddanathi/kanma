@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+@extends('layouts.branch-manager')
 
 @section('title', 'Order Details')
 
@@ -7,7 +7,7 @@
     <div class="px-4 py-6 sm:px-0">
         <!-- Back Button -->
         <div class="mb-6">
-            <a href="{{ route('admin.orders') }}" class="text-indigo-600 hover:text-indigo-900">
+            <a href="{{ route('branch.orders') }}" class="text-indigo-600 hover:text-indigo-900">
                 ← Back to Orders
             </a>
         </div>
@@ -28,10 +28,6 @@
                         <dt class="text-sm font-medium text-gray-500">Customer</dt>
                         <dd class="mt-1 text-sm text-gray-900">{{ $order->user->name }}</dd>
                     </div>
-                    <div class="sm:col-span-1">
-                        <dt class="text-sm font-medium text-gray-500">Branch</dt>
-                        <dd class="mt-1 text-sm text-gray-900">{{ $order->branch->name }}</dd>
-                    </div>
                     @if($order->shop)
                     <div class="sm:col-span-1">
                         <dt class="text-sm font-medium text-gray-500">Shop</dt>
@@ -45,7 +41,7 @@
                     <div class="sm:col-span-1">
                         <dt class="text-sm font-medium text-gray-500">Status</dt>
                         <dd class="mt-1">
-                            <form action="{{ route('admin.orders.update-status', $order) }}" method="POST" class="inline-flex">
+                            <form action="{{ route('branch.orders.update-status', $order) }}" method="POST" class="inline-flex">
                                 @csrf
                                 @method('PUT')
                                 <select name="status" onchange="this.form.submit()" 
@@ -152,8 +148,8 @@
                         @endif
                         @if($order->coupon)
                         <tr>
-                            <td colspan="3" class="px-6 py-2 text-right text-sm text-green-600">Coupon Discount:</td>
-                            <td class="px-6 py-2 whitespace-nowrap text-sm text-green-600">
+                            <td colspan="3" class="px-6 py-2 text-right text-sm text-gray-600">Coupon Discount:</td>
+                            <td class="px-6 py-2 whitespace-nowrap text-sm text-gray-600">
                                 -₹{{ number_format($order->coupon->discount_type === 'percentage' ? 
                                     ($order->items->sum(function($item) { return $item->price * $item->quantity; }) * $order->coupon->discount_value / 100) : 
                                     $order->coupon->discount_value, 2) }}
@@ -162,15 +158,15 @@
                         @endif
                         @if($order->wallet_amount_used > 0)
                         <tr>
-                            <td colspan="3" class="px-6 py-2 text-right text-sm text-blue-600">Wallet Amount Used:</td>
-                            <td class="px-6 py-2 whitespace-nowrap text-sm text-blue-600">
+                            <td colspan="3" class="px-6 py-2 text-right text-sm text-gray-600">Wallet Amount Used:</td>
+                            <td class="px-6 py-2 whitespace-nowrap text-sm text-gray-600">
                                 -₹{{ number_format($order->wallet_amount_used, 2) }}
                             </td>
                         </tr>
                         @endif
-                        <tr class="border-t border-gray-200">
-                            <td colspan="3" class="px-6 py-4 text-right text-lg font-bold text-gray-900">Total Amount:</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-lg font-bold text-gray-900">
+                        <tr>
+                            <td colspan="3" class="px-6 py-4 text-right text-sm font-medium text-gray-900">Total:</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                                 ₹{{ number_format($order->total_amount, 2) }}
                             </td>
                         </tr>

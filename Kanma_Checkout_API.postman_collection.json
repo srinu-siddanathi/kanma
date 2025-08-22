@@ -117,7 +117,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"branch_id\": 1,\n    \"delivery_address\": \"123 Main Street, Bangalore, Karnataka - 560001\",\n    \"delivery_latitude\": 12.9716,\n    \"delivery_longitude\": 77.5946,\n    \"items\": [\n        {\n            \"product_id\": 1,\n            \"quantity\": 2,\n            \"variant_id\": null\n        },\n        {\n            \"product_id\": 3,\n            \"quantity\": 1,\n            \"variant_id\": 5\n        }\n    ],\n    \"notes\": \"Please deliver in the morning\",\n    \"payment_method\": \"cod\",\n    \"wallet_amount_used\": 0\n}"
+					"raw": "{\n    \"branch_id\": 1,\n    \"shop_id\": 1,\n    \"delivery_address\": \"123 Main Street, Bangalore, Karnataka - 560001\",\n    \"delivery_latitude\": 12.9716,\n    \"delivery_longitude\": 77.5946,\n    \"items\": [\n        {\n            \"product_id\": 1,\n            \"quantity\": 2,\n            \"variant_id\": null\n        },\n        {\n            \"product_id\": 3,\n            \"quantity\": 1,\n            \"variant_id\": 5\n        }\n    ],\n    \"notes\": \"Please deliver in the morning\",\n    \"payment_method\": \"cod\",\n    \"wallet_amount_used\": 0\n}"
 				},
 				"url": {
 					"raw": "{{base_url}}/api/orders",
@@ -156,7 +156,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"branch_id\": 1,\n    \"delivery_address\": \"123 Main Street, Bangalore, Karnataka - 560001\",\n    \"delivery_latitude\": 12.9716,\n    \"delivery_longitude\": 77.5946,\n    \"items\": [\n        {\n            \"product_id\": 1,\n            \"quantity\": 2,\n            \"variant_id\": null\n        }\n    ],\n    \"notes\": \"Wallet payment order\",\n    \"payment_method\": \"wallet\",\n    \"wallet_amount_used\": 100\n}"
+					"raw": "{\n    \"branch_id\": 1,\n    \"shop_id\": 1,\n    \"delivery_address\": \"123 Main Street, Bangalore, Karnataka - 560001\",\n    \"delivery_latitude\": 12.9716,\n    \"delivery_longitude\": 77.5946,\n    \"items\": [\n        {\n            \"product_id\": 1,\n            \"quantity\": 2,\n            \"variant_id\": null\n        }\n    ],\n    \"notes\": \"Wallet payment order\",\n    \"payment_method\": \"wallet\",\n    \"wallet_amount_used\": 100\n}"
 				},
 				"url": {
 					"raw": "{{base_url}}/api/orders",
@@ -195,7 +195,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"branch_id\": 1,\n    \"delivery_address\": \"123 Main Street, Bangalore, Karnataka - 560001\",\n    \"delivery_latitude\": 12.9716,\n    \"delivery_longitude\": 77.5946,\n    \"items\": [\n        {\n            \"product_id\": 1,\n            \"quantity\": 2,\n            \"variant_id\": null\n        }\n    ],\n    \"notes\": \"Razorpay payment order\",\n    \"payment_method\": \"razorpay\",\n    \"wallet_amount_used\": 0\n}"
+					"raw": "{\n    \"branch_id\": 1,\n    \"shop_id\": 1,\n    \"delivery_address\": \"123 Main Street, Bangalore, Karnataka - 560001\",\n    \"delivery_latitude\": 12.9716,\n    \"delivery_longitude\": 77.5946,\n    \"items\": [\n        {\n            \"product_id\": 1,\n            \"quantity\": 2,\n            \"variant_id\": null\n        }\n    ],\n    \"notes\": \"Razorpay payment order\",\n    \"payment_method\": \"razorpay\",\n    \"wallet_amount_used\": 0\n}"
 				},
 				"url": {
 					"raw": "{{base_url}}/api/orders",

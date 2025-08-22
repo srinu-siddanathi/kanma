@@ -14,7 +14,7 @@ class OrderController extends Controller
     {
         $branch = auth()->user()->branch;
         $orders = $branch->orders()
-            ->with(['user', 'items.product'])
+            ->with(['user', 'shop', 'items.product'])
             ->latest()
             ->paginate(10);
 
@@ -29,7 +29,7 @@ class OrderController extends Controller
         }
 
         return view('branch-manager.orders.show', [
-            'order' => $order->load(['user', 'items.product']),
+            'order' => $order->load(['user', 'shop', 'items.product']),
         ]);
     }
 
@@ -103,7 +103,7 @@ class OrderController extends Controller
         
         // Get the query builder before executing
         $query = Order::where('branch_id', $branch->id)
-            ->with(['user', 'deliveryBoy', 'items.product'])
+            ->with(['user', 'deliveryBoy', 'shop', 'items.product'])
             ->latest();
 
         // Debug logging

@@ -23,7 +23,7 @@ class DashboardController extends Controller
                 ->count(),
         ];
 
-        $recent_orders = Order::with(['user'])
+        $recent_orders = Order::with(['user', 'shop'])
             ->where('branch_id', $branch->id)
             ->latest()
             ->take(5)

@@ -33,14 +33,18 @@
                 <div class="col-md-5">
                     <div class="d-flex flex-column align-items-center">
                         <!-- Main Image -->
-                        @if($product->images->isNotEmpty())
+                        @if($product->image_path)
+                            <img id="mainImage" src="{{ asset($product->image_path) }}" alt="{{ $product->name }}" class="img-fluid rounded mb-3" style="max-height: 350px; object-fit: contain;">
+                        @elseif($product->images->isNotEmpty())
                             <img id="mainImage" src="{{ asset($product->images->first()->image_path) }}" alt="{{ $product->name }}" class="img-fluid rounded mb-3" style="max-height: 350px; object-fit: contain;">
                         @else
                             <img id="mainImage" src="{{ asset('images/no-image.png') }}" alt="{{ $product->name }}" class="img-fluid rounded mb-3" style="max-height: 350px; object-fit: contain;">
                         @endif
                         <!-- Thumbnails (horizontal row) -->
                         <div class="d-flex flex-row gap-2 justify-content-center mb-3" id="thumbnails">
-                            @if($product->images->isNotEmpty())
+                            @if($product->image_path)
+                                <img src="{{ asset($product->image_path) }}" alt="thumb" class="img-thumbnail thumbnail-img border-warning" style="width: 60px; height: 60px; object-fit: cover; cursor:pointer; border-width:2px;" onclick="selectThumbnail(this)">
+                            @elseif($product->images->isNotEmpty())
                                 @foreach($product->images as $key => $img)
                                     <img src="{{ asset($img->image_path) }}" alt="thumb" class="img-thumbnail thumbnail-img {{ $key == 0 ? 'border-warning' : '' }}" style="width: 60px; height: 60px; object-fit: cover; cursor:pointer; border-width:2px;" onclick="selectThumbnail(this)">
                                 @endforeach

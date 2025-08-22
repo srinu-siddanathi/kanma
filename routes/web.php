@@ -222,6 +222,7 @@ Route::prefix('admin')->group(function () {
     Route::middleware(['auth', 'branch.manager'])->prefix('branch')->name('branch.')->group(function () {
         Route::get('/dashboard', [BranchManagerDashboardController::class, 'show'])->name('dashboard');
         Route::get('/orders', [BranchManagerOrderController::class, 'list'])->name('orders');
+        Route::get('/orders/{order}', [BranchManagerOrderController::class, 'show'])->name('orders.show');
         Route::put('/orders/{order}/update-status', [BranchManagerOrderController::class, 'updateStatus'])->name('orders.update-status');
         
         // Chat Orders

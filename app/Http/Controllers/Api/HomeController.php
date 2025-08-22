@@ -103,6 +103,11 @@ class HomeController extends Controller
                 
                 if (!$variant) return null;
 
+                // Calculate discounted price using product-level discount
+                $discountedPrice = $product->discount > 0 
+                    ? $variant->price * (1 - $product->discount / 100)
+                    : $variant->price;
+
                 return [
                     'id' => $product->id,
                     'name' => $product->name,
@@ -110,8 +115,8 @@ class HomeController extends Controller
                     'unit' => $variant->unit,
                     'quantity' => $variant->quantity,
                     'original_price' => $variant->price,
-                    'discounted_price' => $variant->discount_percentage > 0 ? $variant->discounted_price : $variant->price,
-                    'discount_percentage' => $variant->discount_percentage ?? 0,
+                    'discounted_price' => $discountedPrice,
+                    'discount_percentage' => $product->discount ?? 0,
                     'variant_id' => $variant->id
                 ];
             })

@@ -119,6 +119,7 @@ Authorization: Bearer {your_token}
 ```json
 {
     "branch_id": 1,
+    "shop_id": 1,
     "delivery_address": "123 Main St, City, State - 123456",
     "delivery_latitude": 12.9716,
     "delivery_longitude": 77.5946,

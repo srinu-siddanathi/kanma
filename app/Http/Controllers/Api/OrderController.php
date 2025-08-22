@@ -20,6 +20,7 @@ class OrderController extends Controller
     {
         $validated = $request->validate([
             'branch_id' => 'required|exists:branches,id',
+            'shop_id' => 'nullable|exists:shops,id',
             'delivery_address' => 'required|string',
             'delivery_latitude' => 'required|numeric',
             'delivery_longitude' => 'required|numeric',
@@ -220,6 +221,7 @@ class OrderController extends Controller
             $order = Order::create([
                 'user_id' => $user->id,
                 'branch_id' => $validated['branch_id'],
+                'shop_id' => $validated['shop_id'] ?? null,
                 'status' => 'pending',
                 'delivery_address' => $validated['delivery_address'],
                 'delivery_latitude' => $validated['delivery_latitude'],
@@ -281,7 +283,7 @@ class OrderController extends Controller
                 'status' => 'success',
                 'message' => 'Order created successfully',
                 'data' => [
-                    'order' => $order->load('items.product', 'branch', 'coupon'),
+                    'order' => $order->load('items.product', 'branch', 'shop', 'coupon'),
                     'breakdown' => [
                         'subtotal' => round($subtotal, 2),
                         'coupon_discount' => round($couponDiscount, 2),

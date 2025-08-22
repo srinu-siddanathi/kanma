@@ -83,9 +83,17 @@ class Product extends Model
 
     public function getImageUrlAttribute(): ?string
     {
+        // First check if product has image_path in products table
+        if ($this->image_path) {
+            return asset($this->image_path);
+        }
+        
+        // Then check product_images table
         if ($this->images->isNotEmpty()) {
             return asset($this->images->first()->image_path);
         }
+        
+        // If no images found, use default
         return asset('images/no-image.png');
     }
 

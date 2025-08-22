@@ -13,7 +13,7 @@ class OrderController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Order::with(['user', 'branch', 'items.product']);
+        $query = Order::with(['user', 'branch', 'shop', 'items.product']);
 
         if ($request->filled('search')) {
             $search = $request->search;
@@ -44,7 +44,7 @@ class OrderController extends Controller
 
     public function show(Order $order)
     {
-        $order->load(['user', 'branch', 'items.product', 'coupon']);
+        $order->load(['user', 'branch', 'shop', 'items.product', 'coupon']);
         return view('admin.orders.show', compact('order'));
     }
 

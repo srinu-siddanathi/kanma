@@ -62,6 +62,11 @@ class CartController extends Controller
                 $imagePath = 'images/no-image.png';
             }
 
+            // Calculate discounted price using product-level discount
+            $discountedPrice = $product->discount > 0 
+                ? $variant->price * (1 - $product->discount / 100)
+                : $variant->price;
+
             $cart[$cartItemId] = [
                 'product_id' => $product->id,
                 'product_name' => $product->name,
@@ -70,8 +75,8 @@ class CartController extends Controller
                 'unit' => $variant->unit,
                 'price' => floatval($variant->price),
                 'image_path' => $imagePath,
-                'discount_percentage' => floatval($variant->discount_percentage),
-                'discounted_price' => floatval($variant->discounted_price)
+                'discount_percentage' => floatval($product->discount),
+                'discounted_price' => floatval($discountedPrice)
             ];
         }
 
