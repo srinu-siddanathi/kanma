@@ -324,7 +324,7 @@ class OrderController extends Controller
     {
         $orders = $request->user()
             ->orders()
-            ->with(['items.product', 'branch'])
+            ->with(['items.product', 'branch', 'shop'])
             ->latest()
             ->get();
 
@@ -358,6 +358,12 @@ class OrderController extends Controller
                     'id' => $order->branch->id,
                     'name' => $order->branch->name,
                 ] : null,
+                'shop' => $order->shop ? [
+                    'id' => $order->shop->id,
+                    'name' => $order->shop->name,
+                    'image_path' => $order->shop->image_url,
+                    'address' => $order->shop->address
+                ] : null,
             ];
         });
 
@@ -385,11 +391,27 @@ class OrderController extends Controller
             ], 403);
         }
 
-        $order->load(['items.product', 'branch']);
+        $order->load(['items.product', 'branch', 'shop']);
+
+        // Return the order with both original format (for Android compatibility) and formatted dates
+        $orderData = $order->toArray();
+        
+        // Add formatted dates while keeping the original created_at for backward compatibility
+        $orderData['created_at'] = $order->getApiDate('created_at');
+        $orderData['updated_at'] = $order->getApiDate('updated_at');
+        
+        if ($order->cancelled_at) {
+            $orderData['cancelled_at_formatted'] = $order->getApiDate('cancelled_at');
+        }
 
         return response()->json([
             'status' => 'success',
-            'data' => $order
+            'data' => $orderData,
+            'timezone_info' => [
+                'api_timezone' => config('timezone.api_timezone', 'Asia/Kolkata'),
+                'database_timezone' => config('timezone.database_timezone', 'UTC'),
+                'app_timezone' => config('timezone.app_timezone', 'Asia/Kolkata'),
+            ]
         ]);
     }
 

@@ -409,6 +409,14 @@ Success Response (200):
                 "id": "integer",
                 "name": "string"
             },
+            "shop": {
+                "id": "integer",
+                "name": "string",
+                "description": "string",
+                "image_path": "string",
+                "is_active": "boolean",
+                "is_verified": "boolean"
+            },
             "items": [
                 {
                     "id": "integer",
@@ -444,6 +452,14 @@ Success Response (200):
         "branch": {
             "id": "integer",
             "name": "string"
+        },
+        "shop": {
+            "id": "integer",
+            "name": "string",
+            "description": "string",
+            "image_path": "string",
+            "is_active": "boolean",
+            "is_verified": "boolean"
         },
         "items": [
             {

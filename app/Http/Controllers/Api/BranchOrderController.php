@@ -15,7 +15,7 @@ class BranchOrderController extends Controller
     {
         $branch = auth()->user()->branch;
         
-        $orders = Order::with(['user', 'items.product'])
+        $orders = Order::with(['user', 'items.product', 'shop'])
             ->where('branch_id', $branch->id)
             ->latest()
             ->paginate(10);

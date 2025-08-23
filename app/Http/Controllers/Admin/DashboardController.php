@@ -19,7 +19,7 @@ class DashboardController extends Controller
             'total_customers' => User::where('role', 'customer')->count(),
             'total_branches' => Branch::count(),
             'total_branch_managers' => User::where('role', 'branch_manager')->count(),
-            'recent_orders' => Order::with(['user', 'branch'])
+            'recent_orders' => Order::with(['user', 'branch', 'shop'])
                 ->latest()
                 ->take(5)
                 ->get(),
