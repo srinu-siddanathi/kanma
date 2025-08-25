@@ -18,6 +18,14 @@ class OrderController extends Controller
 {
     public function store(Request $request)
     {
+        // Debug logging to see if this method is being called
+        \Log::info('API OrderController store method called', [
+            'request_data' => $request->all(),
+            'headers' => $request->headers->all(),
+            'user_authenticated' => auth()->check(),
+            'user_id' => auth()->id()
+        ]);
+
         $validated = $request->validate([
             'branch_id' => 'required|exists:branches,id',
             'shop_id' => 'nullable|exists:shops,id',
@@ -159,20 +167,21 @@ class OrderController extends Controller
                     'wallet_addon' => $plan->wallet_addon
                 ];
                 
+                $hasFreeDelivery = false;
+                
                 // Check if user has free orders remaining
                 if ($plan->free_orders > 0) {
                     $freeOrdersUsed = $user->orders()
                         ->where('created_at', '>=', $activeSubscription->starts_at)
                         ->where('created_at', '<=', $activeSubscription->ends_at)
                         ->count();
-                    
                     if ($freeOrdersUsed < $plan->free_orders) {
-                        $deliveryFee = 0; // Free delivery if free orders are available
+                        $hasFreeDelivery = true; // Free delivery if free orders are available
                     }
                 }
                 
-                // Check if delivery is within free delivery radius
-                if ($plan->free_delivery_radius > 0) {
+                // If no free orders remaining, check if delivery is within free delivery radius
+                if (!$hasFreeDelivery && $plan->free_delivery_radius > 0) {
                     // Get branch location for distance calculation
                     $branch = Branch::find($validated['branch_id']);
                     
@@ -183,11 +192,15 @@ class OrderController extends Controller
                             $validated['delivery_latitude'],
                             $validated['delivery_longitude']
                         );
-                        
                         if ($distance <= $plan->free_delivery_radius) {
-                            $deliveryFee = 0; // Free delivery within radius
+                            $hasFreeDelivery = true; // Free delivery within radius
                         }
                     }
+                }
+                
+                // Apply free delivery if any condition is met
+                if ($hasFreeDelivery) {
+                    $deliveryFee = 0;
                 }
             }
 
@@ -203,6 +216,18 @@ class OrderController extends Controller
             // Calculate wallet amount used
             $walletAmountUsed = $validated['wallet_amount_used'] ?? 0;
             
+            // Calculate final total after coupon discount
+            $totalAfterCoupon = $subtotal - $couponDiscount;
+            $orderTotal = $totalAfterCoupon + $deliveryFee + $smallCartFee;
+            
+            // Validate wallet amount doesn't exceed order total
+            if ($walletAmountUsed > $orderTotal) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Wallet amount cannot exceed order total. Order total: ' . $orderTotal . ', Wallet amount: ' . $walletAmountUsed
+                ], 400);
+            }
+            
             // Validate wallet balance if wallet amount is being used
             if ($walletAmountUsed > 0) {
                 if ($walletAmountUsed > $user->wallet_balance) {
@@ -213,9 +238,8 @@ class OrderController extends Controller
                 }
             }
 
-            // Calculate final total after coupon discount
-            $totalAfterCoupon = $subtotal - $couponDiscount;
-            $totalAmount = $totalAfterCoupon + $deliveryFee + $smallCartFee - $walletAmountUsed;
+            // Calculate final total after wallet deduction
+            $totalAmount = $orderTotal - $walletAmountUsed;
 
             // Create order
             $order = Order::create([
@@ -290,6 +314,7 @@ class OrderController extends Controller
                         'total_after_coupon' => round($totalAfterCoupon, 2),
                         'delivery_fee' => round($deliveryFee, 2),
                         'small_cart_fee' => round($smallCartFee, 2),
+                        'order_total_before_wallet' => round($orderTotal, 2),
                         'wallet_amount_used' => round($walletAmountUsed, 2),
                         'total' => round($totalAmount, 2)
                     ],

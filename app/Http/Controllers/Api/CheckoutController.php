@@ -146,6 +146,8 @@ class CheckoutController extends Controller
                     'wallet_addon' => $plan->wallet_addon
                 ];
                 
+                $hasFreeDelivery = false;
+                
                 // Check if user has free orders remaining
                 if ($plan->free_orders > 0) {
                     $freeOrdersUsed = $user->orders()
@@ -154,12 +156,12 @@ class CheckoutController extends Controller
                         ->count();
                     
                     if ($freeOrdersUsed < $plan->free_orders) {
-                        $deliveryFee = 0; // Free delivery if free orders are available
+                        $hasFreeDelivery = true; // Free delivery if free orders are available
                     }
                 }
                 
-                // Check if delivery is within free delivery radius
-                if ($plan->free_delivery_radius > 0 && 
+                // If no free orders remaining, check if delivery is within free delivery radius
+                if (!$hasFreeDelivery && $plan->free_delivery_radius > 0 && 
                     isset($validated['delivery_latitude']) && 
                     isset($validated['delivery_longitude'])) {
                     
@@ -180,9 +182,14 @@ class CheckoutController extends Controller
                         );
                         
                         if ($distance <= $plan->free_delivery_radius) {
-                            $deliveryFee = 0; // Free delivery within radius
+                            $hasFreeDelivery = true; // Free delivery within radius
                         }
                     }
+                }
+                
+                // Apply free delivery if any condition is met
+                if ($hasFreeDelivery) {
+                    $deliveryFee = 0;
                 }
             }
 
@@ -361,6 +368,8 @@ class CheckoutController extends Controller
                     'wallet_addon' => $plan->wallet_addon
                 ];
                 
+                $hasFreeDelivery = false;
+                
                 // Check if user has free orders remaining
                 if ($plan->free_orders > 0) {
                     $freeOrdersUsed = $user->orders()
@@ -369,12 +378,12 @@ class CheckoutController extends Controller
                         ->count();
                     
                     if ($freeOrdersUsed < $plan->free_orders) {
-                        $deliveryFee = 0; // Free delivery if free orders are available
+                        $hasFreeDelivery = true; // Free delivery if free orders are available
                     }
                 }
                 
-                // Check if delivery is within free delivery radius
-                if ($plan->free_delivery_radius > 0 && 
+                // If no free orders remaining, check if delivery is within free delivery radius
+                if (!$hasFreeDelivery && $plan->free_delivery_radius > 0 && 
                     isset($validated['delivery_latitude']) && 
                     isset($validated['delivery_longitude'])) {
                     
@@ -393,11 +402,15 @@ class CheckoutController extends Controller
                             $validated['delivery_latitude'],
                             $validated['delivery_longitude']
                         );
-                        
                         if ($distance <= $plan->free_delivery_radius) {
-                            $deliveryFee = 0; // Free delivery within radius
+                            $hasFreeDelivery = true; // Free delivery within radius
                         }
                     }
+                }
+                
+                // Apply free delivery if any condition is met
+                if ($hasFreeDelivery) {
+                    $deliveryFee = 0;
                 }
             }
 
