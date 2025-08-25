@@ -260,7 +260,7 @@
                 </p>
             @else
                 <div style="text-align: center;">
-                    <a href="{{ route('branch-manager.orders.show', $order->id) }}" class="cta-button">Review Order</a>
+                    <a href="{{ route('branch.orders.show', $order->id) }}" class="cta-button">Review Order</a>
                 </div>
                 <p style="text-align: center; color: #6c757d; font-size: 14px;">
                     Please review and confirm this order as soon as possible to ensure timely delivery.

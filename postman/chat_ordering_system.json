@@ -268,7 +268,7 @@
 					}
 				},
 				{
-					"name": "Send Voice Message",
+					"name": "Send Voice Message (3gp)",
 					"request": {
 						"method": "POST",
 						"header": [
@@ -294,7 +294,7 @@
 								{
 									"key": "media",
 									"type": "file",
-									"src": "/path/to/voice.mp3"
+									"src": "/path/to/voice.3gp"
 								},
 								{
 									"key": "duration",
@@ -414,6 +414,93 @@
 							"raw": "{{base_url}}/api/chat-messages/1",
 							"host": ["{{base_url}}"],
 							"path": ["api", "chat-messages", "1"]
+						}
+					}
+				},
+				{
+					"name": "Get Messages (Web Platform)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/chat-orders/1/messages?platform=web",
+							"host": ["{{base_url}}"],
+							"path": ["api", "chat-orders", "1", "messages"],
+							"query": [
+								{
+									"key": "platform",
+									"value": "web"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Messages (Android Platform)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/chat-orders/1/messages?platform=android",
+							"host": ["{{base_url}}"],
+							"path": ["api", "chat-orders", "1", "messages"],
+							"query": [
+								{
+									"key": "platform",
+									"value": "android"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Messages with Platform Metadata",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/chat-orders/1/messages/platform?platform=web",
+							"host": ["{{base_url}}"],
+							"path": ["api", "chat-orders", "1", "messages", "platform"],
+							"query": [
+								{
+									"key": "platform",
+									"value": "web"
+								}
+							]
 						}
 					}
 				}
