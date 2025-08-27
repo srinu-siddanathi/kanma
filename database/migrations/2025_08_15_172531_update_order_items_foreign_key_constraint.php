@@ -13,7 +13,13 @@ return new class extends Migration
     public function up(): void
     {
         // First, clean up any orphaned order items (order items that reference non-existent products)
-        DB::statement('DELETE oi FROM order_items oi LEFT JOIN products p ON oi.product_id = p.id WHERE p.id IS NULL');
+        if (DB::connection()->getDriverName() === 'sqlite') {
+            // SQLite compatible syntax
+            DB::statement('DELETE FROM order_items WHERE product_id NOT IN (SELECT id FROM products)');
+        } else {
+            // MySQL compatible syntax
+            DB::statement('DELETE oi FROM order_items oi LEFT JOIN products p ON oi.product_id = p.id WHERE p.id IS NULL');
+        }
         
         Schema::table('order_items', function (Blueprint $table) {
             // Drop the existing foreign key constraint

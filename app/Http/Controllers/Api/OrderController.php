@@ -8,6 +8,8 @@ use App\Models\Product;
 use App\Models\Setting;
 use App\Models\Branch;
 use App\Http\Controllers\Api\RazorpayController;
+use App\Helpers\NotificationHelper;
+use App\Services\OrderEmailService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
@@ -42,8 +44,13 @@ class OrderController extends Controller
             'coupon_id' => 'nullable|integer|min:0',
         ]);
 
+        // Ensure coupon_id is set (default to null if not provided)
+        if (!isset($validated['coupon_id'])) {
+            $validated['coupon_id'] = null;
+        }
+        
         // Handle coupon_id = 0 as null (no coupon)
-        if (isset($validated['coupon_id']) && $validated['coupon_id'] == 0) {
+        if ($validated['coupon_id'] == 0) {
             $validated['coupon_id'] = null;
         }
 
@@ -272,6 +279,20 @@ class OrderController extends Controller
                             'payment_method' => $validated['payment_method']
                         ]
                     );
+                    
+                    // If entire order amount is paid by wallet, automatically confirm the order
+                    if ($walletAmountUsed >= $orderTotal) {
+                        $order->update([
+                            'status' => 'confirmed',
+                            'payment_status' => 'paid'
+                        ]);
+                        
+                        // Send notifications for confirmed order
+                        NotificationHelper::sendOrderStatusUpdate($order->user_id, $order->id, 'confirmed');
+                        
+                        // Send confirmation emails
+                        \App\Services\OrderEmailService::sendOrderConfirmationEmails($order);
+                    }
                 } catch (\Exception $e) {
                     // If wallet deduction fails, rollback the transaction
                     DB::rollBack();
@@ -358,7 +379,7 @@ class OrderController extends Controller
             return [
                 'id' => $order->id,
                 'status' => $order->status,
-                'total_amount' => $order->total_amount,
+                'total_amount' => $order->total_amount+$order->wallet_amount_used,
                 'payment_method' => $order->payment_method,
                 'payment_status' => $order->payment_status,
                 'delivery_address' => $order->delivery_address,
@@ -416,7 +437,7 @@ class OrderController extends Controller
             ], 403);
         }
 
-        $order->load(['items.product', 'branch', 'shop']);
+        $order->load(['items.product', 'branch', 'shop', 'deliveryBoy']);
 
         // Return the order with both original format (for Android compatibility) and formatted dates
         $orderData = $order->toArray();

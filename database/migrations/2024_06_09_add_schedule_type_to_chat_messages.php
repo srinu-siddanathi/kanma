@@ -26,8 +26,8 @@ return new class extends Migration
                 $table->foreign('sender_id')->references('id')->on('users')->onDelete('cascade');
             });
             
-            // Copy data from old table to new table
-            DB::statement('INSERT INTO chat_messages_new SELECT * FROM chat_messages');
+            // Copy data from old table to new table (specify columns to match)
+            DB::statement('INSERT INTO chat_messages_new (id, chat_order_id, sender_id, type, content, file_path, scheduled_at, created_at, updated_at) SELECT id, chat_order_id, sender_id, type, content, media_path, NULL, created_at, updated_at FROM chat_messages');
             
             // Drop old table and rename new table
             Schema::drop('chat_messages');
@@ -57,8 +57,8 @@ return new class extends Migration
                 $table->foreign('sender_id')->references('id')->on('users')->onDelete('cascade');
             });
             
-            // Copy data back (excluding 'schedule' type messages)
-            DB::statement("INSERT INTO chat_messages_old SELECT * FROM chat_messages WHERE type != 'schedule'");
+            // Copy data back (excluding 'schedule' type messages and specifying columns)
+            DB::statement("INSERT INTO chat_messages_old (id, chat_order_id, sender_id, type, content, media_path, duration, is_read, created_at, updated_at) SELECT id, chat_order_id, sender_id, type, content, file_path, NULL, false, created_at, updated_at FROM chat_messages WHERE type != 'schedule'");
             
             // Drop current table and rename old table
             Schema::drop('chat_messages');

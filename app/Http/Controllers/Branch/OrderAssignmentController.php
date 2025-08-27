@@ -15,7 +15,7 @@ class OrderAssignmentController extends Controller
         $branch = auth()->user()->branch;
         $unassignedOrders = Order::where('branch_id', $branch->id)
             ->whereNull('delivery_boy_id')
-            ->where('status', 'pending')
+            ->whereIn('status', ['pending', 'confirmed'])
             ->with(['customer', 'items'])
             ->paginate(10);
 

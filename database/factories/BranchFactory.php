@@ -29,12 +29,10 @@ class BranchFactory extends Factory
             'address' => $this->faker->address(),
             'phone' => $this->faker->phoneNumber(),
             'email' => $this->faker->email(),
-            'is_active' => true,
+            'pincode' => $this->faker->postcode(),
             'latitude' => $this->faker->latitude(),
             'longitude' => $this->faker->longitude(),
-            'delivery_radius' => $this->faker->numberBetween(5, 20),
-            'minimum_order_amount' => $this->faker->numberBetween(100, 500),
-            'delivery_fee' => $this->faker->numberBetween(0, 50),
+            'is_active' => true,
         ];
     }
 
