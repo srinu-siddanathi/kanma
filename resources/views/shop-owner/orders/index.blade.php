@@ -23,6 +23,7 @@
                     <option value="">All Status</option>
                     <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
                     <option value="processing" {{ request('status') == 'processing' ? 'selected' : '' }}>Processing</option>
+                    <option value="delivered" {{ request('status') == 'delivered' ? 'selected' : '' }}>Delivered</option>
                     <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>Completed</option>
                     <option value="cancelled" {{ request('status') == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
                 </select>
@@ -62,9 +63,8 @@
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
                         <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                            {{ $order->status === 'completed' ? 'bg-green-100 text-green-800' : 
-                               ($order->status === 'cancelled' ? 'bg-red-100 text-red-800' : 
-                               'bg-yellow-100 text-yellow-800') }}">
+                            {{ $order->status === 'completed' || $order->status === 'delivered' ? 'bg-green-100 text-green-800' :
+                               ($order->status === 'cancelled' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800') }}">
                             {{ ucfirst($order->status) }}
                         </span>
                     </td>
