@@ -14,7 +14,7 @@ class OrderController extends Controller
     public function index()
     {
         $orders = auth()->user()->shop->orders()
-            ->with(['user', 'items.product'])
+            ->with(['user', 'items.product.images'])
             ->latest()
             ->paginate(10);
 
@@ -27,7 +27,7 @@ class OrderController extends Controller
             abort(403);
         }
 
-        $order->load(['user', 'items.product']);
+        $order->load(['user', 'items.product.images']);
         return view('shop-owner.orders.show', compact('order'));
     }
 

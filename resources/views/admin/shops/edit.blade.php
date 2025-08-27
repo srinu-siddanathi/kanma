@@ -18,6 +18,23 @@
                 @method('PUT')
                 
                 <div class="p-6">
+                    <!-- Error Messages -->
+                    @if($errors->any())
+                        <div class="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+                            <h4 class="font-medium">Please fix the following errors:</h4>
+                            <ul class="mt-2 list-disc list-inside">
+                                @foreach($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
+
+                    @if(session('error'))
+                        <div class="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+                            {{ session('error') }}
+                        </div>
+                    @endif
                     <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
                         <!-- Basic Information -->
                         <div class="sm:col-span-2">
@@ -99,6 +116,7 @@
                         <!-- Working Hours -->
                         <div class="sm:col-span-2">
                             <h3 class="text-lg font-medium text-gray-900 mb-4">Working Hours</h3>
+                            <p class="text-sm text-gray-600 mb-4">Leave time fields empty for days when the shop is closed. Both open and close times must be filled for a day to be considered open.</p>
                             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                                 @php
                                     $days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
@@ -114,7 +132,7 @@
                                                 <input type="time" 
                                                        name="working_hours[{{ $day }}][open]" 
                                                        id="working_hours[{{ $day }}][open]" 
-                                                       value="{{ old("working_hours.{$day}.open", $workingHours[$day]['open'] ?? '') }}" 
+                                                       value="{{ old("working_hours.{$day}.open", isset($workingHours[$day]['open']) && !empty($workingHours[$day]['open']) ? $workingHours[$day]['open'] : '') }}" 
                                                        class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-xs">
                                             </div>
                                             <div>
@@ -122,7 +140,7 @@
                                                 <input type="time" 
                                                        name="working_hours[{{ $day }}][close]" 
                                                        id="working_hours[{{ $day }}][close]" 
-                                                       value="{{ old("working_hours.{$day}.close", $workingHours[$day]['close'] ?? '') }}" 
+                                                       value="{{ old("working_hours.{$day}.close", isset($workingHours[$day]['close']) && !empty($workingHours[$day]['close']) ? $workingHours[$day]['close'] : '') }}" 
                                                        class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-xs">
                                             </div>
                                         </div>

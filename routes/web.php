@@ -392,3 +392,17 @@ Route::post('/shop-owner/register', [App\Http\Controllers\ShopOwnerRegistrationC
 Route::get('/captcha/new', function () {
     return App\Services\CaptchaService::getNewCaptcha();
 })->name('captcha.new');
+
+// Temporary debug route for shop update testing
+Route::get('/debug/shop-update/{shop}', function (App\Models\Shop $shop) {
+    return response()->json([
+        'shop_id' => $shop->id,
+        'shop_name' => $shop->name,
+        'working_hours' => $shop->working_hours,
+        'working_hours_type' => gettype($shop->working_hours),
+        'is_active' => $shop->is_active,
+        'is_verified' => $shop->is_verified,
+        'fillable_fields' => $shop->getFillable(),
+        'casts' => $shop->getCasts()
+    ]);
+})->middleware(['auth', 'admin'])->name('debug.shop-update');

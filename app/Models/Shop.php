@@ -37,6 +37,24 @@ class Shop extends Model
         'rating' => 'decimal:1'
     ];
 
+    // Add mutator for working_hours to ensure proper JSON handling
+    public function setWorkingHoursAttribute($value)
+    {
+        if (is_array($value)) {
+            $this->attributes['working_hours'] = json_encode($value);
+        } else {
+            $this->attributes['working_hours'] = $value;
+        }
+    }
+
+    public function getWorkingHoursAttribute($value)
+    {
+        if (is_string($value)) {
+            return json_decode($value, true) ?: [];
+        }
+        return $value ?: [];
+    }
+
     public function user()
     {
         return $this->belongsTo(User::class);
